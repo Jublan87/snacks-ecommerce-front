@@ -3,16 +3,40 @@ import { MOCK_PRODUCTS } from '@/mocks/products.mock';
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white py-16">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            🛒 Snacks Ecommerce
-          </h1>
-          <p className="text-xl md:text-2xl">
-            Tu distribuidor de snacks favorito
-          </p>
+    <main className="min-h-screen">
+      {/* Hero Section - Diseño compacto y centrado */}
+      <div className="pt-6 pb-8 md:pt-8 md:pb-12">
+        <div className="container mx-auto px-4">
+          <div className="bg-gradient-to-b from-[#CC0000] via-[#FF5454] to-[#FF6B6B] rounded-2xl shadow-2xl overflow-hidden relative">
+            {/* Patrón decorativo de fondo */}
+            <div className="absolute inset-0 opacity-10">
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage:
+                    'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
+                  backgroundSize: '40px 40px',
+                }}
+              ></div>
+            </div>
+
+            {/* Contenido */}
+            <div className="relative px-8 py-10 md:px-12 md:py-14 text-center text-white">
+              <div className="mb-4">
+                <span className="text-6xl md:text-7xl">🛒</span>
+              </div>
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 drop-shadow-lg">
+                Snacks Ecommerce
+              </h1>
+              <p className="text-lg md:text-xl text-white/90 font-medium">
+                Tu distribuidor de snacks favorito
+              </p>
+
+              {/* Elementos decorativos */}
+              <div className="absolute top-4 right-4 w-20 h-20 bg-white/20 rounded-full blur-xl"></div>
+              <div className="absolute bottom-4 left-4 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -32,4 +56,3 @@ export default function Home() {
     </main>
   );
 }
-
