@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { SearchProvider } from '@/contexts/SearchContext';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 
@@ -16,9 +17,11 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className="antialiased flex flex-col min-h-screen">
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        <SearchProvider>
+          <Header />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </SearchProvider>
       </body>
     </html>
   );

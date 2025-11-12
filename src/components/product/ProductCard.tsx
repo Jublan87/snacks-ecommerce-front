@@ -1,6 +1,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Product } from '@/types/product';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 interface ProductCardProps {
   product: Product;
@@ -31,12 +33,13 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         {/* Badge de oferta */}
         {hasDiscount && (
-          <div
-            className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-md text-sm font-bold z-10"
+          <Badge
+            variant="destructive"
+            className="absolute top-2 right-2 z-10"
             aria-label={`${product.discountPercentage}% de descuento`}
           >
             -{product.discountPercentage}%
-          </div>
+          </Badge>
         )}
 
         {/* Overlay sin stock */}
@@ -101,12 +104,9 @@ export default function ProductCard({ product }: ProductCardProps) {
         )}
 
         {/* Botón agregar (por ahora solo visual) */}
-        <button
-          className={`mt-auto w-full py-2 px-4 rounded-md font-medium transition-colors ${
-            isOutOfStock
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-blue-600 text-white hover:bg-blue-700'
-          }`}
+        <Button
+          className="mt-auto w-full bg-[#FF5454] hover:bg-[#E63939] text-white"
+          variant={isOutOfStock ? 'secondary' : 'default'}
           disabled={isOutOfStock}
           aria-label={
             isOutOfStock
@@ -115,7 +115,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           }
         >
           {isOutOfStock ? 'Sin Stock' : 'Agregar al Carrito'}
-        </button>
+        </Button>
       </div>
     </article>
   );

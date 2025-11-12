@@ -2,9 +2,14 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import ProductSearch from '@/components/filters/ProductSearch';
+import { useSearch } from '@/contexts/SearchContext';
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { searchQuery, setSearchQuery } = useSearch();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -26,30 +31,29 @@ export default function Header() {
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-6">
-            <Link
-              href="/"
-              className="text-white hover:bg-[#CC0000] hover:text-white px-3 py-2 rounded-md transition-all duration-200 font-medium hover:scale-105"
-            >
-              Inicio
+          {/* Desktop Navigation: Búsqueda y acciones */}
+          <div className="hidden md:flex items-center space-x-4 flex-1 max-w-2xl mx-4">
+            {/* Botón Productos */}
+            <Link href="/productos">
+              <Button
+                variant="ghost"
+                className="text-white hover:bg-[#CC0000] hover:text-white transition-all duration-200 hover:scale-105"
+              >
+                Productos
+              </Button>
             </Link>
-            <Link
-              href="/productos"
-              className="text-white hover:bg-[#CC0000] hover:text-white px-3 py-2 rounded-md transition-all duration-200 font-medium hover:scale-105"
-            >
-              Productos
-            </Link>
-            <Link
-              href="/carrito"
-              className="text-white hover:bg-[#CC0000] hover:text-white px-3 py-2 rounded-md transition-all duration-200 font-medium hover:scale-105"
-            >
-              Carrito
-            </Link>
-          </nav>
+
+            {/* Barra de búsqueda */}
+            <div className="flex-1 max-w-md">
+              <ProductSearch
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+              />
+            </div>
+          </div>
 
           {/* Cart Icon (Desktop) */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center">
             <Link
               href="/carrito"
               className="relative p-2 text-white hover:bg-[#CC0000] rounded-full transition-all duration-200 hover:scale-110"
@@ -69,9 +73,12 @@ export default function Header() {
                 />
               </svg>
               {/* Badge de cantidad (por ahora vacío) */}
-              <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center opacity-0">
+              <Badge
+                variant="destructive"
+                className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 opacity-0"
+              >
                 0
-              </span>
+              </Badge>
             </Link>
           </div>
 
@@ -127,26 +134,18 @@ export default function Header() {
             {/* Drawer */}
             <div className="fixed top-16 left-0 right-0 bg-[#FF5454] shadow-lg z-50 md:hidden animate-slide-down border-b border-[#E63939]">
               <nav className="flex flex-col py-4">
-                <Link
-                  href="/"
-                  onClick={closeMobileMenu}
-                  className="px-4 py-3 text-white hover:bg-[#E63939] hover:text-white transition-colors font-medium"
-                >
-                  Inicio
-                </Link>
+                <div className="px-4 mb-4">
+                  <ProductSearch
+                    searchQuery={searchQuery}
+                    onSearchChange={setSearchQuery}
+                  />
+                </div>
                 <Link
                   href="/productos"
                   onClick={closeMobileMenu}
                   className="px-4 py-3 text-white hover:bg-[#E63939] hover:text-white transition-colors font-medium"
                 >
                   Productos
-                </Link>
-                <Link
-                  href="/carrito"
-                  onClick={closeMobileMenu}
-                  className="px-4 py-3 text-white hover:bg-[#E63939] hover:text-white transition-colors font-medium"
-                >
-                  Carrito
                 </Link>
               </nav>
             </div>
