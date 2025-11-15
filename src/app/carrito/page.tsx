@@ -1,35 +1,80 @@
+'use client'; // Componente del cliente (necesita interactividad con Zustand)
+
+import { useCartStore } from '@/lib/store/cart-store';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
+import { useCartCalculations } from '@/hooks/useCartCalculations';
+import { useCartActions } from '@/hooks/useCartActions';
+import CartItem from '@/components/cart/CartItem';
+import CartSummary from '@/components/cart/CartSummary';
+import CartEmptyState from '@/components/cart/CartEmptyState';
+
 export default function CarritoPage() {
+  // Obtener items del carrito
+  const items = useCartStore((state) => state.items);
+
+  // Calcular totales usando hook reutilizable
+  const { subtotal, shippingCalculation, total } = useCartCalculations();
+
+  // Obtener acciones usando hook reutilizable (con toasts para página)
+  const { handleQuantityChange, handleRemoveItem } = useCartActions({
+    showToasts: true,
+  });
+
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gray-50">
       {/* Header de la página */}
       <div className="bg-white border-b">
         <div className="container mx-auto px-4 py-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-            Carrito de Compras
-          </h1>
-          <p className="text-gray-600 mt-2">
-            Revisa tus productos antes de comprar
-          </p>
+          <div className="flex items-center gap-4 mb-4">
+            <Link href="/productos">
+              <Button variant="ghost" size="icon" className="h-10 w-10">
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+            </Link>
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+                Carrito de Compras
+              </h1>
+              <p className="text-gray-600 mt-2">
+                Revisa tus productos antes de comprar
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Contenido del carrito */}
-      <div className="container mx-auto px-4 py-12">
-        <div className="bg-white rounded-lg shadow p-8 text-center">
-          <div className="text-6xl mb-4">🛒</div>
-          <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-            Tu carrito está vacío
-          </h2>
-          <p className="text-gray-600 mb-6">
-            Agrega productos desde la página de productos
-          </p>
-          <a
-            href="/productos"
-            className="inline-block bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition-colors font-medium"
-          >
-            Ver Productos
-          </a>
-        </div>
+      <div className="container mx-auto px-4 py-8">
+        {items.length === 0 ? (
+          // Empty state: carrito vacío usando componente reutilizable
+          <CartEmptyState variant="page" />
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Lista de items del carrito usando componente reutilizable */}
+            <div className="lg:col-span-2 space-y-4">
+              {items.map((item) => (
+                <CartItem
+                  key={item.id}
+                  item={item}
+                  variant="card"
+                  onQuantityChange={handleQuantityChange}
+                  onRemove={handleRemoveItem}
+                />
+              ))}
+            </div>
+
+            {/* Resumen del pedido usando componente reutilizable */}
+            <div className="lg:col-span-1">
+              <CartSummary
+                subtotal={subtotal}
+                shippingCalculation={shippingCalculation}
+                variant="card"
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
