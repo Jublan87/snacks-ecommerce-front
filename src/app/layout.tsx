@@ -3,6 +3,7 @@ import './globals.css';
 import { SearchProvider } from '@/contexts/SearchContext';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import { Toaster } from 'sonner';
 
 export const metadata: Metadata = {
   title: 'Snacks Ecommerce - Tu distribuidor de snacks',
@@ -21,6 +22,11 @@ export default function RootLayout({
           <Header />
           <main className="flex-1">{children}</main>
           <Footer />
+          {/* Toaster: Muestra notificaciones en la esquina superior derecha
+              richColors: Activa colores más vibrantes para los mensajes
+              closeButton: Muestra un botón X para cerrar el toast
+              offset: Mueve el toast hacia abajo para no tapar el icono del carrito (80px desde arriba) */}
+          <Toaster position="top-right" richColors closeButton offset="80px" />
         </SearchProvider>
       </body>
     </html>

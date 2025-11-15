@@ -1,4 +1,4 @@
-'use client';
+'use client'; // Componente del cliente (necesita interactividad)
 
 import Link from 'next/link';
 import { useState } from 'react';
@@ -6,10 +6,18 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import ProductSearch from '@/components/filters/ProductSearch';
 import { useSearch } from '@/contexts/SearchContext';
+// useCartStore: Hook para obtener la cantidad de items en el carrito
+import { useCartStore } from '@/lib/store/cart-store';
+// CartDrawer: Componente del drawer lateral del carrito
+import CartDrawer from './CartDrawer';
 
 export default function Header() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  // Estados para controlar la apertura/cierre de menús
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Menú móvil
+  const [isCartOpen, setIsCartOpen] = useState(false); // Drawer del carrito
   const { searchQuery, setSearchQuery } = useSearch();
+  // Obtener la cantidad total de items en el carrito (se actualiza automáticamente)
+  const itemCount = useCartStore((state) => state.getItemCount());
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -17,6 +25,11 @@ export default function Header() {
 
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
+  };
+
+  // Función para abrir/cerrar el drawer del carrito
+  const toggleCart = () => {
+    setIsCartOpen(!isCartOpen);
   };
 
   return (
@@ -52,13 +65,14 @@ export default function Header() {
             </div>
           </div>
 
-          {/* Cart Icon (Desktop) */}
+          {/* Icono del Carrito (Desktop) */}
           <div className="hidden md:flex items-center">
-            <Link
-              href="/carrito"
+            <button
+              onClick={toggleCart} // Al hacer clic, abre el drawer del carrito
               className="relative p-2 text-white hover:bg-[#CC0000] rounded-full transition-all duration-200 hover:scale-110"
               aria-label="Ver carrito"
             >
+              {/* Icono SVG del carrito */}
               <svg
                 className="w-6 h-6"
                 fill="none"
@@ -72,14 +86,18 @@ export default function Header() {
                   d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
                 />
               </svg>
-              {/* Badge de cantidad (por ahora vacío) */}
-              <Badge
-                variant="destructive"
-                className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 opacity-0"
-              >
-                0
-              </Badge>
-            </Link>
+              {/* Badge: Muestra la cantidad de items en el carrito
+                  Solo se muestra si hay items (itemCount > 0)
+                  Si hay más de 99, muestra "99+" */}
+              {itemCount > 0 && (
+                <Badge
+                  variant="destructive"
+                  className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs animate-in fade-in zoom-in-50"
+                >
+                  {itemCount > 99 ? '99+' : itemCount}
+                </Badge>
+              )}
+            </button>
           </div>
 
           {/* Mobile Menu Button */}
@@ -147,11 +165,48 @@ export default function Header() {
                 >
                   Productos
                 </Link>
+                {/* Botón del carrito en menú móvil */}
+                <button
+                  onClick={() => {
+                    closeMobileMenu(); // Cierra el menú móvil
+                    toggleCart(); // Abre el drawer del carrito
+                  }}
+                  className="relative px-4 py-3 text-white hover:bg-[#E63939] hover:text-white transition-colors font-medium flex items-center gap-2"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                    />
+                  </svg>
+                  Carrito
+                  {/* Badge con cantidad también en móvil */}
+                  {itemCount > 0 && (
+                    <Badge
+                      variant="destructive"
+                      className="h-5 w-5 flex items-center justify-center p-0 text-xs"
+                    >
+                      {itemCount > 99 ? '99+' : itemCount}
+                    </Badge>
+                  )}
+                </button>
               </nav>
             </div>
           </>
         )}
       </div>
+
+      {/* Cart Drawer: Drawer lateral que muestra el contenido del carrito
+          isOpen: Controla si está abierto o cerrado
+          onClose: Función que se ejecuta al cerrar el drawer */}
+      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </header>
   );
 }

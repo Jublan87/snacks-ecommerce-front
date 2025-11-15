@@ -1,17 +1,35 @@
+'use client'; // Componente del cliente (necesita interactividad para el botón)
+
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Product } from '@/types/product';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useAddToCart } from '@/hooks/useAddToCart';
 
 interface ProductCardProps {
   product: Product;
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
+  // Usar el hook personalizado para manejar la lógica de agregar al carrito
+  // quantity: 1 por defecto (desde la card siempre se agrega 1 unidad)
+  const { handleAddToCart, isAdding, isOutOfStock } = useAddToCart({
+    product,
+    quantity: 1,
+  });
+
   const currentPrice = product.discountPrice || product.price;
   const hasDiscount = !!product.discountPrice;
-  const isOutOfStock = product.stock === 0;
+
+  // Función que se ejecuta al hacer clic en "Agregar al Carrito"
+  const onButtonClick = (e: React.MouseEvent) => {
+    // Prevenir que el click se propague al Link del producto
+    e.preventDefault();
+    e.stopPropagation();
+    // Llamar a la función del hook
+    handleAddToCart();
+  };
 
   return (
     <article
@@ -103,18 +121,47 @@ export default function ProductCard({ product }: ProductCardProps) {
           </p>
         )}
 
-        {/* Botón agregar (por ahora solo visual) */}
+        {/* Botón agregar al carrito */}
         <Button
-          className="mt-auto w-full bg-[#FF5454] hover:bg-[#E63939] text-white"
+          className="mt-auto w-full bg-[#FF5454] hover:bg-[#E63939] text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
           variant={isOutOfStock ? 'secondary' : 'default'}
-          disabled={isOutOfStock}
+          disabled={isOutOfStock || isAdding}
+          onClick={onButtonClick}
           aria-label={
             isOutOfStock
               ? 'Producto sin stock'
               : `Agregar ${product.name} al carrito`
           }
         >
-          {isOutOfStock ? 'Sin Stock' : 'Agregar al Carrito'}
+          {isAdding ? (
+            <>
+              <svg
+                className="animate-spin h-4 w-4 mr-2"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              Agregando...
+            </>
+          ) : isOutOfStock ? (
+            'Sin Stock'
+          ) : (
+            'Agregar al Carrito'
+          )}
         </Button>
       </div>
     </article>

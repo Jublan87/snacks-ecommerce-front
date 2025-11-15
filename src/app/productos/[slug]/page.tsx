@@ -92,7 +92,10 @@ export default async function ProductDetailPage({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mt-6">
           {/* Galería de Imágenes */}
           <div className="w-full">
-            <ProductImageGallery images={product.images} productName={product.name} />
+            <ProductImageGallery
+              images={product.images}
+              productName={product.name}
+            />
           </div>
 
           {/* Información del Producto */}
@@ -113,11 +116,7 @@ export default async function ProductDetailPage({
                     <>
                       <span className="text-gray-400">•</span>
                       {product.tags.slice(0, 3).map((tag) => (
-                        <Badge
-                          key={tag}
-                          variant="outline"
-                          className="text-xs"
-                        >
+                        <Badge key={tag} variant="outline" className="text-xs">
                           {tag}
                         </Badge>
                       ))}
@@ -248,11 +247,7 @@ export default async function ProductDetailPage({
                 <Separator />
 
                 {/* Selector de Cantidad y Botón Agregar */}
-                <ProductQuantitySection
-                  productName={product.name}
-                  stock={product.stock}
-                  isOutOfStock={isOutOfStock}
-                />
+                <ProductQuantitySection product={product} />
               </CardContent>
             </Card>
           </div>
@@ -275,4 +270,3 @@ export default async function ProductDetailPage({
     </div>
   );
 }
-
