@@ -2,14 +2,17 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { getMockProductBySlug, MOCK_PRODUCTS } from '@/mocks/products.mock';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import ProductCard from '@/components/product/ProductCard';
-import ProductImageGallery from '@/components/product/ProductImageGallery';
-import ProductBreadcrumbs from '@/components/product/ProductBreadcrumbs';
-import ProductQuantitySection from '@/components/product/ProductQuantitySection';
+import {
+  getMockProductBySlug,
+  MOCK_PRODUCTS,
+} from '@/features/product/mocks/products.mock';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Badge } from '@/shared/ui/badge';
+import { Separator } from '@/shared/ui/separator';
+import ProductCard from '@/features/product/components/ProductCard';
+import ProductImageGallery from '@/features/product/components/ProductImageGallery';
+import ProductBreadcrumbs from '@/features/product/components/ProductBreadcrumbs';
+import ProductQuantitySection from '@/features/product/components/ProductQuantitySection';
 
 interface ProductDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -107,7 +110,7 @@ export default async function ProductDetailPage({
                   {product.category && (
                     <Link
                       href={`/productos?categoria=${product.category.slug}`}
-                      className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                      className="text-lg font-bold text-blue-600 hover:text-blue-800 hover:underline"
                     >
                       {product.category.name}
                     </Link>
@@ -130,8 +133,9 @@ export default async function ProductDetailPage({
                 </CardTitle>
 
                 {/* SKU */}
-                <p className="text-sm text-gray-500 mb-4">
-                  SKU: <span className="font-mono">{product.sku}</span>
+                <p className="text-lg font-semibold text-gray-700 mb-4">
+                  SKU:{' '}
+                  <span className="font-mono font-bold">{product.sku}</span>
                 </p>
               </CardHeader>
 
@@ -146,9 +150,9 @@ export default async function ProductDetailPage({
                       <span className="text-xl text-gray-500 line-through">
                         ${product.price.toLocaleString('es-AR')}
                       </span>
-                      <Badge variant="destructive" className="text-sm">
+                      <div className="bg-red-600 text-white px-2 py-0.5 rounded font-bold text-xs shadow-md">
                         -{product.discountPercentage}% OFF
-                      </Badge>
+                      </div>
                     </>
                   ) : (
                     <span className="text-3xl md:text-4xl font-bold text-gray-900">
@@ -161,10 +165,10 @@ export default async function ProductDetailPage({
 
                 {/* Descripción */}
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">
+                  <h3 className="font-bold text-xl text-gray-900 mb-4">
                     Descripción
                   </h3>
-                  <p className="text-gray-600 leading-relaxed">
+                  <p className="text-gray-800 leading-relaxed text-base font-semibold">
                     {product.description}
                   </p>
                 </div>
@@ -174,22 +178,26 @@ export default async function ProductDetailPage({
                   <>
                     <Separator />
                     <div>
-                      <h3 className="font-semibold text-gray-900 mb-3">
+                      <h3 className="font-bold text-xl text-gray-900 mb-4">
                         Especificaciones
                       </h3>
-                      <div className="space-y-2 text-sm">
+                      <div className="space-y-4 text-lg">
                         {product.weight && (
                           <div className="flex justify-between">
-                            <span className="text-gray-600">Peso:</span>
-                            <span className="font-medium text-gray-900">
+                            <span className="font-bold text-gray-800">
+                              Peso:
+                            </span>
+                            <span className="font-bold text-gray-900">
                               {product.weight}g
                             </span>
                           </div>
                         )}
                         {product.dimensions && (
                           <div className="flex justify-between">
-                            <span className="text-gray-600">Dimensiones:</span>
-                            <span className="font-medium text-gray-900">
+                            <span className="font-bold text-gray-800">
+                              Dimensiones:
+                            </span>
+                            <span className="font-bold text-gray-900">
                               {product.dimensions.width} x{' '}
                               {product.dimensions.height} x{' '}
                               {product.dimensions.depth} cm
@@ -220,7 +228,7 @@ export default async function ProductDetailPage({
                           d="M6 18L18 6M6 6l12 12"
                         />
                       </svg>
-                      <span className="font-semibold">Sin Stock</span>
+                      <span className="font-bold text-xl">Sin Stock</span>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2 text-green-600">
@@ -237,7 +245,7 @@ export default async function ProductDetailPage({
                           d="M5 13l4 4L19 7"
                         />
                       </svg>
-                      <span className="font-medium">
+                      <span className="font-bold text-xl">
                         {product.stock} unidades disponibles
                       </span>
                     </div>

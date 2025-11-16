@@ -1,20 +1,20 @@
 'use client'; // Componente del cliente (necesita interactividad)
 
-import { useCartStore } from '@/lib/store/cart-store';
+import { useCartStore } from '@/features/cart/store/cart-store';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
+} from '@/shared/ui/dialog';
+import { Button } from '@/shared/ui/button';
+import { Separator } from '@/shared/ui/separator';
 import Link from 'next/link';
-import { useCartCalculations } from '@/hooks/useCartCalculations';
-import { useCartActions } from '@/hooks/useCartActions';
-import CartItem from '@/components/cart/CartItem';
-import CartSummary from '@/components/cart/CartSummary';
-import CartEmptyState from '@/components/cart/CartEmptyState';
+import { useCartCalculations } from '@/features/cart/hooks/useCartCalculations';
+import { useCartActions } from '@/features/cart/hooks/useCartActions';
+import CartItem from '@/features/cart/components/CartItem';
+import CartSummary from '@/features/cart/components/CartSummary';
+import CartEmptyState from '@/features/cart/components/CartEmptyState';
 
 interface CartDrawerProps {
   isOpen: boolean; // Si el drawer está abierto
@@ -42,7 +42,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           Las clases con ! fuerzan estilos para sobrescribir los del Dialog por defecto
           !fixed !right-0: Fija el drawer en el lado derecho
           data-[state=open]:slide-in-from-right: Animación de entrada desde la derecha */}
-      <DialogContent className="!fixed !right-0 !top-0 !left-auto !translate-x-0 !translate-y-0 !w-full sm:!max-w-[500px] !max-h-screen !h-full !flex !flex-col !p-0 !rounded-l-lg !rounded-r-none !border-r-0 data-[state=open]:!slide-in-from-right data-[state=closed]:!slide-out-to-right">
+      <DialogContent className="!fixed !right-0 !top-0 !left-auto !translate-x-0 !translate-y-0 !w-full sm:!max-w-[500px] !max-h-screen !h-full !flex !flex-col !p-0 !rounded-l-lg !rounded-r-none !border-r-0 !bg-white data-[state=open]:!slide-in-from-right data-[state=closed]:!slide-out-to-right">
         <DialogHeader className="px-6 pt-6 pb-4 border-b">
           <DialogTitle className="text-2xl font-bold">
             Tu Carrito ({items.length} {items.length === 1 ? 'item' : 'items'})

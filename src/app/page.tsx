@@ -1,5 +1,5 @@
-import ProductCard from '@/components/product/ProductCard';
-import { MOCK_PRODUCTS } from '@/mocks/products.mock';
+import ProductCard from '@/features/product/components/ProductCard';
+import { MOCK_PRODUCTS } from '@/features/product/mocks/products.mock';
 
 export default function Home() {
   return (

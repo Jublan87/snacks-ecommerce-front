@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { SearchProvider } from '@/contexts/SearchContext';
+import { SearchProvider } from '@/shared/contexts/SearchContext';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Toaster } from 'sonner';

@@ -1,14 +1,14 @@
 'use client'; // Componente del cliente (necesita interactividad con Zustand)
 
-import { useCartStore } from '@/lib/store/cart-store';
-import { Button } from '@/components/ui/button';
+import { useCartStore } from '@/features/cart/store/cart-store';
+import { Button } from '@/shared/ui/button';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import { useCartCalculations } from '@/hooks/useCartCalculations';
-import { useCartActions } from '@/hooks/useCartActions';
-import CartItem from '@/components/cart/CartItem';
-import CartSummary from '@/components/cart/CartSummary';
-import CartEmptyState from '@/components/cart/CartEmptyState';
+import { useCartCalculations } from '@/features/cart/hooks/useCartCalculations';
+import { useCartActions } from '@/features/cart/hooks/useCartActions';
+import CartItem from '@/features/cart/components/CartItem';
+import CartSummary from '@/features/cart/components/CartSummary';
+import CartEmptyState from '@/features/cart/components/CartEmptyState';
 
 export default function CarritoPage() {
   // Obtener items del carrito
@@ -37,7 +37,7 @@ export default function CarritoPage() {
               <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
                 Carrito de Compras
               </h1>
-              <p className="text-gray-600 mt-2">
+              <p className="text-gray-800 mt-2 text-lg font-semibold">
                 Revisa tus productos antes de comprar
               </p>
             </div>

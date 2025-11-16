@@ -1,26 +1,28 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
-import ProductCard from '@/components/product/ProductCard';
-import CategoryFilter from '@/components/filters/CategoryFilter';
-import ProductSort from '@/components/filters/ProductSort';
-import type { SortOption } from '@/types/filters';
-import ProductPagination from '@/components/filters/ProductPagination';
-import EmptyState from '@/components/product/EmptyState';
-import LoadingState from '@/components/product/LoadingState';
-import { MOCK_PRODUCTS } from '@/mocks/products.mock';
-import { useSearch } from '@/contexts/SearchContext';
+import ProductCard from '@/features/product/components/ProductCard';
+import CategoryFilter from '@/features/filters/components/CategoryFilter';
+import DiscountFilter from '@/features/filters/components/DiscountFilter';
+import ProductSort from '@/features/filters/components/ProductSort';
+import type { SortOption } from '@/features/filters/types';
+import ProductPagination from '@/features/filters/components/ProductPagination';
+import EmptyState from '@/features/product/components/EmptyState';
+import LoadingState from '@/features/product/components/LoadingState';
+import { MOCK_PRODUCTS } from '@/features/product/mocks/products.mock';
+import { useSearch } from '@/shared/contexts/SearchContext';
 import {
   filterProducts,
   sortProducts,
   paginateProducts,
-} from '@/lib/utils/productFilters';
+} from '@/shared/utils/productFilters';
 
 const ITEMS_PER_PAGE = 12;
 
 export default function ProductosPage() {
   const { searchQuery } = useSearch();
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [hasDiscount, setHasDiscount] = useState<boolean>(false);
   const [sortBy, setSortBy] = useState<SortOption>('name-asc');
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -47,7 +49,7 @@ export default function ProductosPage() {
   // Resetear página cuando cambian los filtros o búsqueda
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, selectedCategories, sortBy]);
+  }, [searchQuery, selectedCategories, hasDiscount, sortBy]);
 
   // Procesar productos: filtrar, ordenar y paginar
   const processedProducts = useMemo(() => {
@@ -55,7 +57,8 @@ export default function ProductosPage() {
     let filtered = filterProducts(
       MOCK_PRODUCTS.filter((p) => p.isActive),
       searchQuery,
-      selectedCategories
+      selectedCategories,
+      hasDiscount
     );
 
     // Ordenar productos
@@ -73,7 +76,7 @@ export default function ProductosPage() {
       totalPages,
       totalCount: sorted.length,
     };
-  }, [searchQuery, selectedCategories, sortBy, currentPage]);
+  }, [searchQuery, selectedCategories, hasDiscount, sortBy, currentPage]);
 
   // Manejar transición suave al cambiar de página
   useEffect(() => {
@@ -111,7 +114,7 @@ export default function ProductosPage() {
       setIsLoading(false);
     }, 150);
     return () => clearTimeout(timer);
-  }, [searchQuery, selectedCategories, sortBy]);
+  }, [searchQuery, selectedCategories, hasDiscount, sortBy]);
 
   return (
     <div className="min-h-screen">
@@ -181,6 +184,14 @@ export default function ProductosPage() {
                 onCategoryChange={handleCategoryChange}
                 onClearCategories={handleClearCategories}
               />
+
+              {/* Filtro de descuento */}
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <DiscountFilter
+                  hasDiscount={hasDiscount}
+                  onDiscountChange={setHasDiscount}
+                />
+              </div>
             </div>
           </aside>
 
@@ -208,9 +219,9 @@ export default function ProductosPage() {
                     />
                   </svg>
                   Filtros
-                  {selectedCategories.length > 0 && (
+                  {(selectedCategories.length > 0 || hasDiscount) && (
                     <span className="ml-1 px-2 py-0.5 text-xs font-semibold bg-blue-600 text-white rounded-full">
-                      {selectedCategories.length}
+                      {selectedCategories.length + (hasDiscount ? 1 : 0)}
                     </span>
                   )}
                 </button>
