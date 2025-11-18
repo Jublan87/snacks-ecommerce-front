@@ -7,10 +7,12 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
+import ProtectedRoute from '@/features/auth/components/ProtectedRoute';
 
 import { useCartStore } from '@/features/cart/store/cart-store';
 import { useCartCalculations } from '@/features/cart/hooks/useCartCalculations';
 import { calculateShipping } from '@/features/shipping/services/shipping.service';
+import { useAuthStore } from '@/features/auth/store/auth-store';
 import {
   checkoutFormSchema,
   type CheckoutFormInput,
@@ -39,13 +41,14 @@ import { Separator } from '@/shared/ui/separator';
 import CartItem from '@/features/cart/components/CartItem';
 import { useCartActions } from '@/features/cart/hooks/useCartActions';
 
-export default function CheckoutPage() {
+function CheckoutPageContent() {
   const router = useRouter();
   const items = useCartStore((state) => state.items);
   const { subtotal } = useCartCalculations();
   const { handleQuantityChange, handleRemoveItem } = useCartActions({
     showToasts: false,
   });
+  const user = useAuthStore((state) => state.user);
 
   // Formulario con React Hook Form y validación Zod
   const {
@@ -78,17 +81,43 @@ export default function CheckoutPage() {
   const shippingAddress = watch('shippingAddress');
 
   // Cargar dirección guardada al montar el componente
+  // Prioridad: 1. Usuario autenticado con dirección guardada, 2. Dirección en localStorage
   useEffect(() => {
-    const savedAddress = getSavedShippingAddress();
-    if (savedAddress) {
-      Object.entries(savedAddress).forEach(([key, value]) => {
-        setValue(
-          `shippingAddress.${key as keyof typeof savedAddress}` as any,
-          value
-        );
-      });
+    // Si el usuario está autenticado y tiene dirección guardada, usarla
+    if (user?.shippingAddress) {
+      const userAddress = user.shippingAddress;
+      setValue('shippingAddress.firstName', userAddress.firstName);
+      setValue('shippingAddress.lastName', userAddress.lastName);
+      setValue('shippingAddress.email', userAddress.email);
+      setValue('shippingAddress.phone', userAddress.phone);
+      setValue('shippingAddress.address', userAddress.address);
+      setValue('shippingAddress.city', userAddress.city);
+      setValue('shippingAddress.province', userAddress.province);
+      setValue('shippingAddress.postalCode', userAddress.postalCode);
+      if (userAddress.notes) {
+        setValue('shippingAddress.notes', userAddress.notes);
+      }
+    } else {
+      // Si no hay usuario con dirección, intentar cargar desde localStorage
+      const savedAddress = getSavedShippingAddress();
+      if (savedAddress) {
+        Object.entries(savedAddress).forEach(([key, value]) => {
+          setValue(
+            `shippingAddress.${key as keyof typeof savedAddress}` as any,
+            value
+          );
+        });
+      } else if (user) {
+        // Si hay usuario pero sin dirección guardada, precargar datos básicos
+        setValue('shippingAddress.firstName', user.firstName);
+        setValue('shippingAddress.lastName', user.lastName);
+        setValue('shippingAddress.email', user.email);
+        if (user.phone) {
+          setValue('shippingAddress.phone', user.phone);
+        }
+      }
     }
-  }, [setValue]);
+  }, [setValue, user]);
 
   // Guardar dirección cuando cambie el código postal (con debounce implícito)
   useEffect(() => {
@@ -502,5 +531,13 @@ export default function CheckoutPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <ProtectedRoute>
+      <CheckoutPageContent />
+    </ProtectedRoute>
   );
 }

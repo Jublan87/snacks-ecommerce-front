@@ -83,6 +83,9 @@ src/
     │   └── productFilters.ts # Funciones de filtrado de productos
     ├── contexts/            # Contextos globales de React
     │   └── SearchContext.tsx
+    ├── middleware/          # Middlewares de Next.js
+    │   ├── auth.middleware.ts  # Middleware de autenticación
+    │   └── utils.ts         # Utilidades para middlewares
     └── types/               # Tipos TypeScript realmente compartidos
 ```
 

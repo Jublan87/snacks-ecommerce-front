@@ -2,6 +2,9 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { User, LogOut, LogIn } from 'lucide-react';
+import { toast } from 'sonner';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import ProductSearch from '@/features/filters/components/ProductSearch';
@@ -10,8 +13,19 @@ import { useSearch } from '@/shared/contexts/SearchContext';
 import { useCartStore } from '@/features/cart/store/cart-store';
 // CartDrawer: Componente del drawer lateral del carrito
 import CartDrawer from '@/features/cart/components/CartDrawer';
+// Auth store
+import { useAuthStore } from '@/features/auth/store/auth-store';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/shared/ui/dropdown-menu';
 
 export default function Header() {
+  const router = useRouter();
   // Estados para controlar la apertura/cierre de menús
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Menú móvil
   const [isCartOpen, setIsCartOpen] = useState(false); // Drawer del carrito
@@ -19,6 +33,8 @@ export default function Header() {
   const { searchQuery, setSearchQuery } = useSearch();
   // Obtener la cantidad total de items en el carrito (se actualiza automáticamente)
   const itemCount = useCartStore((state) => state.getItemCount());
+  // Auth state
+  const { user, isAuthenticated, logout } = useAuthStore();
 
   // Esperar a que el componente se monte en el cliente
   useEffect(() => {
@@ -36,6 +52,14 @@ export default function Header() {
   // Función para abrir/cerrar el drawer del carrito
   const toggleCart = () => {
     setIsCartOpen(!isCartOpen);
+  };
+
+  // Función para cerrar sesión
+  const handleLogout = () => {
+    logout();
+    toast.success('Sesión cerrada exitosamente');
+    router.push('/');
+    router.refresh();
   };
 
   return (
@@ -71,8 +95,65 @@ export default function Header() {
             </div>
           </div>
 
-          {/* Icono del Carrito (Desktop) */}
-          <div className="hidden md:flex items-center">
+          {/* Icono del Carrito y Autenticación (Desktop) */}
+          <div className="hidden md:flex items-center gap-3">
+            {/* Menú de Usuario o Botón de Login */}
+            {mounted && isAuthenticated && user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="text-white hover:bg-[#CC0000] hover:text-white transition-all duration-200 hover:scale-105"
+                  >
+                    <User className="w-5 h-5 mr-2" />
+                    <span className="text-base font-semibold">
+                      {user.firstName}
+                    </span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium">
+                        {user.firstName} {user.lastName}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {user.email}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/perfil" className="cursor-pointer">
+                      <User className="mr-2 h-4 w-4" />
+                      Mi Perfil
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={handleLogout}
+                    className="cursor-pointer text-red-600 focus:text-red-600"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Cerrar Sesión
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link href="/login">
+                <Button
+                  variant="ghost"
+                  className="text-white hover:bg-[#CC0000] hover:text-white transition-all duration-200 hover:scale-105"
+                >
+                  <LogIn className="w-5 h-5 mr-2" />
+                  <span className="text-base font-semibold">
+                    Iniciar Sesión
+                  </span>
+                </Button>
+              </Link>
+            )}
+
+            {/* Botón del Carrito */}
             <button
               onClick={toggleCart} // Al hacer clic, abre el drawer del carrito
               className="relative flex items-center gap-2 px-3 py-2 text-white hover:bg-[#CC0000] rounded-full transition-all duration-200 hover:scale-105"
@@ -169,6 +250,38 @@ export default function Header() {
                 >
                   Todos los productos
                 </Link>
+                {/* Autenticación en menú móvil */}
+                {mounted && isAuthenticated && user ? (
+                  <>
+                    <Link
+                      href="/perfil"
+                      onClick={closeMobileMenu}
+                      className="px-4 py-3 text-white hover:bg-[#E63939] hover:text-white transition-colors text-base font-semibold flex items-center gap-2"
+                    >
+                      <User className="w-5 h-5" />
+                      Mi Perfil
+                    </Link>
+                    <button
+                      onClick={() => {
+                        closeMobileMenu();
+                        handleLogout();
+                      }}
+                      className="px-4 py-3 text-white hover:bg-[#E63939] hover:text-white transition-colors text-base font-semibold flex items-center gap-2"
+                    >
+                      <LogOut className="w-5 h-5" />
+                      Cerrar Sesión
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    href="/login"
+                    onClick={closeMobileMenu}
+                    className="px-4 py-3 text-white hover:bg-[#E63939] hover:text-white transition-colors text-base font-semibold flex items-center gap-2"
+                  >
+                    <LogIn className="w-5 h-5" />
+                    Iniciar Sesión
+                  </Link>
+                )}
                 {/* Botón del carrito en menú móvil */}
                 <button
                   onClick={() => {
@@ -211,4 +324,3 @@ export default function Header() {
     </header>
   );
 }
-
