@@ -49,9 +49,12 @@ function getShippingConfig() {
 }
 
 /**
- * Calcula el costo de envío basado en el subtotal
+ * Calcula el costo de envío basado en el subtotal y código postal
  *
- * Por ahora usa lógica simple: envío gratis si el subtotal supera el umbral.
+ * Por ahora usa lógica simple:
+ * - Envío gratis si el subtotal supera el umbral
+ * - Si no, usa el costo base de envío
+ * - El código postal se puede usar para ajustar el costo (por ahora no lo hace)
  *
  * MIGRACIÓN AL BACKEND:
  * Cuando el backend esté listo, descomentar la función async de abajo y
@@ -62,10 +65,26 @@ export function calculateShipping(
   params: ShippingCalculationParams
 ): ShippingCalculationResult {
   const { freeShippingThreshold, shippingCost } = getShippingConfig();
-  const { subtotal } = params;
+  const { subtotal, postalCode } = params;
+
+  // Por ahora, el código postal no afecta el cálculo
+  // En el futuro, se puede usar para calcular costos por zona
+  // Ejemplo: zonas remotas pueden tener costo adicional
 
   const isFreeShipping = subtotal >= freeShippingThreshold;
-  const shipping = isFreeShipping ? 0 : shippingCost;
+  let shipping = isFreeShipping ? 0 : shippingCost;
+
+  // TODO: Cuando el backend esté listo, usar postalCode para calcular costo por zona
+  // Por ahora, mantener lógica simple
+  if (postalCode && !isFreeShipping) {
+    // Ejemplo de lógica futura: zonas remotas (códigos que empiezan con ciertos números)
+    // podrían tener costo adicional
+    // const isRemoteZone = postalCode.startsWith('9');
+    // if (isRemoteZone) {
+    //   shipping = shippingCost * 1.5;
+    // }
+  }
+
   const amountNeededForFreeShipping = Math.max(
     0,
     freeShippingThreshold - subtotal
