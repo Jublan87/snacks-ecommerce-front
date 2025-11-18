@@ -9,7 +9,7 @@ import { useSearch } from '@/shared/contexts/SearchContext';
 // useCartStore: Hook para obtener la cantidad de items en el carrito
 import { useCartStore } from '@/features/cart/store/cart-store';
 // CartDrawer: Componente del drawer lateral del carrito
-import CartDrawer from './CartDrawer';
+import CartDrawer from '@/features/cart/components/CartDrawer';
 
 export default function Header() {
   // Estados para controlar la apertura/cierre de menús
@@ -211,3 +211,4 @@ export default function Header() {
     </header>
   );
 }
+

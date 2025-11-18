@@ -17,19 +17,14 @@ src/
 │       └── [slug]/
 │           └── page.tsx     # Página de detalle de producto
 │
-├── components/              # Componentes de layout compartidos
-│   └── layout/
-│       ├── Header.tsx       # Header de la aplicación
-│       ├── Footer.tsx       # Footer de la aplicación
-│       └── CartDrawer.tsx   # Drawer del carrito lateral
-│
 ├── features/                # Features del dominio (organización por feature)
 │   │
 │   ├── cart/                # Feature: Carrito de compras
 │   │   ├── components/      # Componentes específicos del carrito
 │   │   │   ├── CartItem.tsx
 │   │   │   ├── CartSummary.tsx
-│   │   │   └── CartEmptyState.tsx
+│   │   │   ├── CartEmptyState.tsx
+│   │   │   └── CartDrawer.tsx   # Drawer del carrito lateral
 │   │   ├── hooks/           # Hooks específicos del carrito
 │   │   │   ├── useAddToCart.ts
 │   │   │   ├── useCartActions.ts
@@ -69,6 +64,10 @@ src/
 │       └── types.ts         # Tipos TypeScript de envío
 │
 └── shared/                  # Código compartido entre features
+    ├── components/          # Componentes compartidos de layout
+    │   └── layout/
+    │       ├── Header.tsx   # Header de la aplicación
+    │       └── Footer.tsx   # Footer de la aplicación
     ├── ui/                  # Componentes UI base (Shadcn)
     │   ├── button.tsx
     │   ├── input.tsx
@@ -104,6 +103,7 @@ Cada feature agrupa todo el código relacionado con un dominio específico:
 
 Código que es utilizado por múltiples features:
 
+- **components/**: Componentes compartidos de layout (Header, Footer, etc.)
 - **ui/**: Componentes UI base (Shadcn/ui)
 - **hooks/**: Hooks genéricos reutilizables
 - **utils/**: Funciones utilitarias puras
@@ -120,9 +120,10 @@ Páginas y layouts de Next.js App Router:
 
 ### 4. Components (Layout)
 
-Componentes de layout que no pertenecen a una feature específica:
+Componentes de layout globales que no pertenecen a una feature específica:
 
-- Header, Footer, CartDrawer, etc.
+- **Header, Footer**: Ubicados en `shared/components/layout/` porque son componentes de layout globales usados en toda la aplicación
+- **CartDrawer**: Ubicado en `features/cart/components/` porque está fuertemente acoplado a la feature del carrito y usa múltiples hooks y componentes específicos del carrito
 
 ## Reglas de Importación
 
@@ -140,6 +141,7 @@ Componentes de layout que no pertenecen a una feature específica:
 ### Imports desde Shared
 
 - ✅ Cualquier feature puede importar desde `shared/`
+- ✅ `shared/components/` para componentes de layout compartidos
 - ✅ `shared/ui/` para componentes UI base
 - ✅ `shared/utils/` para utilidades
 - ✅ `shared/contexts/` para contextos globales
@@ -150,6 +152,7 @@ Componentes de layout que no pertenecen a una feature específica:
 // ✅ Correcto: Importar desde shared
 import { Button } from '@/shared/ui/button';
 import { cn } from '@/shared/utils/utils';
+import Header from '@/shared/components/layout/Header';
 
 // ✅ Correcto: Importar dentro de la misma feature
 import { useAddToCart } from '@/features/cart/hooks/useAddToCart';
@@ -171,6 +174,338 @@ import { ProductCard } from '@/features/product/components/ProductCard';
 - **Types**: camelCase con sufijo `.types.ts` o `types.ts` (ej: `types.ts`)
 - **Utils**: camelCase (ej: `productFilters.ts`)
 - **Mocks**: camelCase con sufijo `.mock.ts` (ej: `products.mock.ts`)
+
+## Reglas de Arquitectura y Desarrollo
+
+> **Nota importante**: Algunas de estas reglas aún no se implementan porque el proyecto está en fase inicial sin backend. Sin embargo, deben tenerse en cuenta y aplicarse cuando corresponda. Las reglas están marcadas con su estado actual: ✅ Implementado, ⏳ Pendiente (cuando haya backend), 🔄 Aplicar cuando corresponda.
+
+### 1. Principios Base
+
+#### ✅ Usar RSC como default
+
+- **Server Components** son el default en Next.js 15
+- Solo usar `'use client'` cuando el componente necesite:
+  - Hooks de React (`useState`, `useEffect`, etc.)
+  - Eventos del navegador (`onClick`, `onChange`, etc.)
+  - APIs del navegador (`localStorage`, `window`, etc.)
+  - Context API (aunque el Provider puede ser RSC)
+
+#### ✅ Client Components solo para interactividad
+
+- Minimizar el uso de Client Components
+- Extraer lógica interactiva a hooks personalizados
+- Mantener la mayoría de componentes como RSC
+
+#### ✅ Estructura por features
+
+- Organizar código por dominio de negocio: `cart/`, `product/`, `shipping/`, `filters/`
+- Cada feature agrupa: `components/`, `hooks/`, `services/`, `store/`, `types.ts`
+- Evitar features genéricas o demasiado amplias
+
+### 2. Servicios sin Sobredimensionar
+
+#### ⏳ Data fetching va en `features/[feature]/services/*.service.ts`
+
+- **Estado actual**: Las carpetas `services/` existen pero están vacías (usando mocks)
+- **Cuando implementar**: Al conectar el backend, crear servicios para:
+  - `features/product/services/product.service.ts` - Obtener productos, detalles, etc.
+  - `features/filters/services/filter.service.ts` - Búsqueda, filtros, etc.
+- **Ejemplo futuro**:
+
+```typescript
+// features/product/services/product.service.ts
+export async function getProducts(filters?: ProductFilters) {
+  const res = await fetch('/api/products', {
+    method: 'POST',
+    body: JSON.stringify(filters),
+  });
+  if (!res.ok) throw new Error('Error al obtener productos');
+  return res.json();
+}
+```
+
+#### ⏳ Los componentes importan services, nunca hacen fetch directo
+
+- **Estado actual**: Los componentes usan mocks directamente
+- **Cuando implementar**: Al conectar el backend, los componentes deben:
+  - Importar funciones de `services/`
+  - Nunca usar `fetch()` directamente en componentes
+  - Los services encapsulan toda la lógica de API
+
+#### ⏳ Services pueden usar fetch directo (sin adaptadores)
+
+- Los services pueden usar `fetch()` nativo de JavaScript
+- No es necesario crear adaptadores para `fetch` básico
+- Solo crear adaptadores para SDKs complejos (ver regla 3)
+
+#### ⏳ Solo crear adaptadores para SDKs complejos
+
+- Crear adaptadores solo cuando uses SDKs que puedan cambiar de proveedor:
+  - Stripe SDK
+  - MercadoPago SDK
+  - Auth0/Clerk
+  - Cualquier SDK que pueda cambiar de proveedor
+- **Ejemplo futuro**:
+
+```typescript
+// features/payment/adapters/stripe.adapter.ts
+export class StripeAdapter {
+  // Encapsula toda la lógica de Stripe
+  // Si cambias a otro proveedor, solo cambias este archivo
+}
+```
+
+### 3. Librerías de Uso Directo
+
+#### ✅ Librerías permitidas sin adaptador
+
+Estas librerías se usan directamente sin necesidad de adaptadores:
+
+- **Tailwind CSS** - Framework de estilos
+- **Shadcn/ui, Radix UI** - Componentes UI base
+- **Lucide React** - Iconos
+- **Zod** - Validación de esquemas (cuando se implemente)
+- **React Hook Form** - Manejo de formularios (cuando se implemente)
+- **date-fns** - Formateo de fechas en UI (cuando se implemente)
+- **Lodash, clsx, uuid** - Utilidades generales
+
+### 4. date-fns Pragmático
+
+#### ⏳ Formateo en UI: uso directo
+
+- **Cuando implementar**: Al necesitar formatear fechas en componentes
+- Usar `date-fns` directamente en componentes para formateo simple
+- **Ejemplo futuro**:
+
+```typescript
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+
+export function ProductDate({ date }: { date: Date }) {
+  return <span>{format(date, 'dd/MM/yyyy', { locale: es })}</span>;
+}
+```
+
+#### ⏳ Lógica de negocio: encapsular en utils
+
+- Si necesitas lógica compleja de fechas (cálculos, validaciones), crear funciones en `shared/utils/`
+- **Ejemplo futuro**:
+
+```typescript
+// shared/utils/dateUtils.ts
+import { differenceInDays, isAfter } from 'date-fns';
+
+export function isProductNew(createdAt: Date): boolean {
+  const daysSinceCreation = differenceInDays(new Date(), createdAt);
+  return daysSinceCreation <= 30;
+}
+```
+
+### 5. Validación con Zod
+
+#### ⏳ Agregar cuando conectes el backend
+
+- **Estado actual**: No implementado (no hay backend)
+- **Cuando implementar**: Al conectar el backend, usar Zod para:
+
+#### ⏳ Validar respuestas de API en services
+
+- Validar todas las respuestas de API con esquemas Zod
+- **Ejemplo futuro**:
+
+```typescript
+// features/product/services/product.service.ts
+import { z } from 'zod';
+
+const ProductSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  price: z.number().positive(),
+  // ...
+});
+
+export async function getProduct(id: string) {
+  const res = await fetch(`/api/products/${id}`);
+  const data = await res.json();
+  return ProductSchema.parse(data); // Valida y lanza error si no coincide
+}
+```
+
+#### ⏳ Formularios complejos (checkout, perfil)
+
+- Usar Zod con React Hook Form para validación de formularios
+- **Ejemplo futuro**:
+
+```typescript
+// features/checkout/schemas/checkout.schema.ts
+import { z } from 'zod';
+
+export const checkoutSchema = z.object({
+  email: z.string().email(),
+  address: z.string().min(10),
+  // ...
+});
+```
+
+### 6. Estado
+
+#### ✅ Local: useState/useReducer
+
+- Estado simple y local → `useState`
+- Estado complejo local → `useReducer`
+- No usar estado global para datos que solo un componente necesita
+
+#### ✅ Compartido: Context API
+
+- Estado compartido entre componentes relacionados → Context API
+- **Ejemplo actual**: `SearchContext` para búsqueda global
+
+#### ⏳ Servidor: RSC + Server Actions
+
+- **Estado actual**: Usando RSC, pero sin Server Actions aún
+- **Cuando implementar**: Al conectar el backend, usar Server Actions para:
+  - Mutaciones de datos (crear, actualizar, eliminar)
+  - Formularios que requieren acción del servidor
+- **Ejemplo futuro**:
+
+```typescript
+// app/actions/product.actions.ts
+'use server';
+
+export async function addToCart(productId: string, quantity: number) {
+  // Lógica del servidor
+}
+```
+
+#### ✅ Global cliente: Zustand
+
+- Estado global del cliente → Zustand
+- **Ejemplo actual**: `cart-store.ts` para el carrito de compras
+- Usar persistencia cuando sea necesario (localStorage, sessionStorage)
+
+### 7. Rutas App Router
+
+#### ✅ page.tsx
+
+- Todas las rutas tienen `page.tsx`
+- Usar RSC cuando sea posible
+
+#### ⏳ loading.tsx
+
+- **Estado actual**: No implementado
+- **Cuando implementar**: Crear `loading.tsx` en rutas que carguen datos
+- **Ejemplo futuro**:
+
+```typescript
+// app/productos/loading.tsx
+import LoadingState from '@/features/product/components/LoadingState';
+
+export default function Loading() {
+  return <LoadingState />;
+}
+```
+
+#### ⏳ error.tsx
+
+- **Estado actual**: No implementado
+- **Cuando implementar**: Crear `error.tsx` en rutas que puedan fallar
+- **Ejemplo futuro**:
+
+```typescript
+// app/productos/error.tsx
+'use client';
+
+export default function Error({ error, reset }: ErrorProps) {
+  return (
+    <div>
+      <h2>Algo salió mal</h2>
+      <button onClick={reset}>Intentar de nuevo</button>
+    </div>
+  );
+}
+```
+
+#### 🔄 not-found.tsx (opcional)
+
+- Crear `not-found.tsx` cuando necesites páginas 404 personalizadas
+- Por ahora, Next.js maneja esto automáticamente
+
+### 8. Performance
+
+#### ✅ next/image
+
+- Siempre usar `next/image` en lugar de `<img>`
+- Configurar `sizes` apropiadamente
+- Usar `priority` para imágenes above-the-fold
+
+#### ✅ Minimizar Client Components
+
+- Mantener la mayoría de componentes como RSC
+- Solo usar Client Components cuando sea necesario
+
+#### ✅ generateStaticParams
+
+- Usar `generateStaticParams` para rutas dinámicas cuando sea posible
+- **Ejemplo actual**: Implementado en `app/productos/[slug]/page.tsx`
+
+#### ✅ Metadata
+
+- Usar `generateMetadata` para SEO dinámico
+- **Ejemplo actual**: Implementado en `app/productos/[slug]/page.tsx`
+
+### 9. Accesibilidad
+
+#### ✅ Alt en imágenes
+
+- Todas las imágenes deben tener `alt` descriptivo
+- Si es decorativa, usar `alt=""`
+
+#### ✅ aria-label en botones
+
+- Botones sin texto visible deben tener `aria-label`
+- Botones con iconos deben ser descriptivos
+
+#### ✅ Componentes Radix/Shadcn
+
+- Estos componentes ya son accesibles por defecto
+- No modificar su comportamiento de accesibilidad
+
+#### ✅ Navegación con teclado
+
+- Asegurar que todos los elementos interactivos sean navegables con teclado
+- Usar `tabIndex` apropiadamente
+- Manejar eventos `onKeyDown` cuando sea necesario
+
+### 10. Ecommerce
+
+#### ✅ Optimistic UI en carrito
+
+- Actualizar UI inmediatamente antes de confirmar con el servidor
+- **Ejemplo actual**: Implementado en `cart-store.ts`
+
+#### ✅ Validación de stock
+
+- Validar stock antes de agregar al carrito
+- Mostrar mensajes claros cuando no hay stock
+- **Ejemplo actual**: Implementado en `cart-store.ts`
+
+#### ✅ localStorage + sync
+
+- Persistir carrito en localStorage
+- Sincronizar con servidor cuando esté disponible
+- **Ejemplo actual**: Implementado con Zustand persist
+
+#### ✅ SEO metadata
+
+- Metadata dinámica para productos
+- Open Graph y Twitter Cards
+- **Ejemplo actual**: Implementado en `app/productos/[slug]/page.tsx`
+
+#### ✅ Lazy loading
+
+- Usar `next/image` con lazy loading
+- Lazy load de componentes pesados con `next/dynamic`
+- Cargar datos bajo demanda
 
 ## Reglas de Desarrollo
 

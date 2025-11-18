@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { SearchProvider } from '@/shared/contexts/SearchContext';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
+import Header from '@/shared/components/layout/Header';
+import Footer from '@/shared/components/layout/Footer';
 import { Toaster } from 'sonner';
 
 export const metadata: Metadata = {
