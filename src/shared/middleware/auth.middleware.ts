@@ -26,10 +26,9 @@ export function authMiddleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Si ya está autenticado e intenta acceder a login/registro, redirigir a home
-  if (isAuthRoute && authToken) {
-    return NextResponse.redirect(new URL('/', request.url));
-  }
+  // Permitir siempre el acceso a login/registro, incluso si está autenticado
+  // El componente del lado del cliente puede manejar la lógica de redirección si es necesario
+  // Esto permite que los usuarios puedan hacer logout/login o cambiar de cuenta
 
   return null; // Continuar con el siguiente middleware
 }

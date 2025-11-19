@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
@@ -13,10 +13,12 @@ import { useCartStore } from '@/features/cart/store/cart-store';
 import { useCartCalculations } from '@/features/cart/hooks/useCartCalculations';
 import { calculateShipping } from '@/features/shipping/services/shipping.service';
 import { useAuthStore } from '@/features/auth/store/auth-store';
+import { useOrderStore } from '@/features/order/store/order-store';
 import {
   checkoutFormSchema,
   type CheckoutFormInput,
 } from '@/features/checkout/schemas/checkout.schema';
+import { PaymentMethod } from '@/features/checkout/types';
 import {
   getSavedShippingAddress,
   saveShippingAddress,
@@ -44,11 +46,14 @@ import { useCartActions } from '@/features/cart/hooks/useCartActions';
 function CheckoutPageContent() {
   const router = useRouter();
   const items = useCartStore((state) => state.items);
+  const clearCart = useCartStore((state) => state.clearCart);
   const { subtotal } = useCartCalculations();
   const { handleQuantityChange, handleRemoveItem } = useCartActions({
     showToasts: false,
   });
   const user = useAuthStore((state) => state.user);
+  const createOrder = useOrderStore((state) => state.createOrder);
+  const [isProcessingOrder, setIsProcessingOrder] = useState(false);
 
   // Formulario con React Hook Form y validación Zod
   const {
@@ -101,12 +106,18 @@ function CheckoutPageContent() {
       // Si no hay usuario con dirección, intentar cargar desde localStorage
       const savedAddress = getSavedShippingAddress();
       if (savedAddress) {
-        Object.entries(savedAddress).forEach(([key, value]) => {
-          setValue(
-            `shippingAddress.${key as keyof typeof savedAddress}` as any,
-            value
-          );
-        });
+        // Mapear las claves de forma type-safe usando Path y PathValue
+        setValue('shippingAddress.firstName', savedAddress.firstName);
+        setValue('shippingAddress.lastName', savedAddress.lastName);
+        setValue('shippingAddress.email', savedAddress.email);
+        setValue('shippingAddress.phone', savedAddress.phone);
+        setValue('shippingAddress.address', savedAddress.address);
+        setValue('shippingAddress.city', savedAddress.city);
+        setValue('shippingAddress.province', savedAddress.province);
+        setValue('shippingAddress.postalCode', savedAddress.postalCode);
+        if (savedAddress.notes) {
+          setValue('shippingAddress.notes', savedAddress.notes);
+        }
       } else if (user) {
         // Si hay usuario pero sin dirección guardada, precargar datos básicos
         setValue('shippingAddress.firstName', user.firstName);
@@ -142,32 +153,65 @@ function CheckoutPageContent() {
   const total = subtotal + shippingCalculation.shipping;
 
   // Validar que haya items en el carrito
+  // Solo redirigir si no estamos en proceso de envío del formulario o procesando el pedido
   useEffect(() => {
-    if (items.length === 0) {
+    if (items.length === 0 && !isSubmitting && !isProcessingOrder) {
       toast.error('Tu carrito está vacío');
       router.push('/carrito');
     }
-  }, [items.length, router]);
+  }, [items.length, router, isSubmitting, isProcessingOrder]);
 
   // Manejar envío del formulario
   const onSubmit = async (data: CheckoutFormInput) => {
     try {
+      // Marcar que estamos procesando el pedido
+      setIsProcessingOrder(true);
+
+      // Validar que haya items en el carrito
+      if (items.length === 0) {
+        setIsProcessingOrder(false);
+        toast.error('Tu carrito está vacío');
+        router.push('/carrito');
+        return;
+      }
+
+      // Validar que el usuario esté autenticado
+      if (!user) {
+        setIsProcessingOrder(false);
+        toast.error('Debes iniciar sesión para completar la compra');
+        router.push('/login');
+        return;
+      }
+
       // Guardar dirección
       saveShippingAddress(data.shippingAddress);
 
-      // TODO: En el futuro, aquí se creará el pedido y se redirigirá a confirmación
-      // Por ahora, solo mostramos un mensaje
-      toast.success('¡Formulario de checkout completado!');
-      console.log('Checkout data:', {
-        ...data,
+      // Crear el pedido (guardar el orderNumber antes de limpiar el carrito)
+      const order = createOrder(
+        items,
+        data.shippingAddress,
+        data.paymentMethod,
         subtotal,
-        shipping: shippingCalculation.shipping,
+        shippingCalculation.shipping,
         total,
-      });
+        user.id
+      );
 
-      // TODO: Redirigir a página de confirmación cuando esté lista
-      // router.push('/checkout/confirmacion');
+      // Guardar el orderNumber antes de limpiar el carrito
+      const orderNumber = order.orderNumber;
+
+      // Limpiar el carrito
+      clearCart();
+
+      // Mostrar mensaje de éxito
+      toast.success('¡Pedido creado exitosamente!');
+
+      // Redirigir a página de confirmación usando window.location para evitar conflictos
+      // con el useEffect que verifica el carrito vacío
+      // No resetear isProcessingOrder porque estamos saliendo de la página
+      window.location.href = `/checkout/confirmacion?orderNumber=${orderNumber}`;
     } catch (error) {
+      setIsProcessingOrder(false);
       toast.error('Error al procesar el checkout. Intenta nuevamente.');
       console.error('Checkout error:', error);
     }
@@ -426,7 +470,7 @@ function CheckoutPageContent() {
                   <Select
                     value={paymentMethod}
                     onValueChange={(value) =>
-                      setValue('paymentMethod', value as any)
+                      setValue('paymentMethod', value as PaymentMethod)
                     }
                   >
                     <SelectTrigger

@@ -2,7 +2,7 @@
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { ArrowLeft, Mail, Lock } from 'lucide-react';
@@ -24,8 +24,9 @@ import {
 import { Separator } from '@/shared/ui/separator';
 
 export default function LoginPage() {
-  const router = useRouter();
+  const searchParams = useSearchParams();
   const login = useAuthStore((state) => state.login);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   const {
     register,
@@ -42,9 +43,38 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginFormInput) => {
     try {
       await login(data);
+
+      // Obtener la URL de redirect antes de redirigir
+      const redirectUrl = searchParams.get('redirect');
+      const targetUrl = redirectUrl || '/';
+
       toast.success('¡Bienvenido de vuelta!');
-      router.push('/');
-      router.refresh();
+
+      // Verificar que la cookie esté establecida antes de redirigir
+      // Esto es importante porque el middleware del servidor necesita ver la cookie
+      const checkCookie = () => {
+        const cookies = document.cookie.split(';');
+        const authCookie = cookies.find((cookie) =>
+          cookie.trim().startsWith('auth-token=')
+        );
+        return !!authCookie && authCookie.trim().length > 0;
+      };
+
+      // Esperar un momento para que la cookie se establezca completamente
+      // Luego verificar que esté disponible antes de redirigir
+      setTimeout(() => {
+        // Verificar que la cookie esté disponible
+        if (checkCookie()) {
+          // Usar window.location.href para forzar una navegación completa del navegador
+          // Esto asegura que el middleware vea la cookie actualizada
+          window.location.href = targetUrl;
+        } else {
+          // Si la cookie no está disponible después del delay, intentar de nuevo
+          // o redirigir de todas formas (el ProtectedRoute del cliente manejará la autenticación)
+          console.warn('Cookie no detectada, redirigiendo de todas formas');
+          window.location.href = targetUrl;
+        }
+      }, 500); // Aumentar delay a 500ms para dar más tiempo a la cookie
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : 'Error al iniciar sesión'

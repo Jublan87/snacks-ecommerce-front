@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { User, LogOut, LogIn } from 'lucide-react';
+import { User, LogOut, LogIn, Package } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
@@ -127,6 +127,12 @@ export default function Header() {
                     <Link href="/perfil" className="cursor-pointer">
                       <User className="mr-2 h-4 w-4" />
                       Mi Perfil
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/perfil/pedidos" className="cursor-pointer">
+                      <Package className="mr-2 h-4 w-4" />
+                      Mis Pedidos
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
@@ -260,6 +266,14 @@ export default function Header() {
                     >
                       <User className="w-5 h-5" />
                       Mi Perfil
+                    </Link>
+                    <Link
+                      href="/perfil/pedidos"
+                      onClick={closeMobileMenu}
+                      className="px-4 py-3 text-white hover:bg-[#E63939] hover:text-white transition-colors text-base font-semibold flex items-center gap-2"
+                    >
+                      <Package className="w-5 h-5" />
+                      Mis Pedidos
                     </Link>
                     <button
                       onClick={() => {

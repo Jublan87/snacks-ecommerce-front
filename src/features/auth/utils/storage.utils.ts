@@ -73,3 +73,58 @@ export function findMockUser(
   const users = getMockUsers();
   return users.find((u) => u.email === email && u.password === password);
 }
+
+/**
+ * Busca un usuario por ID
+ */
+export function findMockUserById(userId: string): MockUserData | undefined {
+  const users = getMockUsers();
+  return users.find((u) => u.user.id === userId);
+}
+
+/**
+ * Actualiza un usuario existente
+ */
+export function updateMockUser(
+  userId: string,
+  updatedUser: Partial<User>
+): void {
+  const users = getMockUsers();
+  const userIndex = users.findIndex((u) => u.user.id === userId);
+
+  if (userIndex === -1) {
+    throw new Error('Usuario no encontrado');
+  }
+
+  // Actualizar el usuario manteniendo el email y password originales
+  users[userIndex] = {
+    ...users[userIndex],
+    user: {
+      ...users[userIndex].user,
+      ...updatedUser,
+      id: users[userIndex].user.id, // No permitir cambiar el ID
+      email: users[userIndex].user.email, // No permitir cambiar el email
+      createdAt: users[userIndex].user.createdAt, // No permitir cambiar la fecha de creación
+    },
+  };
+
+  saveMockUsers(users);
+}
+
+/**
+ * Actualiza la contraseña de un usuario
+ */
+export function updateMockUserPassword(
+  userId: string,
+  newPassword: string
+): void {
+  const users = getMockUsers();
+  const userIndex = users.findIndex((u) => u.user.id === userId);
+
+  if (userIndex === -1) {
+    throw new Error('Usuario no encontrado');
+  }
+
+  users[userIndex].password = newPassword;
+  saveMockUsers(users);
+}

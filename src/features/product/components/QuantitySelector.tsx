@@ -39,7 +39,7 @@ export default function QuantitySelector({
     if (!isNaN(currentValue) && currentValue >= 1 && currentValue <= maxStock) {
       validationCallbackRef.current?.(true);
     }
-  }, []); // Solo al montar
+  }, [defaultValue, maxStock]); // Revalidar cuando cambien defaultValue o maxStock
 
   // Actualizar ref cuando cambia quantity
   useEffect(() => {
@@ -100,7 +100,7 @@ export default function QuantitySelector({
 
   const handleBlur = () => {
     const numValue = parseInt(quantity, 10);
-    
+
     // Si el campo está vacío o inválido al perder el foco, restaurar valor por defecto
     if (quantity === '' || isNaN(numValue) || numValue < 1) {
       setQuantity('1');
@@ -146,9 +146,7 @@ export default function QuantitySelector({
           aria-invalid={error ? 'true' : 'false'}
           aria-describedby={error ? `${id}-error` : undefined}
         />
-        <span className="text-sm text-gray-500">
-          (máx. {maxStock})
-        </span>
+        <span className="text-sm text-gray-500">(máx. {maxStock})</span>
       </div>
       {error && (
         <p
@@ -176,4 +174,3 @@ export default function QuantitySelector({
     </div>
   );
 }
-

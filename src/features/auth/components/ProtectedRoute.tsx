@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/features/auth/store/auth-store';
 
@@ -15,16 +15,34 @@ interface ProtectedRouteProps {
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const router = useRouter();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      const currentPath = window.location.pathname;
-      router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
-    }
+    // Dar un momento para que el estado se sincronice después del login
+    const checkAuth = async () => {
+      // Esperar un momento para que el estado de Zustand se sincronice
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      
+      // Verificar también la cookie como respaldo
+      const cookies = document.cookie.split(';');
+      const hasAuthCookie = cookies.some((cookie) =>
+        cookie.trim().startsWith('auth-token=')
+      );
+      
+      // Si no está autenticado ni tiene cookie, redirigir a login
+      if (!isAuthenticated && !hasAuthCookie) {
+        const currentPath = window.location.pathname;
+        router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
+      } else {
+        setIsChecking(false);
+      }
+    };
+
+    checkAuth();
   }, [isAuthenticated, router]);
 
   // Mostrar loading mientras verifica autenticación
-  if (!isAuthenticated) {
+  if (isChecking || !isAuthenticated) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
