@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -328,7 +328,13 @@ function ConfirmacionPageContent() {
 export default function ConfirmacionPage() {
   return (
     <ProtectedRoute>
-      <ConfirmacionPageContent />
+      <Suspense fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">Cargando...</div>
+        </div>
+      }>
+        <ConfirmacionPageContent />
+      </Suspense>
     </ProtectedRoute>
   );
 }

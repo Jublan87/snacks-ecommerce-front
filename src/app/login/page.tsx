@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useSearchParams } from 'next/navigation';
@@ -23,7 +24,7 @@ import {
 } from '@/shared/ui/card';
 import { Separator } from '@/shared/ui/separator';
 
-export default function LoginPage() {
+function LoginForm() {
   const searchParams = useSearchParams();
   const login = useAuthStore((state) => state.login);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -178,5 +179,21 @@ export default function LoginPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto px-4 py-12 max-w-md">
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center">Cargando...</div>
+          </CardContent>
+        </Card>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }
