@@ -1,6 +1,6 @@
 'use client';
 
-import { Tab, TabList, TabPanel, TabPanels } from '@headlessui/react';
+import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react';
 import { User, MapPin, Lock } from 'lucide-react';
 import ProtectedRoute from '@/features/auth/components/ProtectedRoute';
 import { Card, CardContent } from '@/shared/ui/card';
@@ -42,7 +42,7 @@ function ProfilePageContent() {
 
       <Card>
         <CardContent className="p-0">
-          <Tab>
+          <TabGroup>
             <TabList className="flex border-b border-gray-200 overflow-x-auto">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
@@ -68,7 +68,7 @@ function ProfilePageContent() {
                 );
               })}
             </TabPanels>
-          </Tab>
+          </TabGroup>
         </CardContent>
       </Card>
     </div>
