@@ -1,5 +1,18 @@
+import type { Metadata } from 'next';
 import ProductCard from '@/features/product/components/ProductCard';
 import { MOCK_PRODUCTS } from '@/features/product/mocks/products.mock';
+
+export const metadata: Metadata = {
+  title: 'Inicio',
+  description:
+    'Descubre nuestra amplia selección de snacks. Productos de calidad, envíos rápidos y los mejores precios. ¡Encuentra tus snacks favoritos!',
+  openGraph: {
+    title: 'Snacks Ecommerce - Inicio',
+    description:
+      'Descubre nuestra amplia selección de snacks. Productos de calidad, envíos rápidos y los mejores precios.',
+    url: '/',
+  },
+};
 
 export default function Home() {
   return (

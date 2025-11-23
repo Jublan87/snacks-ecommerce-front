@@ -1,14 +1,46 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react';
 import { User, MapPin, Lock, Package } from 'lucide-react';
 import Link from 'next/link';
 import ProtectedRoute from '@/features/auth/components/ProtectedRoute';
 import { Card, CardContent } from '@/shared/ui/card';
 import { Button } from '@/shared/ui/button';
-import ProfileInfoTab from '@/features/auth/components/ProfileInfoTab';
-import ProfileAddressTab from '@/features/auth/components/ProfileAddressTab';
-import ProfilePasswordTab from '@/features/auth/components/ProfilePasswordTab';
+
+// Lazy load de los tabs del perfil para mejorar performance
+const ProfileInfoTab = dynamic(
+  () => import('@/features/auth/components/ProfileInfoTab'),
+  {
+    loading: () => (
+      <div className="flex items-center justify-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    ),
+  }
+);
+
+const ProfileAddressTab = dynamic(
+  () => import('@/features/auth/components/ProfileAddressTab'),
+  {
+    loading: () => (
+      <div className="flex items-center justify-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    ),
+  }
+);
+
+const ProfilePasswordTab = dynamic(
+  () => import('@/features/auth/components/ProfilePasswordTab'),
+  {
+    loading: () => (
+      <div className="flex items-center justify-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    ),
+  }
+);
 
 function ProfilePageContent() {
   const tabs = [

@@ -11,8 +11,14 @@ import ProductSearch from '@/features/filters/components/ProductSearch';
 import { useSearch } from '@/shared/contexts/SearchContext';
 // useCartStore: Hook para obtener la cantidad de items en el carrito
 import { useCartStore } from '@/features/cart/store/cart-store';
-// CartDrawer: Componente del drawer lateral del carrito
-import CartDrawer from '@/features/cart/components/CartDrawer';
+// CartDrawer: Componente del drawer lateral del carrito (lazy loaded)
+import dynamic from 'next/dynamic';
+const CartDrawer = dynamic(
+  () => import('@/features/cart/components/CartDrawer'),
+  {
+    ssr: false, // No renderizar en servidor ya que usa estado del cliente
+  }
+);
 // Auth store
 import { useAuthStore } from '@/features/auth/store/auth-store';
 import {
