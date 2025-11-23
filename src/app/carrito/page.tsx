@@ -29,8 +29,13 @@ export default function CarritoPage() {
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center gap-4 mb-4">
             <Link href="/productos">
-              <Button variant="ghost" size="icon" className="h-10 w-10">
-                <ArrowLeft className="h-5 w-5" />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-10 w-10"
+                aria-label="Volver a productos"
+              >
+                <ArrowLeft className="h-5 w-5" aria-hidden="true" />
               </Button>
             </Link>
             <div>

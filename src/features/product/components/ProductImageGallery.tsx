@@ -58,7 +58,8 @@ export default function ProductImageGallery({
                   ? 'border-blue-600 ring-2 ring-blue-200'
                   : 'border-gray-200 hover:border-gray-300'
               )}
-              aria-label={`Ver ${image.alt || `imagen ${index + 1}`}`}
+              aria-label={`Ver ${image.alt || `imagen ${index + 1} de ${productName}`}`}
+              aria-pressed={index === selectedImageIndex}
             >
               <Image
                 src={image.url}

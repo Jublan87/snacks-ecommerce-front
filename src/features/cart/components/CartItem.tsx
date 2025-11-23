@@ -118,12 +118,13 @@ export default function CartItem({
               className={buttonSize}
               onClick={() => onQuantityChange(item.id, item.quantity - 1)}
               disabled={item.quantity <= 1}
-              aria-label="Reducir cantidad"
+              aria-label={`Reducir cantidad de ${item.product.name}`}
             >
-              <Minus className="h-4 w-4" />
+              <Minus className="h-4 w-4" aria-hidden="true" />
             </Button>
             <span
               className={`w-10 text-center font-bold ${quantityTextSize || 'text-lg'}`}
+              aria-label={`Cantidad: ${item.quantity}`}
             >
               {item.quantity}
             </span>
@@ -133,9 +134,9 @@ export default function CartItem({
               className={buttonSize}
               onClick={() => onQuantityChange(item.id, item.quantity + 1)}
               disabled={item.quantity >= item.product.stock}
-              aria-label="Aumentar cantidad"
+              aria-label={`Aumentar cantidad de ${item.product.name}`}
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-4 w-4" aria-hidden="true" />
             </Button>
           </div>
 
@@ -153,9 +154,9 @@ export default function CartItem({
               size="icon"
               className={`${buttonSize} text-red-600 hover:text-red-700 hover:bg-red-50`}
               onClick={() => onRemove(item.id)}
-              aria-label="Eliminar producto"
+              aria-label={`Eliminar ${item.product.name} del carrito`}
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash2 className="h-4 w-4" aria-hidden="true" />
             </Button>
           </div>
         </div>

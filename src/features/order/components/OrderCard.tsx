@@ -29,9 +29,10 @@ export default function OrderCard({ order }: OrderCardProps) {
               <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-lg overflow-hidden bg-gray-100">
                 <Image
                   src={firstItem.product.images[0].url}
-                  alt={firstItem.product.name}
+                  alt={firstItem.product.images[0].alt || firstItem.product.name}
                   fill
                   className="object-cover"
+                  sizes="(max-width: 640px) 96px, 128px"
                 />
               </div>
             ) : (

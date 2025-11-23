@@ -148,6 +148,7 @@ export default function ProductosPage() {
                 ? 'fixed lg:relative inset-y-0 left-0 z-50 lg:z-auto w-64 lg:w-auto'
                 : 'hidden lg:block'
             }`}
+            aria-label="Filtros de productos"
           >
             <div className="bg-white rounded-lg shadow-sm p-6 sticky top-24 h-full lg:h-auto overflow-y-auto lg:overflow-y-visible">
               <div className="flex items-center justify-between mb-4 lg:hidden">
@@ -162,6 +163,7 @@ export default function ProductosPage() {
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
+                    aria-hidden="true"
                   >
                     <path
                       strokeLinecap="round"
@@ -204,12 +206,15 @@ export default function ProductosPage() {
                 <button
                   onClick={() => setShowFilters(true)}
                   className="lg:hidden flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                  aria-label={`Abrir filtros${selectedCategories.length > 0 || hasDiscount ? `, ${selectedCategories.length + (hasDiscount ? 1 : 0)} filtro${selectedCategories.length + (hasDiscount ? 1 : 0) > 1 ? 's' : ''} activo${selectedCategories.length + (hasDiscount ? 1 : 0) > 1 ? 's' : ''}` : ''}`}
+                  aria-expanded={showFilters}
                 >
                   <svg
                     className="h-5 w-5"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
+                    aria-hidden="true"
                   >
                     <path
                       strokeLinecap="round"
@@ -220,7 +225,10 @@ export default function ProductosPage() {
                   </svg>
                   Filtros
                   {(selectedCategories.length > 0 || hasDiscount) && (
-                    <span className="ml-1 px-2 py-0.5 text-xs font-semibold bg-blue-600 text-white rounded-full">
+                    <span
+                      className="ml-1 px-2 py-0.5 text-xs font-semibold bg-blue-600 text-white rounded-full"
+                      aria-label={`${selectedCategories.length + (hasDiscount ? 1 : 0)} filtro${selectedCategories.length + (hasDiscount ? 1 : 0) > 1 ? 's' : ''} activo${selectedCategories.length + (hasDiscount ? 1 : 0) > 1 ? 's' : ''}`}
+                    >
                       {selectedCategories.length + (hasDiscount ? 1 : 0)}
                     </span>
                   )}
@@ -228,7 +236,7 @@ export default function ProductosPage() {
 
                 {/* Contador de resultados */}
                 {!isLoading && (
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm text-gray-600" role="status" aria-live="polite">
                     {processedProducts.totalCount === 0 ? (
                       <span>No se encontraron productos</span>
                     ) : (

@@ -28,6 +28,7 @@ export async function generateMetadata({
   if (!product) {
     return {
       title: 'Producto no encontrado',
+      description: 'El producto que buscas no está disponible.',
     };
   }
 

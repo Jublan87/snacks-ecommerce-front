@@ -6,6 +6,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/shared/ui/dialog';
 import { Button } from '@/shared/ui/button';
 import { Separator } from '@/shared/ui/separator';
@@ -42,11 +43,21 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           Las clases con ! fuerzan estilos para sobrescribir los del Dialog por defecto
           !fixed !right-0: Fija el drawer en el lado derecho
           data-[state=open]:slide-in-from-right: Animación de entrada desde la derecha */}
-      <DialogContent className="!fixed !right-0 !top-0 !left-auto !translate-x-0 !translate-y-0 !w-full sm:!max-w-[500px] !max-h-screen !h-full !flex !flex-col !p-0 !rounded-l-lg !rounded-r-none !border-r-0 !bg-white data-[state=open]:!slide-in-from-right data-[state=closed]:!slide-out-to-right">
+      <DialogContent
+        className="!fixed !right-0 !top-0 !left-auto !translate-x-0 !translate-y-0 !w-full sm:!max-w-[500px] !max-h-screen !h-full !flex !flex-col !p-0 !rounded-l-lg !rounded-r-none !border-r-0 !bg-white data-[state=open]:!slide-in-from-right data-[state=closed]:!slide-out-to-right"
+      >
+        <DialogTitle className="sr-only">
+          Tu Carrito ({items.length} {items.length === 1 ? 'item' : 'items'})
+        </DialogTitle>
+        <DialogDescription className="sr-only">
+          {items.length === 0
+            ? 'Tu carrito está vacío. Agrega productos para comenzar a comprar.'
+            : `Tu carrito contiene ${items.length} ${items.length === 1 ? 'producto' : 'productos'}. Revisa los items y procede al checkout cuando estés listo.`}
+        </DialogDescription>
         <DialogHeader className="px-6 pt-6 pb-4 border-b">
-          <DialogTitle className="text-2xl font-bold">
+          <h2 className="text-2xl font-bold">
             Tu Carrito ({items.length} {items.length === 1 ? 'item' : 'items'})
-          </DialogTitle>
+          </h2>
         </DialogHeader>
 
         {/* Contenido scrolleable del carrito */}
@@ -85,11 +96,15 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     variant="outline"
                     className="flex-1"
                     onClick={onClose}
+                    aria-label="Cerrar carrito y seguir comprando"
                   >
                     Seguir Comprando
                   </Button>
                   <Link href="/carrito" className="flex-1" onClick={onClose}>
-                    <Button className="w-full bg-[#FF5454] hover:bg-[#E63939]">
+                    <Button
+                      className="w-full bg-[#FF5454] hover:bg-[#E63939]"
+                      aria-label="Ir a la página de checkout"
+                    >
                       Ir a Checkout
                     </Button>
                   </Link>

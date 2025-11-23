@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next';
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+const baseUrl =
+  process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -8,7 +9,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/checkout/', '/perfil/', '/api/', '/admin/'],
+        disallow: ['/checkout', '/perfil', '/api', '/admin'],
       },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,

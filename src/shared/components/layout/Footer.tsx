@@ -2,14 +2,17 @@ import Link from 'next/link';
 
 export default function Footer() {
   return (
-    <footer className="bg-[#FF5454] text-white mt-auto border-t border-[#E63939]">
+    <footer
+      className="bg-[#FF5454] text-white mt-auto border-t border-[#E63939]"
+      role="contentinfo"
+    >
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Información de la empresa */}
           <div>
-            <h3 className="text-lg font-bold mb-4 text-white">
+            <h2 className="text-lg font-bold mb-4 text-white">
               Snacks Ecommerce
-            </h3>
+            </h2>
             <p className="text-gray-100 text-sm">
               Tu distribuidor de snacks favorito. Encuentra los mejores
               productos al mejor precio.
@@ -17,10 +20,10 @@ export default function Footer() {
           </div>
 
           {/* Enlaces rápidos */}
-          <div>
-            <h3 className="text-lg font-bold mb-4 text-white">
+          <nav aria-label="Enlaces rápidos">
+            <h2 className="text-lg font-bold mb-4 text-white">
               Enlaces Rápidos
-            </h3>
+            </h2>
             <ul className="space-y-2">
               <li>
                 <Link
@@ -47,17 +50,35 @@ export default function Footer() {
                 </Link>
               </li>
             </ul>
-          </div>
+          </nav>
 
           {/* Contacto */}
-          <div>
-            <h3 className="text-lg font-bold mb-4 text-white">Contacto</h3>
+          <address className="not-italic">
+            <h2 className="text-lg font-bold mb-4 text-white">Contacto</h2>
             <ul className="space-y-2 text-gray-100 text-sm">
-              <li>📧 contacto@snacksecommerce.com</li>
-              <li>📱 +54 11 1234-5678</li>
-              <li>📍 Buenos Aires, Argentina</li>
+              <li>
+                <a
+                  href="mailto:contacto@snacksecommerce.com"
+                  className="hover:underline"
+                  aria-label="Enviar correo electrónico"
+                >
+                  <span aria-hidden="true">📧</span> contacto@snacksecommerce.com
+                </a>
+              </li>
+              <li>
+                <a
+                  href="tel:+541112345678"
+                  className="hover:underline"
+                  aria-label="Llamar por teléfono"
+                >
+                  <span aria-hidden="true">📱</span> +54 11 1234-5678
+                </a>
+              </li>
+              <li>
+                <span aria-hidden="true">📍</span> Buenos Aires, Argentina
+              </li>
             </ul>
-          </div>
+          </address>
         </div>
 
         {/* Copyright */}

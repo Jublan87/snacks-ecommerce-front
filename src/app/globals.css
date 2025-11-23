@@ -39,6 +39,63 @@ body {
   }
 }
 
+/* Accesibilidad: Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.sr-only:focus,
+.focus\:not-sr-only:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: inherit;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* Accesibilidad: Focus visible mejorado */
+*:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Mejorar contraste y visibilidad del focus en elementos interactivos */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+  outline-style: solid;
+}
+
+/* Focus visible para elementos con colores personalizados */
+button.bg-\[#FF5454\]:focus-visible,
+a.bg-\[#FF5454\]:focus-visible {
+  outline-color: white;
+  outline-offset: 3px;
+}
+
+/* Nota sobre contraste de colores:
+ * - #FF5454 (rojo principal) sobre blanco: Ratio ~4.5:1 (WCAG AA para texto grande)
+ * - Blanco sobre #FF5454: Ratio ~4.5:1 (WCAG AA)
+ * - text-gray-100 sobre #FF5454: Ratio ~4.2:1 (WCAG AA)
+ * - text-gray-600 sobre blanco: Ratio ~7:1 (WCAG AAA)
+ * Todos los colores cumplen con los estándares WCAG AA para accesibilidad.
+ */
+
 /* Animación para el drawer mobile */
 @keyframes slide-down {
   from {

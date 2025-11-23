@@ -25,7 +25,7 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Excluir: API routes, archivos estáticos de Next.js, imágenes y favicon
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    // Excluir: API routes, archivos estáticos de Next.js, imágenes, favicon, robots.txt y sitemap.xml
+    '/((?!api|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };

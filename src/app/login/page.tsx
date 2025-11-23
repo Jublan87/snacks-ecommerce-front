@@ -88,8 +88,9 @@ function LoginForm() {
       <Link
         href="/"
         className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-6 transition-colors"
+        aria-label="Volver a la página de inicio"
       >
-        <ArrowLeft className="w-4 h-4" />
+        <ArrowLeft className="w-4 h-4" aria-hidden="true" />
         Volver al inicio
       </Link>
 
@@ -113,7 +114,10 @@ function LoginForm() {
                 Email
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Mail
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+                  aria-hidden="true"
+                />
                 <Input
                   id="email"
                   type="email"
@@ -121,10 +125,17 @@ function LoginForm() {
                   className="pl-10"
                   {...register('email')}
                   aria-invalid={errors.email ? 'true' : 'false'}
+                  aria-describedby={
+                    errors.email ? 'email-error' : undefined
+                  }
                 />
               </div>
               {errors.email && (
-                <p className="text-sm text-red-600" role="alert">
+                <p
+                  id="email-error"
+                  className="text-sm text-red-600"
+                  role="alert"
+                >
                   {errors.email.message}
                 </p>
               )}
@@ -139,7 +150,10 @@ function LoginForm() {
                 Contraseña
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Lock
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+                  aria-hidden="true"
+                />
                 <Input
                   id="password"
                   type="password"
@@ -147,10 +161,17 @@ function LoginForm() {
                   className="pl-10"
                   {...register('password')}
                   aria-invalid={errors.password ? 'true' : 'false'}
+                  aria-describedby={
+                    errors.password ? 'password-error' : undefined
+                  }
                 />
               </div>
               {errors.password && (
-                <p className="text-sm text-red-600" role="alert">
+                <p
+                  id="password-error"
+                  className="text-sm text-red-600"
+                  role="alert"
+                >
                   {errors.password.message}
                 </p>
               )}
@@ -159,7 +180,14 @@ function LoginForm() {
             <Separator />
 
             {/* Botón de envío */}
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isSubmitting}
+              aria-label={
+                isSubmitting ? 'Iniciando sesión...' : 'Iniciar sesión'
+              }
+            >
               {isSubmitting ? 'Iniciando sesión...' : 'Iniciar Sesión'}
             </Button>
           </form>

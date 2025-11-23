@@ -228,8 +228,13 @@ function CheckoutPageContent() {
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center gap-4 mb-4">
             <Link href="/carrito">
-              <Button variant="ghost" size="icon" className="h-10 w-10">
-                <ArrowLeft className="h-5 w-5" />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-10 w-10"
+                aria-label="Volver al carrito"
+              >
+                <ArrowLeft className="h-5 w-5" aria-hidden="true" />
               </Button>
             </Link>
             <div>
@@ -245,14 +250,16 @@ function CheckoutPageContent() {
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit)} noValidate>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Formulario - Columna izquierda */}
             <div className="lg:col-span-2 space-y-6">
               {/* Dirección de envío */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Dirección de envío</CardTitle>
+                  <CardTitle id="shipping-address-title">
+                    Dirección de envío
+                  </CardTitle>
                   <CardDescription>
                     Ingresa la dirección donde deseas recibir tu pedido
                   </CardDescription>
@@ -274,9 +281,21 @@ function CheckoutPageContent() {
                             ? 'border-red-500'
                             : ''
                         }
+                        aria-invalid={
+                          errors.shippingAddress?.firstName ? 'true' : 'false'
+                        }
+                        aria-describedby={
+                          errors.shippingAddress?.firstName
+                            ? 'firstName-error'
+                            : undefined
+                        }
                       />
                       {errors.shippingAddress?.firstName && (
-                        <p className="text-red-500 text-sm mt-1">
+                        <p
+                          id="firstName-error"
+                          className="text-red-500 text-sm mt-1"
+                          role="alert"
+                        >
                           {errors.shippingAddress.firstName.message}
                         </p>
                       )}
@@ -296,9 +315,21 @@ function CheckoutPageContent() {
                             ? 'border-red-500'
                             : ''
                         }
+                        aria-invalid={
+                          errors.shippingAddress?.lastName ? 'true' : 'false'
+                        }
+                        aria-describedby={
+                          errors.shippingAddress?.lastName
+                            ? 'lastName-error'
+                            : undefined
+                        }
                       />
                       {errors.shippingAddress?.lastName && (
-                        <p className="text-red-500 text-sm mt-1">
+                        <p
+                          id="lastName-error"
+                          className="text-red-500 text-sm mt-1"
+                          role="alert"
+                        >
                           {errors.shippingAddress.lastName.message}
                         </p>
                       )}
@@ -319,9 +350,21 @@ function CheckoutPageContent() {
                       className={
                         errors.shippingAddress?.email ? 'border-red-500' : ''
                       }
+                      aria-invalid={
+                        errors.shippingAddress?.email ? 'true' : 'false'
+                      }
+                      aria-describedby={
+                        errors.shippingAddress?.email
+                          ? 'email-error'
+                          : undefined
+                      }
                     />
                     {errors.shippingAddress?.email && (
-                      <p className="text-red-500 text-sm mt-1">
+                      <p
+                        id="email-error"
+                        className="text-red-500 text-sm mt-1"
+                        role="alert"
+                      >
                         {errors.shippingAddress.email.message}
                       </p>
                     )}
@@ -341,9 +384,21 @@ function CheckoutPageContent() {
                       className={
                         errors.shippingAddress?.phone ? 'border-red-500' : ''
                       }
+                      aria-invalid={
+                        errors.shippingAddress?.phone ? 'true' : 'false'
+                      }
+                      aria-describedby={
+                        errors.shippingAddress?.phone
+                          ? 'phone-error'
+                          : undefined
+                      }
                     />
                     {errors.shippingAddress?.phone && (
-                      <p className="text-red-500 text-sm mt-1">
+                      <p
+                        id="phone-error"
+                        className="text-red-500 text-sm mt-1"
+                        role="alert"
+                      >
                         {errors.shippingAddress.phone.message}
                       </p>
                     )}
@@ -362,9 +417,21 @@ function CheckoutPageContent() {
                       className={
                         errors.shippingAddress?.address ? 'border-red-500' : ''
                       }
+                      aria-invalid={
+                        errors.shippingAddress?.address ? 'true' : 'false'
+                      }
+                      aria-describedby={
+                        errors.shippingAddress?.address
+                          ? 'address-error'
+                          : undefined
+                      }
                     />
                     {errors.shippingAddress?.address && (
-                      <p className="text-red-500 text-sm mt-1">
+                      <p
+                        id="address-error"
+                        className="text-red-500 text-sm mt-1"
+                        role="alert"
+                      >
                         {errors.shippingAddress.address.message}
                       </p>
                     )}
@@ -384,9 +451,21 @@ function CheckoutPageContent() {
                         className={
                           errors.shippingAddress?.city ? 'border-red-500' : ''
                         }
+                        aria-invalid={
+                          errors.shippingAddress?.city ? 'true' : 'false'
+                        }
+                        aria-describedby={
+                          errors.shippingAddress?.city
+                            ? 'city-error'
+                            : undefined
+                        }
                       />
                       {errors.shippingAddress?.city && (
-                        <p className="text-red-500 text-sm mt-1">
+                        <p
+                          id="city-error"
+                          className="text-red-500 text-sm mt-1"
+                          role="alert"
+                        >
                           {errors.shippingAddress.city.message}
                         </p>
                       )}
@@ -406,9 +485,21 @@ function CheckoutPageContent() {
                             ? 'border-red-500'
                             : ''
                         }
+                        aria-invalid={
+                          errors.shippingAddress?.province ? 'true' : 'false'
+                        }
+                        aria-describedby={
+                          errors.shippingAddress?.province
+                            ? 'province-error'
+                            : undefined
+                        }
                       />
                       {errors.shippingAddress?.province && (
-                        <p className="text-red-500 text-sm mt-1">
+                        <p
+                          id="province-error"
+                          className="text-red-500 text-sm mt-1"
+                          role="alert"
+                        >
                           {errors.shippingAddress.province.message}
                         </p>
                       )}
@@ -428,9 +519,21 @@ function CheckoutPageContent() {
                             ? 'border-red-500'
                             : ''
                         }
+                        aria-invalid={
+                          errors.shippingAddress?.postalCode ? 'true' : 'false'
+                        }
+                        aria-describedby={
+                          errors.shippingAddress?.postalCode
+                            ? 'postalCode-error'
+                            : undefined
+                        }
                       />
                       {errors.shippingAddress?.postalCode && (
-                        <p className="text-red-500 text-sm mt-1">
+                        <p
+                          id="postalCode-error"
+                          className="text-red-500 text-sm mt-1"
+                          role="alert"
+                        >
                           {errors.shippingAddress.postalCode.message}
                         </p>
                       )}
@@ -467,17 +570,35 @@ function CheckoutPageContent() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Select
-                    value={paymentMethod}
-                    onValueChange={(value) =>
-                      setValue('paymentMethod', value as PaymentMethod)
-                    }
-                  >
-                    <SelectTrigger
-                      className={errors.paymentMethod ? 'border-red-500' : ''}
+                  <div>
+                    <label
+                      htmlFor="payment-method"
+                      className="block text-sm font-medium text-gray-700 mb-1 sr-only"
                     >
-                      <SelectValue placeholder="Selecciona un método de pago" />
-                    </SelectTrigger>
+                      Método de pago
+                    </label>
+                    <Select
+                      value={paymentMethod}
+                      onValueChange={(value) =>
+                        setValue('paymentMethod', value as PaymentMethod)
+                      }
+                    >
+                      <SelectTrigger
+                        id="payment-method"
+                        className={
+                          errors.paymentMethod ? 'border-red-500' : ''
+                        }
+                        aria-invalid={
+                          errors.paymentMethod ? 'true' : 'false'
+                        }
+                        aria-describedby={
+                          errors.paymentMethod
+                            ? 'payment-method-error'
+                            : undefined
+                        }
+                      >
+                        <SelectValue placeholder="Selecciona un método de pago" />
+                      </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="credit_card">
                         Tarjeta de Crédito
@@ -494,10 +615,15 @@ function CheckoutPageContent() {
                     </SelectContent>
                   </Select>
                   {errors.paymentMethod && (
-                    <p className="text-red-500 text-sm mt-1">
+                    <p
+                      id="payment-method-error"
+                      className="text-red-500 text-sm mt-1"
+                      role="alert"
+                    >
                       {errors.paymentMethod.message}
                     </p>
                   )}
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -564,9 +690,16 @@ function CheckoutPageContent() {
                     type="submit"
                     className="w-full"
                     size="lg"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || isProcessingOrder}
+                    aria-label={
+                      isSubmitting || isProcessingOrder
+                        ? 'Procesando pedido'
+                        : 'Confirmar pedido'
+                    }
                   >
-                    {isSubmitting ? 'Procesando...' : 'Confirmar pedido'}
+                    {isSubmitting || isProcessingOrder
+                      ? 'Procesando...'
+                      : 'Confirmar pedido'}
                   </Button>
                 </CardContent>
               </Card>

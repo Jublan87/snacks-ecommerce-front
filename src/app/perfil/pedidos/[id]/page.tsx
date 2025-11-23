@@ -99,9 +99,10 @@ function OrderDetailPageContent() {
                       {item.product.images?.[0] ? (
                         <Image
                           src={item.product.images[0].url}
-                          alt={item.product.name}
+                          alt={item.product.images[0].alt || item.product.name}
                           fill
                           className="object-cover"
+                          sizes="(max-width: 640px) 80px, 96px"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
