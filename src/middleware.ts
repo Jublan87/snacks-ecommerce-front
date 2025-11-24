@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { authMiddleware } from '@/shared/middleware/auth.middleware';
+import { adminMiddleware } from '@/shared/middleware/admin.middleware';
 
 /**
  * Middleware principal de Next.js
@@ -13,12 +14,11 @@ export function middleware(request: NextRequest) {
     return authResponse;
   }
 
-  // Aquí se pueden agregar más middlewares en el futuro
-  // Ejemplo:
-  // const adminResponse = adminMiddleware(request);
-  // if (adminResponse) {
-  //   return adminResponse;
-  // }
+  // Ejecutar middleware de administración
+  const adminResponse = adminMiddleware(request);
+  if (adminResponse) {
+    return adminResponse;
+  }
 
   return NextResponse.next();
 }

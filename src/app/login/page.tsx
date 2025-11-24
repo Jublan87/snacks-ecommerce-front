@@ -45,11 +45,23 @@ function LoginForm() {
     try {
       await login(data);
 
+      // Obtener el usuario después del login para verificar su rol
+      const user = useAuthStore.getState().user;
+      const isAdmin = user?.role === 'admin';
+
       // Obtener la URL de redirect antes de redirigir
       const redirectUrl = searchParams.get('redirect');
-      const targetUrl = redirectUrl || '/';
+      
+      // Si el usuario es admin, redirigir al panel admin (a menos que haya un redirect específico)
+      // Si hay un redirect específico, respetarlo (por ejemplo, si venía de /admin)
+      let targetUrl = redirectUrl || (isAdmin ? '/admin' : '/');
 
-      toast.success('¡Bienvenido de vuelta!');
+      // Mensaje de bienvenida personalizado para admins
+      if (isAdmin) {
+        toast.success('¡Bienvenido al panel de administración!');
+      } else {
+        toast.success('¡Bienvenido de vuelta!');
+      }
 
       // Verificar que la cookie esté establecida antes de redirigir
       // Esto es importante porque el middleware del servidor necesita ver la cookie

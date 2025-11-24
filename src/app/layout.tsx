@@ -5,6 +5,7 @@ import Header from '@/shared/components/layout/Header';
 import Footer from '@/shared/components/layout/Footer';
 import BottomNavigation from '@/shared/components/layout/BottomNavigation';
 import { Toaster } from 'sonner';
+import { InitAdminUser } from '@/features/admin/components/InitAdminUser';
 
 export const metadata: Metadata = {
   title: {
@@ -93,6 +94,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className="antialiased flex flex-col min-h-screen">
+        <InitAdminUser />
         <SearchProvider>
           {/* Skip Links: Permiten saltar al contenido principal para usuarios de teclado */}
           <a

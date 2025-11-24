@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { User, LogOut, LogIn, Package } from 'lucide-react';
+import { User, LogOut, LogIn, Package, LayoutDashboard } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
@@ -40,7 +40,7 @@ export default function Header() {
   // Obtener la cantidad total de items en el carrito (se actualiza automáticamente)
   const itemCount = useCartStore((state) => state.getItemCount());
   // Auth state
-  const { user, isAuthenticated, logout } = useAuthStore();
+  const { user, isAuthenticated, logout, isAdmin } = useAuthStore();
 
   // Esperar a que el componente se monte en el cliente
   useEffect(() => {
@@ -158,6 +158,18 @@ export default function Header() {
                       Mis Pedidos
                     </Link>
                   </DropdownMenuItem>
+                  {/* Panel Administrativo - Solo para admins */}
+                  {isAdmin() && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin" className="cursor-pointer">
+                          <LayoutDashboard className="mr-2 h-4 w-4" />
+                          Panel Administrativo
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={handleLogout}
@@ -319,6 +331,17 @@ export default function Header() {
                       <Package className="w-5 h-5" />
                       Mis Pedidos
                     </Link>
+                    {/* Panel Administrativo - Solo para admins */}
+                    {isAdmin() && (
+                      <Link
+                        href="/admin"
+                        onClick={closeMobileMenu}
+                        className="px-4 py-3 text-white hover:bg-[#E63939] hover:text-white transition-colors text-base font-semibold flex items-center gap-2"
+                      >
+                        <LayoutDashboard className="w-5 h-5" />
+                        Panel Administrativo
+                      </Link>
+                    )}
                     <button
                       onClick={() => {
                         closeMobileMenu();

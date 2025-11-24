@@ -4,6 +4,8 @@
 
 import { ShippingAddress } from '@/features/checkout/types';
 
+export type UserRole = 'customer' | 'admin';
+
 export interface User {
   id: string;
   email: string;
@@ -11,6 +13,7 @@ export interface User {
   lastName: string;
   phone?: string;
   shippingAddress?: ShippingAddress;
+  role?: UserRole; // Por defecto será 'customer'
   createdAt: string;
 }
 
