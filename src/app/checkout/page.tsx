@@ -225,8 +225,8 @@ function CheckoutPageContent() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center gap-4 mb-4">
+        <div className="container mx-auto px-4 py-4 md:py-8">
+          <div className="flex items-center gap-3 md:gap-4 mb-3 md:mb-4">
             <Link href="/carrito">
               <Button
                 variant="ghost"
@@ -238,10 +238,10 @@ function CheckoutPageContent() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+              <h1 className="text-2xl md:text-4xl font-bold text-gray-900">
                 Checkout
               </h1>
-              <p className="text-gray-600 mt-2">
+              <p className="text-sm md:text-base text-gray-600 mt-1 md:mt-2">
                 Completa tu información para finalizar la compra
               </p>
             </div>
@@ -249,11 +249,11 @@ function CheckoutPageContent() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-4 md:py-8">
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
             {/* Formulario - Columna izquierda */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="lg:col-span-2 space-y-4 md:space-y-6">
               {/* Dirección de envío */}
               <Card>
                 <CardHeader>
@@ -264,8 +264,8 @@ function CheckoutPageContent() {
                     Ingresa la dirección donde deseas recibir tu pedido
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <CardContent className="space-y-3 md:space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                     <div>
                       <label
                         htmlFor="firstName"
@@ -437,7 +437,7 @@ function CheckoutPageContent() {
                     )}
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
                     <div>
                       <label
                         htmlFor="city"

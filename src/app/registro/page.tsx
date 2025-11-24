@@ -62,28 +62,29 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-md">
+    <div className="container mx-auto px-4 py-6 md:py-12 max-w-md">
       <Link
         href="/"
-        className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-6 transition-colors"
+        className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4 md:mb-6 transition-colors min-h-[44px]"
+        aria-label="Volver a la página de inicio"
       >
-        <ArrowLeft className="w-4 h-4" />
+        <ArrowLeft className="w-4 h-4" aria-hidden="true" />
         Volver al inicio
       </Link>
 
       <Card>
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">
+          <CardTitle className="text-xl md:text-2xl font-bold text-center">
             Crear Cuenta
           </CardTitle>
-          <CardDescription className="text-center">
+          <CardDescription className="text-center text-sm md:text-base">
             Completa el formulario para registrarte
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 md:space-y-4">
             {/* Nombre y Apellido en la misma fila */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3 md:gap-4">
               {/* Nombre */}
               <div className="space-y-2">
                 <label
@@ -227,7 +228,7 @@ export default function RegisterPage() {
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3 md:gap-4">
                 <div className="space-y-2">
                   <label
                     htmlFor="city"

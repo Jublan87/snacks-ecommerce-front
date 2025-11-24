@@ -88,12 +88,12 @@ export default async function ProductDetailPage({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-4 py-4 md:py-6">
         {/* Breadcrumbs */}
         <ProductBreadcrumbs product={product} />
 
         {/* Contenido Principal */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mt-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 lg:gap-12 mt-4 md:mt-6">
           {/* Galería de Imágenes */}
           <div className="w-full">
             <ProductImageGallery
@@ -129,26 +129,26 @@ export default async function ProductDetailPage({
                 </div>
 
                 {/* Nombre del Producto */}
-                <CardTitle className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+                <CardTitle className="text-xl md:text-3xl font-bold text-gray-900 mb-3 md:mb-4">
                   {product.name}
                 </CardTitle>
 
                 {/* SKU */}
-                <p className="text-lg font-semibold text-gray-700 mb-4">
+                <p className="text-base md:text-lg font-semibold text-gray-700 mb-3 md:mb-4">
                   SKU:{' '}
                   <span className="font-mono font-bold">{product.sku}</span>
                 </p>
               </CardHeader>
 
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-4 md:space-y-6">
                 {/* Precio */}
-                <div className="flex items-baseline gap-3">
+                <div className="flex flex-wrap items-baseline gap-2 md:gap-3">
                   {hasDiscount ? (
                     <>
-                      <span className="text-3xl md:text-4xl font-bold text-red-600">
+                      <span className="text-2xl md:text-4xl font-bold text-red-600">
                         ${currentPrice.toLocaleString('es-AR')}
                       </span>
-                      <span className="text-xl text-gray-500 line-through">
+                      <span className="text-lg md:text-xl text-gray-500 line-through">
                         ${product.price.toLocaleString('es-AR')}
                       </span>
                       <div className="bg-red-600 text-white px-2 py-0.5 rounded font-bold text-xs shadow-md">
@@ -156,7 +156,7 @@ export default async function ProductDetailPage({
                       </div>
                     </>
                   ) : (
-                    <span className="text-3xl md:text-4xl font-bold text-gray-900">
+                    <span className="text-2xl md:text-4xl font-bold text-gray-900">
                       ${currentPrice.toLocaleString('es-AR')}
                     </span>
                   )}
@@ -166,10 +166,10 @@ export default async function ProductDetailPage({
 
                 {/* Descripción */}
                 <div>
-                  <h3 className="font-bold text-xl text-gray-900 mb-4">
+                  <h3 className="font-bold text-lg md:text-xl text-gray-900 mb-3 md:mb-4">
                     Descripción
                   </h3>
-                  <p className="text-gray-800 leading-relaxed text-base font-semibold">
+                  <p className="text-gray-800 leading-relaxed text-sm md:text-base font-semibold">
                     {product.description}
                   </p>
                 </div>
@@ -179,10 +179,10 @@ export default async function ProductDetailPage({
                   <>
                     <Separator />
                     <div>
-                      <h3 className="font-bold text-xl text-gray-900 mb-4">
+                      <h3 className="font-bold text-lg md:text-xl text-gray-900 mb-3 md:mb-4">
                         Especificaciones
                       </h3>
-                      <div className="space-y-4 text-lg">
+                      <div className="space-y-3 md:space-y-4 text-base md:text-lg">
                         {product.weight && (
                           <div className="flex justify-between">
                             <span className="font-bold text-gray-800">
@@ -229,7 +229,7 @@ export default async function ProductDetailPage({
                           d="M6 18L18 6M6 6l12 12"
                         />
                       </svg>
-                      <span className="font-bold text-xl">Sin Stock</span>
+                      <span className="font-bold text-lg md:text-xl">Sin Stock</span>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2 text-green-600">
@@ -246,7 +246,7 @@ export default async function ProductDetailPage({
                           d="M5 13l4 4L19 7"
                         />
                       </svg>
-                      <span className="font-bold text-xl">
+                      <span className="font-bold text-lg md:text-xl">
                         {product.stock} unidades disponibles
                       </span>
                     </div>
@@ -264,8 +264,8 @@ export default async function ProductDetailPage({
 
         {/* Productos Relacionados */}
         {relatedProducts.length > 0 && (
-          <div className="mt-16">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          <div className="mt-8 md:mt-16">
+            <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 md:mb-6">
               Productos Relacionados
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

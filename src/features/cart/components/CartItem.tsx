@@ -64,10 +64,10 @@ export default function CartItem({
 
   const titleStyles =
     variant === 'card'
-      ? 'font-bold text-xl text-gray-900 hover:text-[#FF5454] transition-colors mb-2'
-      : 'font-bold text-lg text-gray-900 truncate hover:text-[#FF5454] transition-colors';
+      ? 'font-bold text-lg md:text-xl text-gray-900 hover:text-[#FF5454] transition-colors mb-2'
+      : 'font-bold text-base md:text-lg text-gray-900 truncate hover:text-[#FF5454] transition-colors';
 
-  const buttonSize = variant === 'card' ? 'h-9 w-9' : 'h-8 w-8';
+  const buttonSize = variant === 'card' ? 'min-h-[44px] min-w-[44px] h-9 w-9 md:h-9 md:w-9' : 'min-h-[44px] min-w-[44px] h-8 w-8 md:h-8 md:w-8';
   const quantityTextSize = variant === 'card' ? 'text-lg' : '';
 
   const content = (
@@ -100,11 +100,11 @@ export default function CartItem({
         >
           <h3 className={titleStyles}>{item.product.name}</h3>
         </Link>
-        <p className="text-base font-semibold text-gray-800 mb-1">
+        <p className="text-sm md:text-base font-semibold text-gray-800 mb-1">
           ${currentPrice.toLocaleString('es-AR')} c/u
         </p>
         {item.product.discountPrice && (
-          <p className="text-sm font-semibold text-gray-500 line-through">
+          <p className="text-xs md:text-sm font-semibold text-gray-500 line-through">
             ${item.product.price.toLocaleString('es-AR')}
           </p>
         )}
@@ -123,7 +123,7 @@ export default function CartItem({
               <Minus className="h-4 w-4" aria-hidden="true" />
             </Button>
             <span
-              className={`w-10 text-center font-bold ${quantityTextSize || 'text-lg'}`}
+              className={`w-10 text-center font-bold ${quantityTextSize || 'text-base md:text-lg'}`}
               aria-label={`Cantidad: ${item.quantity}`}
             >
               {item.quantity}
@@ -144,7 +144,7 @@ export default function CartItem({
           <div className="flex items-center gap-4">
             <span
               className={`font-bold text-gray-900 ${
-                variant === 'card' ? 'text-2xl' : 'text-xl'
+                variant === 'card' ? 'text-xl md:text-2xl' : 'text-lg md:text-xl'
               }`}
             >
               ${itemTotal.toLocaleString('es-AR')}

@@ -120,17 +120,17 @@ export default function ProductosPage() {
     <div className="min-h-screen">
       {/* Header de la página */}
       <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+        <div className="container mx-auto px-4 py-4 md:py-8">
+          <h1 className="text-2xl md:text-4xl font-bold text-gray-900">
             Todos los Productos
           </h1>
-          <p className="text-gray-600 mt-2">
+          <p className="text-sm md:text-base text-gray-600 mt-2">
             Encuentra los mejores snacks para ti
           </p>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-4 md:py-8">
         {/* Overlay para mobile cuando los filtros están abiertos */}
         {showFilters && (
           <div
@@ -200,12 +200,12 @@ export default function ProductosPage() {
           {/* Contenido Principal */}
           <main className="flex-1" ref={productsContainerRef}>
             {/* Barra de filtros mobile y contador */}
-            <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-              <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+            <div className="bg-white rounded-lg shadow-sm p-3 md:p-4 mb-4 md:mb-6">
+              <div className="flex flex-col md:flex-row gap-3 md:gap-4 items-center justify-between">
                 {/* Botón para mostrar filtros en mobile */}
                 <button
                   onClick={() => setShowFilters(true)}
-                  className="lg:hidden flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                  className="lg:hidden flex items-center justify-center gap-2 px-4 py-3 min-h-[44px] border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
                   aria-label={`Abrir filtros${selectedCategories.length > 0 || hasDiscount ? `, ${selectedCategories.length + (hasDiscount ? 1 : 0)} filtro${selectedCategories.length + (hasDiscount ? 1 : 0) > 1 ? 's' : ''} activo${selectedCategories.length + (hasDiscount ? 1 : 0) > 1 ? 's' : ''}` : ''}`}
                   aria-expanded={showFilters}
                 >

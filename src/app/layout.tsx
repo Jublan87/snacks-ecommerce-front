@@ -3,6 +3,7 @@ import './globals.css';
 import { SearchProvider } from '@/shared/contexts/SearchContext';
 import Header from '@/shared/components/layout/Header';
 import Footer from '@/shared/components/layout/Footer';
+import BottomNavigation from '@/shared/components/layout/BottomNavigation';
 import { Toaster } from 'sonner';
 
 export const metadata: Metadata = {
@@ -107,10 +108,15 @@ export default function RootLayout({
             Saltar a la navegación
           </a>
           <Header />
-          <main id="main-content" className="flex-1" tabIndex={-1}>
+          <main
+            id="main-content"
+            className="flex-1 pb-16 md:pb-0"
+            tabIndex={-1}
+          >
             {children}
           </main>
           <Footer />
+          <BottomNavigation />
           {/* Live region para anuncios de screen readers */}
           <div
             id="live-region"

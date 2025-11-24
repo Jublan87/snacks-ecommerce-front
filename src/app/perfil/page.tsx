@@ -65,18 +65,19 @@ function ProfilePageContent() {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-2">
-          <h1 className="text-3xl font-bold text-gray-900">Mi Perfil</h1>
+    <div className="container mx-auto px-4 py-4 md:py-8 max-w-4xl">
+      <div className="mb-6 md:mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-2">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Mi Perfil</h1>
           <Link href="/perfil/pedidos">
-            <Button variant="outline" className="gap-2">
+            <Button variant="outline" className="gap-2 w-full sm:w-auto">
               <Package className="w-4 h-4" />
               <span className="hidden sm:inline">Mis Pedidos</span>
+              <span className="sm:hidden">Ver Pedidos</span>
             </Button>
           </Link>
         </div>
-        <p className="text-gray-600 mt-2">
+        <p className="text-sm md:text-base text-gray-600 mt-1 md:mt-2">
           Gestiona tu información personal, direcciones y configuración de
           cuenta
         </p>
@@ -91,16 +92,17 @@ function ProfilePageContent() {
                 return (
                   <Tab
                     key={tab.id}
-                    className="flex items-center gap-2 px-6 py-4 text-sm font-medium transition-colors whitespace-nowrap data-[selected]:border-b-2 data-[selected]:border-[#FF5454] data-[selected]:text-[#FF5454] data-[selected]:bg-gray-50 text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                    className="flex items-center gap-2 px-4 md:px-6 py-3 md:py-4 min-h-[44px] text-sm font-medium transition-colors whitespace-nowrap data-[selected]:border-b-2 data-[selected]:border-[#FF5454] data-[selected]:text-[#FF5454] data-[selected]:bg-gray-50 text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                   >
                     <Icon className="w-5 h-5" />
                     <span className="hidden sm:inline">{tab.name}</span>
+                    <span className="sm:hidden">{tab.name.split(' ')[0]}</span>
                   </Tab>
                 );
               })}
             </TabList>
 
-            <TabPanels className="p-6">
+            <TabPanels className="p-4 md:p-6">
               {tabs.map((tab) => {
                 const Component = tab.component;
                 return (
