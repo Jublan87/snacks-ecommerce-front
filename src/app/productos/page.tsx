@@ -9,7 +9,7 @@ import type { SortOption } from '@/features/filters/types';
 import ProductPagination from '@/features/filters/components/ProductPagination';
 import EmptyState from '@/features/product/components/EmptyState';
 import LoadingState from '@/features/product/components/LoadingState';
-import { MOCK_PRODUCTS } from '@/features/product/mocks/products.mock';
+import { useProductStore } from '@/features/admin/store/product-store';
 import { useSearch } from '@/shared/contexts/SearchContext';
 import {
   filterProducts,
@@ -21,6 +21,7 @@ const ITEMS_PER_PAGE = 12;
 
 export default function ProductosPage() {
   const { searchQuery } = useSearch();
+  const { products, initializeWithMocks } = useProductStore();
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [hasDiscount, setHasDiscount] = useState<boolean>(false);
   const [sortBy, setSortBy] = useState<SortOption>('name-asc');
@@ -29,6 +30,11 @@ export default function ProductosPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [isPageTransitioning, setIsPageTransitioning] = useState(false);
   const productsContainerRef = useRef<HTMLDivElement>(null);
+
+  // Inicializar con datos mock si está vacío (solo una vez)
+  useEffect(() => {
+    initializeWithMocks();
+  }, [initializeWithMocks]);
 
   // Manejar cambio de categoría
   const handleCategoryChange = (categoryId: string) => {
@@ -53,9 +59,9 @@ export default function ProductosPage() {
 
   // Procesar productos: filtrar, ordenar y paginar
   const processedProducts = useMemo(() => {
-    // Filtrar productos
+    // Filtrar productos (usar productos del store)
     let filtered = filterProducts(
-      MOCK_PRODUCTS.filter((p) => p.isActive),
+      products.filter((p) => p.isActive),
       searchQuery,
       selectedCategories,
       hasDiscount
@@ -76,7 +82,14 @@ export default function ProductosPage() {
       totalPages,
       totalCount: sorted.length,
     };
-  }, [searchQuery, selectedCategories, hasDiscount, sortBy, currentPage]);
+  }, [
+    products,
+    searchQuery,
+    selectedCategories,
+    hasDiscount,
+    sortBy,
+    currentPage,
+  ]);
 
   // Manejar transición suave al cambiar de página
   useEffect(() => {
@@ -174,7 +187,7 @@ export default function ProductosPage() {
                   </svg>
                 </button>
               </div>
-              
+
               {/* Ordenamiento */}
               <div className="mb-6 pb-6 border-b border-gray-200">
                 <ProductSort sortBy={sortBy} onSortChange={setSortBy} />
@@ -206,7 +219,21 @@ export default function ProductosPage() {
                 <button
                   onClick={() => setShowFilters(true)}
                   className="lg:hidden flex items-center justify-center gap-2 px-4 py-3 min-h-[44px] border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-                  aria-label={`Abrir filtros${selectedCategories.length > 0 || hasDiscount ? `, ${selectedCategories.length + (hasDiscount ? 1 : 0)} filtro${selectedCategories.length + (hasDiscount ? 1 : 0) > 1 ? 's' : ''} activo${selectedCategories.length + (hasDiscount ? 1 : 0) > 1 ? 's' : ''}` : ''}`}
+                  aria-label={`Abrir filtros${
+                    selectedCategories.length > 0 || hasDiscount
+                      ? `, ${
+                          selectedCategories.length + (hasDiscount ? 1 : 0)
+                        } filtro${
+                          selectedCategories.length + (hasDiscount ? 1 : 0) > 1
+                            ? 's'
+                            : ''
+                        } activo${
+                          selectedCategories.length + (hasDiscount ? 1 : 0) > 1
+                            ? 's'
+                            : ''
+                        }`
+                      : ''
+                  }`}
                   aria-expanded={showFilters}
                 >
                   <svg
@@ -227,7 +254,17 @@ export default function ProductosPage() {
                   {(selectedCategories.length > 0 || hasDiscount) && (
                     <span
                       className="ml-1 px-2 py-0.5 text-xs font-semibold bg-blue-600 text-white rounded-full"
-                      aria-label={`${selectedCategories.length + (hasDiscount ? 1 : 0)} filtro${selectedCategories.length + (hasDiscount ? 1 : 0) > 1 ? 's' : ''} activo${selectedCategories.length + (hasDiscount ? 1 : 0) > 1 ? 's' : ''}`}
+                      aria-label={`${
+                        selectedCategories.length + (hasDiscount ? 1 : 0)
+                      } filtro${
+                        selectedCategories.length + (hasDiscount ? 1 : 0) > 1
+                          ? 's'
+                          : ''
+                      } activo${
+                        selectedCategories.length + (hasDiscount ? 1 : 0) > 1
+                          ? 's'
+                          : ''
+                      }`}
                     >
                       {selectedCategories.length + (hasDiscount ? 1 : 0)}
                     </span>
@@ -236,7 +273,11 @@ export default function ProductosPage() {
 
                 {/* Contador de resultados */}
                 {!isLoading && (
-                  <div className="text-sm text-gray-600" role="status" aria-live="polite">
+                  <div
+                    className="text-sm text-gray-600"
+                    role="status"
+                    aria-live="polite"
+                  >
                     {processedProducts.totalCount === 0 ? (
                       <span>No se encontraron productos</span>
                     ) : (
