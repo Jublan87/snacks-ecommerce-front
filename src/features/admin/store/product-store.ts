@@ -4,6 +4,17 @@ import { Product, Category, ProductImage } from '@/features/product/types';
 import { ProductFormInput } from '@/features/admin/schemas/product.schema';
 import { MOCK_PRODUCTS, MOCK_CATEGORIES } from '@/features/product/mocks/products.mock';
 
+/** Asegura que cada imagen tenga id requerido para Product. */
+function normalizeImages(
+  images: ProductFormInput['images'],
+  prefix = 'img'
+): ProductImage[] {
+  return (images || []).map((img, i) => ({
+    ...img,
+    id: img.id ?? `${prefix}-${Date.now()}-${i}`,
+  }));
+}
+
 interface ProductStore {
   products: Product[];
   categories: Category[];
@@ -11,6 +22,7 @@ interface ProductStore {
   // Productos
   createProduct: (product: ProductFormInput) => Product;
   updateProduct: (id: string, updates: Partial<ProductFormInput>) => Product;
+  updateStock: (id: string, newStock: number) => { previousStock: number };
   deleteProduct: (id: string) => void;
   getProductById: (id: string) => Product | undefined;
   
@@ -59,16 +71,13 @@ export const useProductStore = create<ProductStore>()(
 
       // Crear producto
       createProduct: (productData) => {
-        // Calcular discountPrice y discountPercentage si hay descuento
+        // Calcular discountPrice desde discountPercentage (el formulario solo envía porcentaje)
         let discountPrice: number | undefined;
         let discountPercentage: number | undefined;
 
         if (productData.discountPercentage !== undefined && productData.discountPercentage > 0) {
           discountPercentage = productData.discountPercentage;
           discountPrice = productData.price * (1 - discountPercentage / 100);
-        } else if (productData.discountPrice !== undefined && productData.discountPrice < productData.price) {
-          discountPrice = productData.discountPrice;
-          discountPercentage = Math.round(((productData.price - discountPrice) / productData.price) * 100);
         }
 
         const newProduct: Product = {
@@ -77,7 +86,7 @@ export const useProductStore = create<ProductStore>()(
           slug: productData.slug || generateSlug(productData.name),
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          images: productData.images || [],
+          images: normalizeImages(productData.images || []),
           tags: productData.tags || [],
           isActive: productData.isActive ?? true,
           isFeatured: productData.isFeatured ?? false,
@@ -111,32 +120,23 @@ export const useProductStore = create<ProductStore>()(
             discountPercentage = updates.discountPercentage;
             discountPrice = finalPrice * (1 - discountPercentage / 100);
           } else {
-            // Si el porcentaje es 0 o undefined, eliminar descuento
-            discountPrice = undefined;
-            discountPercentage = undefined;
-          }
-        } else if (updates.discountPrice !== undefined) {
-          if (updates.discountPrice < finalPrice) {
-            discountPrice = updates.discountPrice;
-            discountPercentage = Math.round(((finalPrice - discountPrice) / finalPrice) * 100);
-          } else {
             discountPrice = undefined;
             discountPercentage = undefined;
           }
         } else {
-          // Mantener los valores existentes si no se actualizan
           discountPrice = product.discountPrice;
           discountPercentage = product.discountPercentage;
         }
 
+        const merged = { ...product, ...updates };
         const updatedProduct: Product = {
-          ...product,
-          ...updates,
-          id, // Asegurar que el ID no cambie
+          ...merged,
+          id,
           slug: updates.slug || updates.name ? generateSlug(updates.name || product.name) : product.slug,
           updatedAt: new Date().toISOString(),
           discountPrice,
           discountPercentage,
+          images: updates.images ? normalizeImages(updates.images) : product.images,
         };
 
         set({
@@ -144,6 +144,25 @@ export const useProductStore = create<ProductStore>()(
         });
 
         return updatedProduct;
+      },
+
+      // Actualizar solo stock (para gestión de inventario)
+      updateStock: (id, newStock) => {
+        const currentProducts = get().products;
+        const product = currentProducts.find((p) => p.id === id);
+        if (!product) {
+          throw new Error('Producto no encontrado');
+        }
+        const previousStock = product.stock;
+        const safeStock = Math.max(0, Math.floor(Number(newStock)));
+        set({
+          products: currentProducts.map((p) =>
+            p.id === id
+              ? { ...p, stock: safeStock, updatedAt: new Date().toISOString() }
+              : p
+          ),
+        });
+        return { previousStock };
       },
 
       // Eliminar producto

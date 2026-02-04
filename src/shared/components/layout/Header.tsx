@@ -71,7 +71,7 @@ export default function Header() {
   return (
     <header
       id="navigation"
-      className="bg-[#FF5454] sticky top-0 z-50 border-b border-[#E63939]"
+      className="bg-brand sticky top-0 z-50 border-b border-brand-hover"
       role="banner"
     >
       <nav className="container mx-auto px-4" aria-label="Navegación principal">
@@ -294,7 +294,7 @@ export default function Header() {
             {/* Drawer */}
             <div
               id="mobile-menu"
-              className="fixed top-16 left-0 right-0 bg-[#FF5454] shadow-lg z-50 md:hidden animate-slide-down border-b border-[#E63939]"
+              className="fixed top-16 left-0 right-0 bg-brand shadow-lg z-50 md:hidden animate-slide-down border-b border-brand-hover"
               role="navigation"
               aria-label="Menú de navegación móvil"
             >
@@ -308,7 +308,7 @@ export default function Header() {
                 <Link
                   href="/productos"
                   onClick={closeMobileMenu}
-                  className="px-4 py-3 text-white hover:bg-[#E63939] hover:text-white transition-colors text-base font-semibold"
+                  className="px-4 py-3 text-white hover:bg-brand-hover hover:text-white transition-colors text-base font-semibold"
                 >
                   Todos los productos
                 </Link>
@@ -318,7 +318,7 @@ export default function Header() {
                     <Link
                       href="/perfil"
                       onClick={closeMobileMenu}
-                      className="px-4 py-3 text-white hover:bg-[#E63939] hover:text-white transition-colors text-base font-semibold flex items-center gap-2"
+                      className="px-4 py-3 text-white hover:bg-brand-hover hover:text-white transition-colors text-base font-semibold flex items-center gap-2"
                     >
                       <User className="w-5 h-5" />
                       Mi Perfil
@@ -326,7 +326,7 @@ export default function Header() {
                     <Link
                       href="/perfil/pedidos"
                       onClick={closeMobileMenu}
-                      className="px-4 py-3 text-white hover:bg-[#E63939] hover:text-white transition-colors text-base font-semibold flex items-center gap-2"
+                      className="px-4 py-3 text-white hover:bg-brand-hover hover:text-white transition-colors text-base font-semibold flex items-center gap-2"
                     >
                       <Package className="w-5 h-5" />
                       Mis Pedidos
@@ -336,7 +336,7 @@ export default function Header() {
                       <Link
                         href="/admin"
                         onClick={closeMobileMenu}
-                        className="px-4 py-3 text-white hover:bg-[#E63939] hover:text-white transition-colors text-base font-semibold flex items-center gap-2"
+                        className="px-4 py-3 text-white hover:bg-brand-hover hover:text-white transition-colors text-base font-semibold flex items-center gap-2"
                       >
                         <LayoutDashboard className="w-5 h-5" />
                         Panel Administrativo
@@ -347,7 +347,7 @@ export default function Header() {
                         closeMobileMenu();
                         handleLogout();
                       }}
-                      className="px-4 py-3 text-white hover:bg-[#E63939] hover:text-white transition-colors text-base font-semibold flex items-center gap-2"
+                      className="px-4 py-3 text-white hover:bg-brand-hover hover:text-white transition-colors text-base font-semibold flex items-center gap-2"
                     >
                       <LogOut className="w-5 h-5" />
                       Cerrar Sesión
@@ -357,7 +357,7 @@ export default function Header() {
                   <Link
                     href="/login"
                     onClick={closeMobileMenu}
-                    className="px-4 py-3 text-white hover:bg-[#E63939] hover:text-white transition-colors text-base font-semibold flex items-center gap-2"
+                    className="px-4 py-3 text-white hover:bg-brand-hover hover:text-white transition-colors text-base font-semibold flex items-center gap-2"
                   >
                     <LogIn className="w-5 h-5" />
                     Iniciar Sesión
@@ -369,7 +369,7 @@ export default function Header() {
                     closeMobileMenu(); // Cierra el menú móvil
                     toggleCart(); // Abre el drawer del carrito
                   }}
-                  className="relative px-4 py-3 text-white hover:bg-[#E63939] hover:text-white transition-colors text-base font-semibold flex items-center gap-2"
+                  className="relative px-4 py-3 text-white hover:bg-brand-hover hover:text-white transition-colors text-base font-semibold flex items-center gap-2"
                   aria-label={
                     mounted && itemCount > 0
                       ? `Ver carrito, ${itemCount} ${

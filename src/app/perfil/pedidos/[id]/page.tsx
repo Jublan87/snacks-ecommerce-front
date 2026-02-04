@@ -218,7 +218,7 @@ function OrderDetailPageContent() {
                 <Separator />
                 <div className="flex justify-between text-lg font-bold">
                   <span>Total</span>
-                  <span className="text-[#FF5454]">
+                  <span className="text-brand">
                     ${order.total.toLocaleString('es-AR', {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,

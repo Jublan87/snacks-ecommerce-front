@@ -64,8 +64,8 @@ export default function CartItem({
 
   const titleStyles =
     variant === 'card'
-      ? 'font-bold text-lg md:text-xl text-gray-900 hover:text-[#FF5454] transition-colors mb-2'
-      : 'font-bold text-base md:text-lg text-gray-900 truncate hover:text-[#FF5454] transition-colors';
+      ? 'font-bold text-lg md:text-xl text-gray-900 hover:text-brand transition-colors mb-2'
+      : 'font-bold text-base md:text-lg text-gray-900 truncate hover:text-brand transition-colors';
 
   const buttonSize = variant === 'card' ? 'min-h-[44px] min-w-[44px] h-9 w-9 md:h-9 md:w-9' : 'min-h-[44px] min-w-[44px] h-8 w-8 md:h-8 md:w-8';
   const quantityTextSize = variant === 'card' ? 'text-lg' : '';

@@ -211,7 +211,7 @@ function LoginForm() {
             <span className="text-gray-600">¿No tienes una cuenta? </span>
             <Link
               href="/registro"
-              className="text-[#FF5454] hover:text-[#CC0000] font-medium transition-colors"
+              className="text-brand hover:text-brand-hover font-medium transition-colors"
             >
               Regístrate aquí
             </Link>

@@ -130,7 +130,7 @@ export default function ProductImageUpload({
                 />
                 {image.isPrimary && (
                   <div className="absolute top-2 left-2">
-                    <span className="bg-[#FF5454] text-white text-xs font-medium px-2 py-1 rounded">
+                    <span className="bg-brand text-white text-xs font-medium px-2 py-1 rounded">
                       Principal
                     </span>
                   </div>

@@ -78,8 +78,8 @@ export default function BottomNavigation() {
                 transition-colors
                 ${
                   isActive
-                    ? 'text-[#FF5454] bg-[#FF5454]/5'
-                    : 'text-gray-600 hover:text-[#FF5454]'
+                    ? 'text-brand bg-brand/5'
+                    : 'text-gray-600 hover:text-brand'
                 }
               `}
               aria-label={item.ariaLabel}
@@ -87,12 +87,12 @@ export default function BottomNavigation() {
             >
               <div className="relative">
                 <Icon
-                  className={`w-6 h-6 ${isActive ? 'text-[#FF5454]' : ''}`}
+                  className={`w-6 h-6 ${isActive ? 'text-brand' : ''}`}
                   aria-hidden="true"
                 />
                 {item.badge && (
                   <Badge
-                    className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs bg-[#FF5454] text-white border-transparent"
+                    className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs bg-brand text-white border-transparent"
                     aria-label={`${item.badge} ${
                       item.badge === 1 ? 'producto' : 'productos'
                     } en el carrito`}
@@ -103,7 +103,7 @@ export default function BottomNavigation() {
               </div>
               <span
                 className={`text-xs font-medium ${
-                  isActive ? 'text-[#FF5454]' : 'text-gray-600'
+                  isActive ? 'text-brand' : 'text-gray-600'
                 }`}
               >
                 {item.label}

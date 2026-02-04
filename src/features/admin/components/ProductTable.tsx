@@ -23,6 +23,10 @@ import {
 } from '@/shared/ui/select';
 import { Edit, Trash2, Search, Plus, Eye } from 'lucide-react';
 import Link from 'next/link';
+import AdminDataTable, {
+  AdminDataTableEmptyRow,
+  type AdminDataTableColumn,
+} from '@/features/admin/components/AdminDataTable';
 
 interface ProductTableProps {
   products: Product[];
@@ -43,7 +47,19 @@ export default function ProductTable({
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  const [sortKey, setSortKey] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const itemsPerPage = 10;
+
+  const productColumns: AdminDataTableColumn[] = [
+    { id: 'product', label: 'Producto', sortable: true },
+    { id: 'sku', label: 'SKU', sortable: true },
+    { id: 'category', label: 'Categoría', sortable: true },
+    { id: 'price', label: 'Precio', sortable: true },
+    { id: 'stock', label: 'Stock', sortable: true },
+    { id: 'status', label: 'Estado', sortable: true },
+    { id: 'actions', label: 'Acciones', align: 'right' },
+  ];
 
   // Obtener categorías únicas para el filtro
   const categories = useMemo(() => {
@@ -80,12 +96,44 @@ export default function ProductTable({
     });
   }, [products, searchQuery, statusFilter, categoryFilter]);
 
-  // Paginación
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const handleSort = (key: string) => {
+    if (sortKey === key) {
+      setSortDirection((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortKey(key);
+      setSortDirection('asc');
+    }
+    setCurrentPage(1);
+  };
+
+  const sortedProducts = useMemo(() => {
+    if (!sortKey) return filteredProducts;
+    const dir = sortDirection === 'asc' ? 1 : -1;
+    return [...filteredProducts].sort((a, b) => {
+      switch (sortKey) {
+        case 'product':
+          return dir * a.name.localeCompare(b.name);
+        case 'sku':
+          return dir * a.sku.localeCompare(b.sku);
+        case 'category':
+          return dir * (a.category?.name ?? '').localeCompare(b.category?.name ?? '');
+        case 'price':
+          return dir * (a.price - b.price);
+        case 'stock':
+          return dir * (a.stock - b.stock);
+        case 'status':
+          return dir * (a.isActive === b.isActive ? 0 : a.isActive ? 1 : -1);
+        default:
+          return 0;
+      }
+    });
+  }, [filteredProducts, sortKey, sortDirection]);
+
+  const totalPages = Math.ceil(sortedProducts.length / itemsPerPage);
   const paginatedProducts = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
-    return filteredProducts.slice(start, start + itemsPerPage);
-  }, [filteredProducts, currentPage]);
+    return sortedProducts.slice(start, start + itemsPerPage);
+  }, [sortedProducts, currentPage]);
 
   // Resetear página cuando cambian los filtros
   const handleFilterChange = () => {
@@ -171,7 +219,7 @@ export default function ProductTable({
         </Select>
         <Button 
           onClick={onCreate} 
-          className="w-full sm:w-auto bg-[#FF5454] hover:bg-[#E63939] text-white"
+          className="w-full sm:w-auto bg-brand hover:bg-brand-hover text-white"
         >
           <Plus className="h-4 w-4 mr-2" />
           Nuevo Producto
@@ -179,44 +227,77 @@ export default function ProductTable({
       </div>
 
       {/* Tabla de productos */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Producto
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  SKU
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Categoría
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Precio
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Stock
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Estado
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Acciones
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {paginatedProducts.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
-                    No se encontraron productos
-                  </td>
-                </tr>
-              ) : (
-                paginatedProducts.map((product) => (
-                  <tr key={product.id} className="hover:bg-gray-50">
+      <AdminDataTable
+        columns={productColumns}
+        sortKey={sortKey}
+        sortDirection={sortDirection}
+        onSort={handleSort}
+        emptyMessage="No se encontraron productos"
+        emptyColSpan={7}
+        footer={
+          totalPages > 1 ? (
+            <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+              <div className="text-sm text-gray-700">
+                Mostrando {paginatedProducts.length} de {sortedProducts.length} productos
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  Anterior
+                </Button>
+                <div className="flex items-center gap-2">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter(
+                      (page) =>
+                        page === 1 ||
+                        page === totalPages ||
+                        (page >= currentPage - 1 && page <= currentPage + 1)
+                    )
+                    .map((page, index, array) => (
+                      <div key={page} className="flex items-center gap-1">
+                        {index > 0 && array[index - 1] !== page - 1 && (
+                          <span className="px-2">...</span>
+                        )}
+                        <Button
+                          variant={currentPage === page ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setCurrentPage(page)}
+                          className={
+                            currentPage === page
+                              ? 'bg-brand hover:bg-brand-hover text-white'
+                              : ''
+                          }
+                        >
+                          {page}
+                        </Button>
+                      </div>
+                    ))}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  Siguiente
+                </Button>
+              </div>
+            </div>
+          ) : undefined
+        }
+      >
+        {paginatedProducts.length === 0 ? (
+          <AdminDataTableEmptyRow
+            message="No se encontraron productos"
+            colSpan={7}
+          />
+        ) : (
+          paginatedProducts.map((product) => (
+            <tr key={product.id} className="hover:bg-[rgb(var(--brand)/0.03)]">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-3">
                         <div className="relative h-12 w-12 flex-shrink-0 rounded-md overflow-hidden bg-gray-100">
@@ -311,67 +392,9 @@ export default function ProductTable({
                       </div>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Paginación */}
-        {totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-            <div className="text-sm text-gray-700">
-              Mostrando {paginatedProducts.length} de {filteredProducts.length} productos
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-              >
-                Anterior
-              </Button>
-              <div className="flex items-center gap-2">
-                {Array.from({ length: totalPages }, (_, i) => i + 1)
-                  .filter(
-                    (page) =>
-                      page === 1 ||
-                      page === totalPages ||
-                      (page >= currentPage - 1 && page <= currentPage + 1)
-                  )
-                  .map((page, index, array) => (
-                    <div key={page} className="flex items-center gap-1">
-                      {index > 0 && array[index - 1] !== page - 1 && (
-                        <span className="px-2">...</span>
-                      )}
-                      <Button
-                        variant={currentPage === page ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setCurrentPage(page)}
-                        className={
-                          currentPage === page
-                            ? 'bg-[#FF5454] hover:bg-[#E63939] text-white'
-                            : ''
-                        }
-                      >
-                        {page}
-                      </Button>
-                    </div>
-                  ))}
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                disabled={currentPage === totalPages}
-              >
-                Siguiente
-              </Button>
-            </div>
-          </div>
+          ))
         )}
-      </div>
+      </AdminDataTable>
 
       {/* Dialog de confirmación de eliminación */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

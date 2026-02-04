@@ -1,9 +1,6 @@
-import { Metadata } from 'next';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Control de Stock',
-  description: 'Gestionar inventario y stock',
-};
+import StockInventory from '@/features/admin/components/StockInventory';
 
 export default function AdminStockPage() {
   return (
@@ -11,15 +8,10 @@ export default function AdminStockPage() {
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Control de Stock</h1>
         <p className="text-gray-600 mt-1">
-          Administra el inventario de productos
+          Administra el inventario, alertas de stock bajo y ajustes masivos
         </p>
       </div>
-      <div className="bg-white p-6 rounded-lg border border-gray-200">
-        <p className="text-gray-600">
-          Esta sección se implementará en el hito 6.4
-        </p>
-      </div>
+      <StockInventory />
     </div>
   );
 }
-

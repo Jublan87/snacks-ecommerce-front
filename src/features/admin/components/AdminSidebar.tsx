@@ -69,8 +69,8 @@ export default function AdminSidebar({ isMobileOpen, onMobileClose }: AdminSideb
                     className={cn(
                       'flex items-center gap-3 px-4 py-3 rounded-lg transition-colors',
                       isActive
-                        ? 'bg-[#FF5454] text-white'
-                        : 'text-gray-700 hover:bg-gray-100'
+                        ? 'bg-brand text-white'
+                        : 'text-gray-700 hover:bg-brand/10'
                     )}
                   >
                     <Icon className="h-5 w-5" />
@@ -85,7 +85,7 @@ export default function AdminSidebar({ isMobileOpen, onMobileClose }: AdminSideb
           <div className="mt-8 pt-8 border-t border-gray-200">
             <Link
               href="/"
-              className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-brand/10 transition-colors"
             >
               <Home className="h-5 w-5" />
               <span className="font-medium">Volver al sitio</span>
@@ -130,8 +130,8 @@ export default function AdminSidebar({ isMobileOpen, onMobileClose }: AdminSideb
                     className={cn(
                       'flex items-center gap-3 px-4 py-3 rounded-lg transition-colors',
                       isActive
-                        ? 'bg-[#FF5454] text-white'
-                        : 'text-gray-700 hover:bg-gray-100'
+                        ? 'bg-brand text-white'
+                        : 'text-gray-700 hover:bg-brand/10'
                     )}
                   >
                     <Icon className="h-5 w-5" />
@@ -146,7 +146,7 @@ export default function AdminSidebar({ isMobileOpen, onMobileClose }: AdminSideb
           <div className="mt-8 pt-8 border-t border-gray-200">
             <Link
               href="/"
-              className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-brand/10 transition-colors"
             >
               <Home className="h-5 w-5" />
               <span className="font-medium">Volver al sitio</span>

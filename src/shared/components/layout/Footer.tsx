@@ -3,7 +3,7 @@ import Link from 'next/link';
 export default function Footer() {
   return (
     <footer
-      className="bg-[#FF5454] text-white mt-auto border-t border-[#E63939]"
+      className="bg-brand text-white mt-auto border-t border-brand-hover"
       role="contentinfo"
     >
       <div className="container mx-auto px-4 py-8">
@@ -82,7 +82,7 @@ export default function Footer() {
         </div>
 
         {/* Copyright */}
-        <div className="border-t border-[#E63939] mt-8 pt-8 text-center text-gray-200 text-sm">
+        <div className="border-t border-brand-hover mt-8 pt-8 text-center text-gray-200 text-sm">
           <p>
             © {new Date().getFullYear()} Snacks Ecommerce. Todos los derechos
             reservados.

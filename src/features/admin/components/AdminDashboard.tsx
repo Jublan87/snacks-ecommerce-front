@@ -88,7 +88,7 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <a
             href="/admin/productos"
-            className="p-4 border border-gray-200 rounded-lg hover:border-[#FF5454] hover:bg-gray-50 transition-colors"
+            className="p-4 border border-gray-200 rounded-lg hover:border-brand hover:bg-gray-50 transition-colors"
           >
             <h3 className="font-semibold text-gray-900">Gestionar Productos</h3>
             <p className="text-sm text-gray-600 mt-1">
@@ -97,7 +97,7 @@ export default function AdminDashboard() {
           </a>
           <a
             href="/admin/pedidos"
-            className="p-4 border border-gray-200 rounded-lg hover:border-[#FF5454] hover:bg-gray-50 transition-colors"
+            className="p-4 border border-gray-200 rounded-lg hover:border-brand hover:bg-gray-50 transition-colors"
           >
             <h3 className="font-semibold text-gray-900">Ver Pedidos</h3>
             <p className="text-sm text-gray-600 mt-1">
@@ -106,7 +106,7 @@ export default function AdminDashboard() {
           </a>
           <a
             href="/admin/stock"
-            className="p-4 border border-gray-200 rounded-lg hover:border-[#FF5454] hover:bg-gray-50 transition-colors"
+            className="p-4 border border-gray-200 rounded-lg hover:border-brand hover:bg-gray-50 transition-colors"
           >
             <h3 className="font-semibold text-gray-900">Control de Stock</h3>
             <p className="text-sm text-gray-600 mt-1">

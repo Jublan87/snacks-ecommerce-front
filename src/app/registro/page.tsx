@@ -387,7 +387,7 @@ export default function RegisterPage() {
             <span className="text-gray-600">¿Ya tienes una cuenta? </span>
             <Link
               href="/login"
-              className="text-[#FF5454] hover:text-[#CC0000] font-medium transition-colors"
+              className="text-brand hover:text-brand-hover font-medium transition-colors"
             >
               Inicia sesión aquí
             </Link>

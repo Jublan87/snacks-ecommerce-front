@@ -99,7 +99,7 @@ export default function CartSummary({
         <>
           {/* Botón Ir a Checkout */}
           <Link href="/checkout" className="block">
-            <Button className="w-full bg-[#FF5454] hover:bg-[#E63939] text-base font-bold">
+            <Button className="w-full bg-brand hover:bg-brand-hover text-base font-bold">
               Ir a Checkout
             </Button>
           </Link>

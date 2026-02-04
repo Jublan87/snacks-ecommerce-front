@@ -158,7 +158,7 @@ export default function AdminProductosPage() {
                 return (
                   <Tab
                     key={tab.id}
-                    className="flex items-center gap-2 px-4 md:px-6 py-3 md:py-4 min-h-[44px] text-sm font-medium transition-colors whitespace-nowrap data-[selected]:border-b-2 data-[selected]:border-[#FF5454] data-[selected]:text-[#FF5454] data-[selected]:bg-[#FF5454]/10 text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                    className="flex items-center gap-2 px-4 md:px-6 py-3 md:py-4 min-h-[44px] text-sm font-medium transition-colors whitespace-nowrap data-[selected]:border-b-2 data-[selected]:border-brand data-[selected]:text-brand data-[selected]:bg-brand/10 text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                   >
                     <Icon className="w-5 h-5" />
                     <span>{tab.name}</span>

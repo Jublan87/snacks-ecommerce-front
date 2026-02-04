@@ -102,7 +102,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   </Button>
                   <Link href="/carrito" className="flex-1" onClick={onClose}>
                     <Button
-                      className="w-full bg-[#FF5454] hover:bg-[#E63939]"
+                      className="w-full bg-brand hover:bg-brand-hover"
                       aria-label="Ir a la página de checkout"
                     >
                       Ir a Checkout

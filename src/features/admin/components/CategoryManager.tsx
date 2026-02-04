@@ -169,7 +169,7 @@ export default function CategoryManager({
         <Button
           onClick={handleCreate}
           size="sm"
-          className="bg-[#FF5454] hover:bg-[#E63939] text-white"
+          className="bg-brand hover:bg-brand-hover text-white"
         >
           <Plus className="h-4 w-4 mr-2" />
           Nueva Categoría
@@ -364,7 +364,7 @@ export default function CategoryManager({
                 type="checkbox"
                 id="cat-active"
                 {...register('isActive')}
-                className="h-4 w-4 rounded border-gray-300 text-[#FF5454] focus:ring-[#FF5454]"
+                className="h-4 w-4 rounded border-gray-300 text-brand focus:ring-brand"
               />
               <label
                 htmlFor="cat-active"
@@ -388,7 +388,7 @@ export default function CategoryManager({
               </Button>
               <Button
                 type="submit"
-                className="bg-[#FF5454] hover:bg-[#E63939] text-white"
+                className="bg-brand hover:bg-brand-hover text-white"
               >
                 {editingCategory ? 'Actualizar' : 'Crear'}
               </Button>

@@ -47,7 +47,7 @@ export default function CartEmptyState({
           : 'Agrega productos para comenzar tu compra'}
       </p>
       <Link href="/productos" onClick={onActionClick}>
-        <Button className="bg-[#FF5454] hover:bg-[#E63939]">
+        <Button className="bg-brand hover:bg-brand-hover">
           {variant === 'page' ? 'Ver Productos' : 'Explorar Productos'}
         </Button>
       </Link>

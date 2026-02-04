@@ -439,7 +439,7 @@ export default function ProductForm({
               <input
                 type="checkbox"
                 {...register('isActive')}
-                className="h-4 w-4 rounded border-gray-300 text-[#FF5454] focus:ring-[#FF5454]"
+                className="h-4 w-4 rounded border-gray-300 text-brand focus:ring-brand"
               />
               <span className="text-sm font-medium text-gray-700">Producto Activo</span>
             </label>
@@ -448,7 +448,7 @@ export default function ProductForm({
               <input
                 type="checkbox"
                 {...register('isFeatured')}
-                className="h-4 w-4 rounded border-gray-300 text-[#FF5454] focus:ring-[#FF5454]"
+                className="h-4 w-4 rounded border-gray-300 text-brand focus:ring-brand"
               />
               <span className="text-sm font-medium text-gray-700">Producto Destacado</span>
             </label>
@@ -464,7 +464,7 @@ export default function ProductForm({
         <Button 
           type="submit" 
           disabled={isLoading}
-          className="bg-[#FF5454] hover:bg-[#E63939] text-white"
+          className="bg-brand hover:bg-brand-hover text-white"
         >
           {isLoading ? 'Guardando...' : isEditing ? 'Actualizar Producto' : 'Crear Producto'}
         </Button>

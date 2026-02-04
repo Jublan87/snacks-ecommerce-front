@@ -212,7 +212,7 @@ function ConfirmacionPageContent() {
                           href={`/productos/${item.product.slug}`}
                           className="block"
                         >
-                          <h4 className="font-bold text-lg text-gray-900 hover:text-[#FF5454] transition-colors mb-1">
+                          <h4 className="font-bold text-lg text-gray-900 hover:text-brand transition-colors mb-1">
                             {item.product.name}
                           </h4>
                         </Link>

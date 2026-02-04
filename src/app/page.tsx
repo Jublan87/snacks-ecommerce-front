@@ -20,7 +20,7 @@ export default function Home() {
       {/* Hero Section - Diseño compacto y centrado */}
       <div className="pt-4 pb-6 md:pt-8 md:pb-12">
         <div className="container mx-auto px-4">
-          <div className="bg-gradient-to-b from-[#CC0000] via-[#FF5454] to-[#FF6B6B] rounded-xl md:rounded-2xl shadow-2xl overflow-hidden relative">
+          <div className="bg-gradient-to-b from-brand-hover via-brand to-red-400 rounded-xl md:rounded-2xl shadow-2xl overflow-hidden relative">
             {/* Patrón decorativo de fondo */}
             <div className="absolute inset-0 opacity-10">
               <div

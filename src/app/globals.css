@@ -1,9 +1,16 @@
+@import '../shared/theme/colors.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
+    --brand: var(--COLOR_PRINCIPAL);
+    --brand-hover: var(--COLOR_PRINCIPAL_HOVER);
+    --brand-hex: var(--COLOR_PRINCIPAL_HEX);
+    --brand-hover-hex: var(--COLOR_PRINCIPAL_HOVER_HEX);
+
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
@@ -81,20 +88,14 @@ textarea:focus-visible {
   outline-style: solid;
 }
 
-/* Focus visible para elementos con colores personalizados */
-button.bg-\[#FF5454\]:focus-visible,
-a.bg-\[#FF5454\]:focus-visible {
+/* Focus visible para elementos con colores brand */
+button.bg-brand:focus-visible,
+a.bg-brand:focus-visible {
   outline-color: white;
   outline-offset: 3px;
 }
 
-/* Nota sobre contraste de colores:
- * - #FF5454 (rojo principal) sobre blanco: Ratio ~4.5:1 (WCAG AA para texto grande)
- * - Blanco sobre #FF5454: Ratio ~4.5:1 (WCAG AA)
- * - text-gray-100 sobre #FF5454: Ratio ~4.2:1 (WCAG AA)
- * - text-gray-600 sobre blanco: Ratio ~7:1 (WCAG AAA)
- * Todos los colores cumplen con los estándares WCAG AA para accesibilidad.
- */
+/* Contraste: --brand-hex cumple WCAG AA. */
 
 /* Animación para el drawer mobile */
 @keyframes slide-down {

@@ -24,7 +24,7 @@ function OrdersPageContent() {
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
-          <Package className="w-8 h-8 text-[#FF5454]" />
+          <Package className="w-8 h-8 text-brand" />
           <h1 className="text-3xl font-bold text-gray-900">
             Mis Pedidos
           </h1>
