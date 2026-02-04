@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useCartStore } from '@/features/cart/store/cart-store';
-import { Product } from '@/features/product/types';
+import { useCartStore } from '@features/cart/store/cart-store';
+import { Product } from '@features/product/types';
 import { toast } from 'sonner';
 
 interface UseAddToCartOptions {

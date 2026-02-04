@@ -1,10 +1,10 @@
 'use client'; // Indica que este componente se ejecuta en el cliente (necesario para hooks y eventos)
 
 import { useState } from 'react';
-import { Button } from '@/shared/ui/button';
+import { Button } from '@shared/ui/button';
 import QuantitySelector from './QuantitySelector';
-import { Product } from '@/features/product/types';
-import { useAddToCart } from '@/features/cart/hooks/useAddToCart';
+import { Product } from '@features/product/types';
+import { useAddToCart } from '@features/cart/hooks/useAddToCart';
 
 interface ProductQuantitySectionProps {
   product: Product;

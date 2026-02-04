@@ -5,28 +5,28 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { Plus, Edit2, Trash2, MapPin } from 'lucide-react';
-import { useAuthStore } from '@/features/auth/store/auth-store';
+import { useAuthStore } from '@features/auth/store/auth-store';
 import {
   updateAddressSchema,
   type UpdateAddressFormInput,
-} from '@/features/auth/schemas/profile.schema';
-import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
-import { Separator } from '@/shared/ui/separator';
+} from '@features/auth/schemas/profile.schema';
+import { Button } from '@shared/ui/button';
+import { Input } from '@shared/ui/input';
+import { Separator } from '@shared/ui/separator';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/shared/ui/card';
+} from '@shared/ui/card';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/shared/ui/select';
+} from '@shared/ui/select';
 
 export default function ProfileAddressTab() {
   const { user, updateUser } = useAuthStore();

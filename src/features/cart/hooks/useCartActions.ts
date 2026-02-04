@@ -1,4 +1,4 @@
-import { useCartStore } from '@/features/cart/store/cart-store';
+import { useCartStore } from '@features/cart/store/cart-store';
 import { toast } from 'sonner';
 
 interface UseCartActionsOptions {

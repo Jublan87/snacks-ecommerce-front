@@ -5,14 +5,14 @@ import type { Metadata } from 'next';
 import {
   getMockProductBySlug,
   MOCK_PRODUCTS,
-} from '@/features/product/mocks/products.mock';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
-import { Badge } from '@/shared/ui/badge';
-import { Separator } from '@/shared/ui/separator';
-import ProductCard from '@/features/product/components/ProductCard';
-import ProductImageGallery from '@/features/product/components/ProductImageGallery';
-import ProductBreadcrumbs from '@/features/product/components/ProductBreadcrumbs';
-import ProductQuantitySection from '@/features/product/components/ProductQuantitySection';
+} from '@features/product/mocks/products.mock';
+import { Card, CardContent, CardHeader, CardTitle } from '@shared/ui/card';
+import { Badge } from '@shared/ui/badge';
+import { Separator } from '@shared/ui/separator';
+import ProductCard from '@features/product/components/ProductCard';
+import ProductImageGallery from '@features/product/components/ProductImageGallery';
+import ProductBreadcrumbs from '@features/product/components/ProductBreadcrumbs';
+import ProductQuantitySection from '@features/product/components/ProductQuantitySection';
 
 interface ProductDetailPageProps {
   params: Promise<{ slug: string }>;

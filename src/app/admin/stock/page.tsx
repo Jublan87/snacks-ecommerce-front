@@ -1,6 +1,6 @@
 'use client';
 
-import StockInventory from '@/features/admin/components/StockInventory';
+import StockInventory from '@features/admin/components/StockInventory';
 
 export default function AdminStockPage() {
   return (

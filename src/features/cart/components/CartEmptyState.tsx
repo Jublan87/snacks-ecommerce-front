@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { ShoppingCart } from 'lucide-react';
-import { Button } from '@/shared/ui/button';
-import { Card, CardContent, CardTitle } from '@/shared/ui/card';
+import { Button } from '@shared/ui/button';
+import { Card, CardContent, CardTitle } from '@shared/ui/card';
 
 interface CartEmptyStateProps {
   /**

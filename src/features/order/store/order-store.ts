@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { Order, OrderItem, OrderStatus } from '@/features/order/types';
-import { CartItem } from '@/features/cart/types';
-import { ShippingAddress, PaymentMethod } from '@/features/checkout/types';
+import { Order, OrderItem, OrderStatus } from '@features/order/types';
+import { CartItem } from '@features/cart/types';
+import { ShippingAddress, PaymentMethod } from '@features/checkout/types';
 
 interface OrderStore {
   orders: Order[];

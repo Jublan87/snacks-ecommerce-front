@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { authMiddleware } from '@/shared/middleware/auth.middleware';
-import { adminMiddleware } from '@/shared/middleware/admin.middleware';
+import { authMiddleware } from '@shared/middleware/auth.middleware';
+import { adminMiddleware } from '@shared/middleware/admin.middleware';
 
 /**
  * Middleware principal de Next.js

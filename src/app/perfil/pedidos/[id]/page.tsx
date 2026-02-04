@@ -6,23 +6,23 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowLeft, Package, MapPin, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
-import ProtectedRoute from '@/features/auth/components/ProtectedRoute';
-import { useAuthStore } from '@/features/auth/store/auth-store';
-import { useOrderStore } from '@/features/order/store/order-store';
-import { Button } from '@/shared/ui/button';
+import ProtectedRoute from '@features/auth/components/ProtectedRoute';
+import { useAuthStore } from '@features/auth/store/auth-store';
+import { useOrderStore } from '@features/order/store/order-store';
+import { Button } from '@shared/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/shared/ui/card';
-import { Separator } from '@/shared/ui/separator';
-import { formatDate } from '@/shared/utils/date.utils';
+} from '@shared/ui/card';
+import { Separator } from '@shared/ui/separator';
+import { formatDate } from '@shared/utils/date.utils';
 import {
   getStatusBadge,
   getPaymentMethodText,
-} from '@/features/order/utils/order.utils';
+} from '@features/order/utils/order.utils';
 
 function OrderDetailPageContent() {
   const router = useRouter();

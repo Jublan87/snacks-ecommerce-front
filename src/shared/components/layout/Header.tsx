@@ -5,22 +5,22 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { User, LogOut, LogIn, Package, LayoutDashboard } from 'lucide-react';
 import { toast } from 'sonner';
-import { Badge } from '@/shared/ui/badge';
-import { Button } from '@/shared/ui/button';
-import ProductSearch from '@/features/filters/components/ProductSearch';
-import { useSearch } from '@/shared/contexts/SearchContext';
+import { Badge } from '@shared/ui/badge';
+import { Button } from '@shared/ui/button';
+import ProductSearch from '@features/filters/components/ProductSearch';
+import { useSearch } from '@shared/contexts/SearchContext';
 // useCartStore: Hook para obtener la cantidad de items en el carrito
-import { useCartStore } from '@/features/cart/store/cart-store';
+import { useCartStore } from '@features/cart/store/cart-store';
 // CartDrawer: Componente del drawer lateral del carrito (lazy loaded)
 import dynamic from 'next/dynamic';
 const CartDrawer = dynamic(
-  () => import('@/features/cart/components/CartDrawer'),
+  () => import('@features/cart/components/CartDrawer'),
   {
     ssr: false, // No renderizar en servidor ya que usa estado del cliente
   }
 );
 // Auth store
-import { useAuthStore } from '@/features/auth/store/auth-store';
+import { useAuthStore } from '@features/auth/store/auth-store';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,7 +28,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/shared/ui/dropdown-menu';
+} from '@shared/ui/dropdown-menu';
 
 export default function Header() {
   const router = useRouter();

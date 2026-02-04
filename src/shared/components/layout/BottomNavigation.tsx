@@ -3,9 +3,9 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, Package, ShoppingCart, User } from 'lucide-react';
-import { useCartStore } from '@/features/cart/store/cart-store';
-import { useAuthStore } from '@/features/auth/store/auth-store';
-import { Badge } from '@/shared/ui/badge';
+import { useCartStore } from '@features/cart/store/cart-store';
+import { useAuthStore } from '@features/auth/store/auth-store';
+import { Badge } from '@shared/ui/badge';
 import { useEffect, useState } from 'react';
 
 export default function BottomNavigation() {

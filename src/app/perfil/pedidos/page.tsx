@@ -2,11 +2,11 @@
 
 import { useMemo } from 'react';
 import { Package } from 'lucide-react';
-import ProtectedRoute from '@/features/auth/components/ProtectedRoute';
-import { useAuthStore } from '@/features/auth/store/auth-store';
-import { useOrderStore } from '@/features/order/store/order-store';
-import { Card, CardContent } from '@/shared/ui/card';
-import OrderList from '@/features/order/components/OrderList';
+import ProtectedRoute from '@features/auth/components/ProtectedRoute';
+import { useAuthStore } from '@features/auth/store/auth-store';
+import { useOrderStore } from '@features/order/store/order-store';
+import { Card, CardContent } from '@shared/ui/card';
+import OrderList from '@features/order/components/OrderList';
 
 function OrdersPageContent() {
   const user = useAuthStore((state) => state.user);

@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
-import AdminLayoutClient from '@/features/admin/components/AdminLayoutClient';
-import ProtectedAdminRoute from '@/features/admin/components/ProtectedAdminRoute';
+import AdminLayoutClient from '@features/admin/components/AdminLayoutClient';
+import ProtectedAdminRoute from '@features/admin/components/ProtectedAdminRoute';
 
 export const metadata: Metadata = {
   title: 'Panel de Administración',

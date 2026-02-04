@@ -3,9 +3,9 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Minus, Plus, Trash2 } from 'lucide-react';
-import { Button } from '@/shared/ui/button';
-import { Card, CardContent } from '@/shared/ui/card';
-import type { CartItem as CartItemType } from '@/features/cart/types';
+import { Button } from '@shared/ui/button';
+import { Card, CardContent } from '@shared/ui/card';
+import type { CartItem as CartItemType } from '@features/cart/types';
 
 interface CartItemProps {
   item: CartItemType;

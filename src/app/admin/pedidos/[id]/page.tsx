@@ -14,28 +14,28 @@ import {
   X,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useOrderStore } from '@/features/order/store/order-store';
-import { OrderStatus } from '@/features/order/types';
+import { useOrderStore } from '@features/order/store/order-store';
+import { OrderStatus } from '@features/order/types';
 import {
   getStatusBadge,
   getPaymentMethodText,
   ORDER_STATUS_CONFIG,
-} from '@/features/order/utils/order.utils';
-import { Button } from '@/shared/ui/button';
+} from '@features/order/utils/order.utils';
+import { Button } from '@shared/ui/button';
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@/shared/ui/card';
+} from '@shared/ui/card';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/shared/ui/select';
-import { formatDate } from '@/shared/utils/date.utils';
+} from '@shared/ui/select';
+import { formatDate } from '@shared/utils/date.utils';
 
 const STATUS_FLOW: OrderStatus[] = [
   'pending',

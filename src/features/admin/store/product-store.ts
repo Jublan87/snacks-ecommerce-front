@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { Product, Category, ProductImage } from '@/features/product/types';
-import { ProductFormInput } from '@/features/admin/schemas/product.schema';
-import { MOCK_PRODUCTS, MOCK_CATEGORIES } from '@/features/product/mocks/products.mock';
+import { Product, Category, ProductImage } from '@features/product/types';
+import { ProductFormInput } from '@features/admin/schemas/product.schema';
+import { MOCK_PRODUCTS, MOCK_CATEGORIES } from '@features/product/mocks/products.mock';
 
 /** Asegura que cada imagen tenga id requerido para Product. */
 function normalizeImages(

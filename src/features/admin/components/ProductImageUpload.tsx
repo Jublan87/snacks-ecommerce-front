@@ -2,8 +2,8 @@
 
 import { useState, useRef } from 'react';
 import Image from 'next/image';
-import { ProductImage } from '@/features/product/types';
-import { Button } from '@/shared/ui/button';
+import { ProductImage } from '@features/product/types';
+import { Button } from '@shared/ui/button';
 import { X, Upload, Image as ImageIcon } from 'lucide-react';
 
 interface ProductImageUploadProps {

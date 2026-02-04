@@ -10,7 +10,7 @@ import {
   Home,
   X,
 } from 'lucide-react';
-import { cn } from '@/shared/utils/utils';
+import { cn } from '@shared/utils/utils';
 import { useEffect } from 'react';
 
 interface AdminSidebarProps {

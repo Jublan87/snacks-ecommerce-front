@@ -1,27 +1,27 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Product, Category } from '@/features/product/types';
-import { useProductStore } from '@/features/admin/store/product-store';
+import { Product, Category } from '@features/product/types';
+import { useProductStore } from '@features/admin/store/product-store';
 import {
   productFormSchema,
   type ProductFormInput,
-} from '@/features/admin/schemas/product.schema';
+} from '@features/admin/schemas/product.schema';
 import {
   categoryFormSchema,
   type CategoryFormInput,
-} from '@/features/admin/schemas/product.schema';
-import ProductTable from '@/features/admin/components/ProductTable';
-import ProductForm from '@/features/admin/components/ProductForm';
-import CategoryManager from '@/features/admin/components/CategoryManager';
-import { Button } from '@/shared/ui/button';
+} from '@features/admin/schemas/product.schema';
+import ProductTable from '@features/admin/components/ProductTable';
+import ProductForm from '@features/admin/components/ProductForm';
+import CategoryManager from '@features/admin/components/CategoryManager';
+import { Button } from '@shared/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/shared/ui/dialog';
-import { Card, CardContent } from '@/shared/ui/card';
+} from '@shared/ui/dialog';
+import { Card, CardContent } from '@shared/ui/card';
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react';
 import { toast } from 'sonner';
 import { Plus, Package, Tag } from 'lucide-react';

@@ -1,5 +1,5 @@
-import { Product } from '@/features/product/types';
-import type { SortOption } from '@/features/filters/types';
+import { Product } from '@features/product/types';
+import type { SortOption } from '@features/filters/types';
 
 export function filterProducts(
   products: Product[],

@@ -4,14 +4,14 @@ import {
   User,
   LoginCredentials,
   RegisterCredentials,
-} from '@/features/auth/types';
+} from '@features/auth/types';
 import {
   addMockUser,
   emailExists,
   findMockUser,
   updateMockUser,
   updateMockUserPassword,
-} from '@/features/auth/utils/storage.utils';
+} from '@features/auth/utils/storage.utils';
 
 interface AuthStore {
   user: User | null;

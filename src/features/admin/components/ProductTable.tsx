@@ -2,10 +2,10 @@
 
 import { useState, useMemo } from 'react';
 import Image from 'next/image';
-import { Product } from '@/features/product/types';
-import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
-import { Badge } from '@/shared/ui/badge';
+import { Product } from '@features/product/types';
+import { Button } from '@shared/ui/button';
+import { Input } from '@shared/ui/input';
+import { Badge } from '@shared/ui/badge';
 import {
   Dialog,
   DialogContent,
@@ -13,20 +13,20 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/shared/ui/dialog';
+} from '@shared/ui/dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/shared/ui/select';
+} from '@shared/ui/select';
 import { Edit, Trash2, Search, Plus, Eye } from 'lucide-react';
 import Link from 'next/link';
 import AdminDataTable, {
   AdminDataTableEmptyRow,
   type AdminDataTableColumn,
-} from '@/features/admin/components/AdminDataTable';
+} from '@features/admin/components/AdminDataTable';
 
 interface ProductTableProps {
   products: Product[];

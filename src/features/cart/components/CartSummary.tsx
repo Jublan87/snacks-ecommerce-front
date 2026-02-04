@@ -1,10 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { Button } from '@/shared/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
-import { Separator } from '@/shared/ui/separator';
-import type { ShippingCalculationResult } from '@/features/shipping/services/shipping.service';
+import { Button } from '@shared/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@shared/ui/card';
+import { Separator } from '@shared/ui/separator';
+import type { ShippingCalculationResult } from '@features/shipping/services/shipping.service';
 import type { ReactNode } from 'react';
 
 interface CartSummaryProps {

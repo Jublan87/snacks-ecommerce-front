@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
-import ProductCard from '@/features/product/components/ProductCard';
-import { MOCK_PRODUCTS } from '@/features/product/mocks/products.mock';
+import ProductCard from '@features/product/components/ProductCard';
+import { MOCK_PRODUCTS } from '@features/product/mocks/products.mock';
 
 export const metadata: Metadata = {
   title: 'Inicio',

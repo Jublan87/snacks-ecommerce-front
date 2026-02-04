@@ -3,12 +3,12 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { ChevronRight, Package } from 'lucide-react';
-import { Order } from '@/features/order/types';
-import { Card, CardContent } from '@/shared/ui/card';
-import { Badge } from '@/shared/ui/badge';
-import { Button } from '@/shared/ui/button';
-import { formatDateShort } from '@/shared/utils/date.utils';
-import { ORDER_STATUS_CONFIG } from '@/features/order/utils/order.utils';
+import { Order } from '@features/order/types';
+import { Card, CardContent } from '@shared/ui/card';
+import { Badge } from '@shared/ui/badge';
+import { Button } from '@shared/ui/button';
+import { formatDateShort } from '@shared/utils/date.utils';
+import { ORDER_STATUS_CONFIG } from '@features/order/utils/order.utils';
 
 interface OrderCardProps {
   order: Order;

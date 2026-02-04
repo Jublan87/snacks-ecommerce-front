@@ -1,5 +1,5 @@
 import { MetadataRoute } from 'next';
-import { MOCK_PRODUCTS } from '@/features/product/mocks/products.mock';
+import { MOCK_PRODUCTS } from '@features/product/mocks/products.mock';
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 

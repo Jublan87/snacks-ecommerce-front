@@ -1,6 +1,6 @@
 'use client';
 
-import { Card } from '@/shared/ui/card';
+import { Card } from '@shared/ui/card';
 import { Package, ShoppingCart, DollarSign, Users } from 'lucide-react';
 
 /**

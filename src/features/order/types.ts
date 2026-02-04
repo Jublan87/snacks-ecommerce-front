@@ -2,8 +2,8 @@
  * Tipos TypeScript para pedidos (orders)
  */
 
-import { Product } from '@/features/product/types';
-import { ShippingAddress, PaymentMethod } from '@/features/checkout/types';
+import { Product } from '@features/product/types';
+import { ShippingAddress, PaymentMethod } from '@features/checkout/types';
 
 export type OrderStatus =
   | 'pending'

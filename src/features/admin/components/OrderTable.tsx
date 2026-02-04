@@ -2,30 +2,30 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { Order, OrderStatus } from '@/features/order/types';
+import { Order, OrderStatus } from '@features/order/types';
 import {
   ORDER_STATUS_CONFIG,
   getStatusBadge,
-} from '@/features/order/utils/order.utils';
-import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
-import { Badge } from '@/shared/ui/badge';
+} from '@features/order/utils/order.utils';
+import { Button } from '@shared/ui/button';
+import { Input } from '@shared/ui/input';
+import { Badge } from '@shared/ui/badge';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/shared/ui/select';
+} from '@shared/ui/select';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/shared/ui/dropdown-menu';
+} from '@shared/ui/dropdown-menu';
 import { Search, Eye, MoreHorizontal, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
-import { formatDateShort } from '@/shared/utils/date.utils';
-import { cn } from '@/shared/utils/utils';
+import { formatDateShort } from '@shared/utils/date.utils';
+import { cn } from '@shared/utils/utils';
 
 type SortColumn = 'orderNumber' | 'client' | 'date' | 'total' | 'status';
 type SortDir = 'asc' | 'desc';

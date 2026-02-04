@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Input } from '@/shared/ui/input';
-import { Button } from '@/shared/ui/button';
+import { Input } from '@shared/ui/input';
+import { Button } from '@shared/ui/button';
 import { Search, X } from 'lucide-react';
 
 interface ProductSearchProps {

@@ -1,14 +1,14 @@
 'use client'; // Componente del cliente (necesita interactividad con Zustand)
 
-import { useCartStore } from '@/features/cart/store/cart-store';
-import { Button } from '@/shared/ui/button';
+import { useCartStore } from '@features/cart/store/cart-store';
+import { Button } from '@shared/ui/button';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import { useCartCalculations } from '@/features/cart/hooks/useCartCalculations';
-import { useCartActions } from '@/features/cart/hooks/useCartActions';
-import CartItem from '@/features/cart/components/CartItem';
-import CartSummary from '@/features/cart/components/CartSummary';
-import CartEmptyState from '@/features/cart/components/CartEmptyState';
+import { useCartCalculations } from '@features/cart/hooks/useCartCalculations';
+import { useCartActions } from '@features/cart/hooks/useCartActions';
+import CartItem from '@features/cart/components/CartItem';
+import CartSummary from '@features/cart/components/CartSummary';
+import CartEmptyState from '@features/cart/components/CartEmptyState';
 
 export default function CarritoPage() {
   // Obtener items del carrito

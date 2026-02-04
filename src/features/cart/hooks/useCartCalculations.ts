@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
-import { useCartStore } from '@/features/cart/store/cart-store';
-import { calculateShipping } from '@/features/shipping/services/shipping.service';
-import type { CartItem } from '@/features/cart/types';
+import { useCartStore } from '@features/cart/store/cart-store';
+import { calculateShipping } from '@features/shipping/services/shipping.service';
+import type { CartItem } from '@features/cart/types';
 
 // Selector estable para obtener items del carrito
 // Se define fuera del componente para que sea una referencia estable

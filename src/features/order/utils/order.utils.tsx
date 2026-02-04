@@ -2,9 +2,9 @@
  * Utilidades para pedidos
  */
 
-import { OrderStatus } from '@/features/order/types';
-import { Badge } from '@/shared/ui/badge';
-import { cn } from '@/shared/utils/utils';
+import { OrderStatus } from '@features/order/types';
+import { Badge } from '@shared/ui/badge';
+import { cn } from '@shared/utils/utils';
 
 /**
  * Configuración de estados de pedido

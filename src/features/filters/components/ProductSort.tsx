@@ -1,13 +1,13 @@
 'use client';
 
-import type { SortOption } from '@/features/filters/types';
+import type { SortOption } from '@features/filters/types';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/shared/ui/select';
+} from '@shared/ui/select';
 
 export type { SortOption };
 

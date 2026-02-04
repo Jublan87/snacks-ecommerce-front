@@ -1,7 +1,7 @@
 'use client';
 
 import { ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
-import { cn } from '@/shared/utils/utils';
+import { cn } from '@shared/utils/utils';
 
 export interface AdminDataTableColumn {
   id: string;

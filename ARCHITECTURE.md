@@ -153,19 +153,19 @@ Componentes de layout globales que no pertenecen a una feature específica:
 
 ```typescript
 // ✅ Correcto: Importar desde shared
-import { Button } from '@/shared/ui/button';
-import { cn } from '@/shared/utils/utils';
-import Header from '@/shared/components/layout/Header';
+import { Button } from '@shared/ui/button';
+import { cn } from '@shared/utils/utils';
+import Header from '@shared/components/layout/Header';
 
 // ✅ Correcto: Importar dentro de la misma feature
-import { useAddToCart } from '@/features/cart/hooks/useAddToCart';
-import type { Product } from '@/features/product/types';
+import { useAddToCart } from '@features/cart/hooks/useAddToCart';
+import type { Product } from '@features/product/types';
 
 // ✅ Correcto: Importar desde otra feature (solo tipos)
-import type { Product } from '@/features/product/types';
+import type { Product } from '@features/product/types';
 
 // ❌ Incorrecto: Importar componente de otra feature directamente
-import { ProductCard } from '@/features/product/components/ProductCard';
+import { ProductCard } from '@features/product/components/ProductCard';
 // En su lugar, exponerlo a través de shared o crear un wrapper
 ```
 
@@ -401,7 +401,7 @@ export async function addToCart(productId: string, quantity: number) {
 
 ```typescript
 // app/productos/loading.tsx
-import LoadingState from '@/features/product/components/LoadingState';
+import LoadingState from '@features/product/components/LoadingState';
 
 export default function Loading() {
   return <LoadingState />;

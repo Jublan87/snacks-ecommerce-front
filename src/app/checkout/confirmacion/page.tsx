@@ -6,19 +6,19 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { CheckCircle2, ArrowLeft, Package } from 'lucide-react';
 import { toast } from 'sonner';
-import ProtectedRoute from '@/features/auth/components/ProtectedRoute';
-import { useOrderStore } from '@/features/order/store/order-store';
-import { useAuthStore } from '@/features/auth/store/auth-store';
-import { Button } from '@/shared/ui/button';
+import ProtectedRoute from '@features/auth/components/ProtectedRoute';
+import { useOrderStore } from '@features/order/store/order-store';
+import { useAuthStore } from '@features/auth/store/auth-store';
+import { Button } from '@shared/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/shared/ui/card';
-import { Separator } from '@/shared/ui/separator';
-import { Badge } from '@/shared/ui/badge';
+} from '@shared/ui/card';
+import { Separator } from '@shared/ui/separator';
+import { Badge } from '@shared/ui/badge';
 
 function ConfirmacionPageContent() {
   const router = useRouter();

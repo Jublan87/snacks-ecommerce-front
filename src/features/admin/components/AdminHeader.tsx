@@ -1,8 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/features/auth/store/auth-store';
-import { Button } from '@/shared/ui/button';
+import { useAuthStore } from '@features/auth/store/auth-store';
+import { Button } from '@shared/ui/button';
 import { LogOut, Menu } from 'lucide-react';
 
 interface AdminHeaderProps {

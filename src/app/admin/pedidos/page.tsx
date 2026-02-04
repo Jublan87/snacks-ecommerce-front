@@ -1,9 +1,9 @@
 'use client';
 
 import { useMemo } from 'react';
-import { OrderStatus } from '@/features/order/types';
-import { useOrderStore } from '@/features/order/store/order-store';
-import OrderTable from '@/features/admin/components/OrderTable';
+import { OrderStatus } from '@features/order/types';
+import { useOrderStore } from '@features/order/store/order-store';
+import OrderTable from '@features/admin/components/OrderTable';
 import { toast } from 'sonner';
 
 export default function AdminPedidosPage() {

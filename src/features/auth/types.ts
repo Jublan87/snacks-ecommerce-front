@@ -2,7 +2,7 @@
  * Tipos TypeScript para autenticación
  */
 
-import { ShippingAddress } from '@/features/checkout/types';
+import { ShippingAddress } from '@features/checkout/types';
 
 export type UserRole = 'customer' | 'admin';
 

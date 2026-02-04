@@ -1,21 +1,21 @@
 'use client'; // Componente del cliente (necesita interactividad)
 
-import { useCartStore } from '@/features/cart/store/cart-store';
+import { useCartStore } from '@features/cart/store/cart-store';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from '@/shared/ui/dialog';
-import { Button } from '@/shared/ui/button';
-import { Separator } from '@/shared/ui/separator';
+} from '@shared/ui/dialog';
+import { Button } from '@shared/ui/button';
+import { Separator } from '@shared/ui/separator';
 import Link from 'next/link';
-import { useCartCalculations } from '@/features/cart/hooks/useCartCalculations';
-import { useCartActions } from '@/features/cart/hooks/useCartActions';
-import CartItem from '@/features/cart/components/CartItem';
-import CartSummary from '@/features/cart/components/CartSummary';
-import CartEmptyState from '@/features/cart/components/CartEmptyState';
+import { useCartCalculations } from '@features/cart/hooks/useCartCalculations';
+import { useCartActions } from '@features/cart/hooks/useCartActions';
+import CartItem from '@features/cart/components/CartItem';
+import CartSummary from '@features/cart/components/CartSummary';
+import CartEmptyState from '@features/cart/components/CartEmptyState';
 
 interface CartDrawerProps {
   isOpen: boolean; // Si el drawer está abierto

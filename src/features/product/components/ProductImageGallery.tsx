@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import type { ProductImage } from '@/features/product/types';
-import { cn } from '@/shared/utils/utils';
+import type { ProductImage } from '@features/product/types';
+import { cn } from '@shared/utils/utils';
 
 interface ProductImageGalleryProps {
   images: ProductImage[];

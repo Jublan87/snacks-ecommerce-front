@@ -4,13 +4,13 @@ import dynamic from 'next/dynamic';
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react';
 import { User, MapPin, Lock, Package } from 'lucide-react';
 import Link from 'next/link';
-import ProtectedRoute from '@/features/auth/components/ProtectedRoute';
-import { Card, CardContent } from '@/shared/ui/card';
-import { Button } from '@/shared/ui/button';
+import ProtectedRoute from '@features/auth/components/ProtectedRoute';
+import { Card, CardContent } from '@shared/ui/card';
+import { Button } from '@shared/ui/button';
 
 // Lazy load de los tabs del perfil para mejorar performance
 const ProfileInfoTab = dynamic(
-  () => import('@/features/auth/components/ProfileInfoTab'),
+  () => import('@features/auth/components/ProfileInfoTab'),
   {
     loading: () => (
       <div className="flex items-center justify-center py-8">
@@ -21,7 +21,7 @@ const ProfileInfoTab = dynamic(
 );
 
 const ProfileAddressTab = dynamic(
-  () => import('@/features/auth/components/ProfileAddressTab'),
+  () => import('@features/auth/components/ProfileAddressTab'),
   {
     loading: () => (
       <div className="flex items-center justify-center py-8">
@@ -32,7 +32,7 @@ const ProfileAddressTab = dynamic(
 );
 
 const ProfilePasswordTab = dynamic(
-  () => import('@/features/auth/components/ProfilePasswordTab'),
+  () => import('@features/auth/components/ProfilePasswordTab'),
   {
     loading: () => (
       <div className="flex items-center justify-center py-8">

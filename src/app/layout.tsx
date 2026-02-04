@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { SearchProvider } from '@/shared/contexts/SearchContext';
-import Header from '@/shared/components/layout/Header';
-import Footer from '@/shared/components/layout/Footer';
-import BottomNavigation from '@/shared/components/layout/BottomNavigation';
+import { SearchProvider } from '@shared/contexts/SearchContext';
+import Header from '@shared/components/layout/Header';
+import Footer from '@shared/components/layout/Footer';
+import BottomNavigation from '@shared/components/layout/BottomNavigation';
 import { Toaster } from 'sonner';
-import { InitAdminUser } from '@/features/admin/components/InitAdminUser';
+import { InitAdminUser } from '@features/admin/components/InitAdminUser';
 
 export const metadata: Metadata = {
   title: {

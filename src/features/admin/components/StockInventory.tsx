@@ -2,13 +2,13 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
-import { Product } from '@/features/product/types';
-import { useProductStore } from '@/features/admin/store/product-store';
-import { useStockStore } from '@/features/admin/store/stock-store';
-import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
-import { Badge } from '@/shared/ui/badge';
-import { Card, CardContent } from '@/shared/ui/card';
+import { Product } from '@features/product/types';
+import { useProductStore } from '@features/admin/store/product-store';
+import { useStockStore } from '@features/admin/store/stock-store';
+import { Button } from '@shared/ui/button';
+import { Input } from '@shared/ui/input';
+import { Badge } from '@shared/ui/badge';
+import { Card, CardContent } from '@shared/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -16,14 +16,14 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/shared/ui/dialog';
+} from '@shared/ui/dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/shared/ui/select';
+} from '@shared/ui/select';
 import {
   Package,
   AlertTriangle,
@@ -39,7 +39,7 @@ import { toast } from 'sonner';
 import AdminDataTable, {
   AdminDataTableEmptyRow,
   type AdminDataTableColumn,
-} from '@/features/admin/components/AdminDataTable';
+} from '@features/admin/components/AdminDataTable';
 
 type StockFilter = 'all' | 'low' | 'out' | 'ok';
 

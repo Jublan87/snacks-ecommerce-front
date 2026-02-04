@@ -3,8 +3,8 @@
  * Solo se ejecuta una vez al inicio de la aplicación
  */
 
-import { addMockUser, emailExists } from '@/features/auth/utils/storage.utils';
-import { User } from '@/features/auth/types';
+import { addMockUser, emailExists } from '@features/auth/utils/storage.utils';
+import { User } from '@features/auth/types';
 
 const ADMIN_EMAIL = 'admin@snacks.com';
 const ADMIN_PASSWORD = 'Admin-123';

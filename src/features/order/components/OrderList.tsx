@@ -2,18 +2,18 @@
 
 import { useMemo, useState } from 'react';
 import { Search, Filter } from 'lucide-react';
-import { Order, OrderStatus } from '@/features/order/types';
-import { Input } from '@/shared/ui/input';
+import { Order, OrderStatus } from '@features/order/types';
+import { Input } from '@shared/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/shared/ui/select';
-import { Button } from '@/shared/ui/button';
-import OrderCard from '@/features/order/components/OrderCard';
-import { ORDER_STATUS_CONFIG } from '@/features/order/utils/order.utils';
+} from '@shared/ui/select';
+import { Button } from '@shared/ui/button';
+import OrderCard from '@features/order/components/OrderCard';
+import { ORDER_STATUS_CONFIG } from '@features/order/utils/order.utils';
 
 interface OrderListProps {
   orders: Order[];

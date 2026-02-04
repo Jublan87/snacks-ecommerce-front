@@ -7,41 +7,41 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
-import ProtectedRoute from '@/features/auth/components/ProtectedRoute';
+import ProtectedRoute from '@features/auth/components/ProtectedRoute';
 
-import { useCartStore } from '@/features/cart/store/cart-store';
-import { useCartCalculations } from '@/features/cart/hooks/useCartCalculations';
-import { calculateShipping } from '@/features/shipping/services/shipping.service';
-import { useAuthStore } from '@/features/auth/store/auth-store';
-import { useOrderStore } from '@/features/order/store/order-store';
+import { useCartStore } from '@features/cart/store/cart-store';
+import { useCartCalculations } from '@features/cart/hooks/useCartCalculations';
+import { calculateShipping } from '@features/shipping/services/shipping.service';
+import { useAuthStore } from '@features/auth/store/auth-store';
+import { useOrderStore } from '@features/order/store/order-store';
 import {
   checkoutFormSchema,
   type CheckoutFormInput,
-} from '@/features/checkout/schemas/checkout.schema';
-import { PaymentMethod } from '@/features/checkout/types';
+} from '@features/checkout/schemas/checkout.schema';
+import { PaymentMethod } from '@features/checkout/types';
 import {
   getSavedShippingAddress,
   saveShippingAddress,
-} from '@/features/checkout/utils/storage.utils';
-import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
+} from '@features/checkout/utils/storage.utils';
+import { Button } from '@shared/ui/button';
+import { Input } from '@shared/ui/input';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/shared/ui/card';
+} from '@shared/ui/card';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/shared/ui/select';
-import { Separator } from '@/shared/ui/separator';
-import CartItem from '@/features/cart/components/CartItem';
-import { useCartActions } from '@/features/cart/hooks/useCartActions';
+} from '@shared/ui/select';
+import { Separator } from '@shared/ui/separator';
+import CartItem from '@features/cart/components/CartItem';
+import { useCartActions } from '@features/cart/hooks/useCartActions';
 
 function CheckoutPageContent() {
   const router = useRouter();

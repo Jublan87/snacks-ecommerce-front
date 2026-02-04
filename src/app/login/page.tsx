@@ -8,21 +8,21 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import { ArrowLeft, Mail, Lock } from 'lucide-react';
 
-import { useAuthStore } from '@/features/auth/store/auth-store';
+import { useAuthStore } from '@features/auth/store/auth-store';
 import {
   loginSchema,
   type LoginFormInput,
-} from '@/features/auth/schemas/auth.schema';
-import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
+} from '@features/auth/schemas/auth.schema';
+import { Button } from '@shared/ui/button';
+import { Input } from '@shared/ui/input';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/shared/ui/card';
-import { Separator } from '@/shared/ui/separator';
+} from '@shared/ui/card';
+import { Separator } from '@shared/ui/separator';
 
 function LoginForm() {
   const searchParams = useSearchParams();

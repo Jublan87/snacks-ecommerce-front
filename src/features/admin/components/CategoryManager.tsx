@@ -3,20 +3,20 @@
 import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Category } from '@/features/product/types';
+import { Category } from '@features/product/types';
 import {
   categoryFormSchema,
   type CategoryFormInput,
-} from '@/features/admin/schemas/product.schema';
-import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
+} from '@features/admin/schemas/product.schema';
+import { Button } from '@shared/ui/button';
+import { Input } from '@shared/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/shared/ui/select';
+} from '@shared/ui/select';
 import {
   Dialog,
   DialogContent,
@@ -24,9 +24,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/shared/ui/dialog';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
-import { Badge } from '@/shared/ui/badge';
+} from '@shared/ui/dialog';
+import { Card, CardContent, CardHeader, CardTitle } from '@shared/ui/card';
+import { Badge } from '@shared/ui/badge';
 import { Edit, Trash2, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 

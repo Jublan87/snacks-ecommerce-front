@@ -3,19 +3,19 @@
 import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Product, Category } from '@/features/product/types';
-import { productFormSchema, type ProductFormInput } from '@/features/admin/schemas/product.schema';
-import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
+import { Product, Category } from '@features/product/types';
+import { productFormSchema, type ProductFormInput } from '@features/admin/schemas/product.schema';
+import { Button } from '@shared/ui/button';
+import { Input } from '@shared/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/shared/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
-import { Separator } from '@/shared/ui/separator';
+} from '@shared/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@shared/ui/card';
+import { Separator } from '@shared/ui/separator';
 import ProductImageUpload from './ProductImageUpload';
 import { toast } from 'sonner';
 

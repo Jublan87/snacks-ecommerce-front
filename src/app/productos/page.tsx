@@ -1,21 +1,21 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
-import ProductCard from '@/features/product/components/ProductCard';
-import CategoryFilter from '@/features/filters/components/CategoryFilter';
-import DiscountFilter from '@/features/filters/components/DiscountFilter';
-import ProductSort from '@/features/filters/components/ProductSort';
-import type { SortOption } from '@/features/filters/types';
-import ProductPagination from '@/features/filters/components/ProductPagination';
-import EmptyState from '@/features/product/components/EmptyState';
-import LoadingState from '@/features/product/components/LoadingState';
-import { useProductStore } from '@/features/admin/store/product-store';
-import { useSearch } from '@/shared/contexts/SearchContext';
+import ProductCard from '@features/product/components/ProductCard';
+import CategoryFilter from '@features/filters/components/CategoryFilter';
+import DiscountFilter from '@features/filters/components/DiscountFilter';
+import ProductSort from '@features/filters/components/ProductSort';
+import type { SortOption } from '@features/filters/types';
+import ProductPagination from '@features/filters/components/ProductPagination';
+import EmptyState from '@features/product/components/EmptyState';
+import LoadingState from '@features/product/components/LoadingState';
+import { useProductStore } from '@features/admin/store/product-store';
+import { useSearch } from '@shared/contexts/SearchContext';
 import {
   filterProducts,
   sortProducts,
   paginateProducts,
-} from '@/shared/utils/productFilters';
+} from '@shared/utils/productFilters';
 
 const ITEMS_PER_PAGE = 12;
 
