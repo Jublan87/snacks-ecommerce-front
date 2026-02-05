@@ -3,7 +3,7 @@
  * Temporal hasta que tengamos backend
  */
 
-import { User } from '@/features/auth/types';
+import { User } from '@features/auth/types';
 
 export interface MockUserData {
   email: string;

@@ -1,8 +1,8 @@
 'use client';
 
-import { Category } from '@/features/product/types';
-import { MOCK_CATEGORIES } from '@/features/product/mocks/products.mock';
-import { Button } from '@/shared/ui/button';
+import { Category } from '@features/product/types';
+import { MOCK_CATEGORIES } from '@features/product/mocks/products.mock';
+import { Button } from '@shared/ui/button';
 
 interface CategoryFilterProps {
   selectedCategories: string[];

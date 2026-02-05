@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useSearchParams } from 'next/navigation';
@@ -7,23 +8,23 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import { ArrowLeft, Mail, Lock } from 'lucide-react';
 
-import { useAuthStore } from '@/features/auth/store/auth-store';
+import { useAuthStore } from '@features/auth/store/auth-store';
 import {
   loginSchema,
   type LoginFormInput,
-} from '@/features/auth/schemas/auth.schema';
-import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
+} from '@features/auth/schemas/auth.schema';
+import { Button } from '@shared/ui/button';
+import { Input } from '@shared/ui/input';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/shared/ui/card';
-import { Separator } from '@/shared/ui/separator';
+} from '@shared/ui/card';
+import { Separator } from '@shared/ui/separator';
 
-export default function LoginPage() {
+function LoginForm() {
   const searchParams = useSearchParams();
   const login = useAuthStore((state) => state.login);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -44,11 +45,23 @@ export default function LoginPage() {
     try {
       await login(data);
 
+      // Obtener el usuario después del login para verificar su rol
+      const user = useAuthStore.getState().user;
+      const isAdmin = user?.role === 'admin';
+
       // Obtener la URL de redirect antes de redirigir
       const redirectUrl = searchParams.get('redirect');
-      const targetUrl = redirectUrl || '/';
+      
+      // Si el usuario es admin, redirigir al panel admin (a menos que haya un redirect específico)
+      // Si hay un redirect específico, respetarlo (por ejemplo, si venía de /admin)
+      let targetUrl = redirectUrl || (isAdmin ? '/admin' : '/');
 
-      toast.success('¡Bienvenido de vuelta!');
+      // Mensaje de bienvenida personalizado para admins
+      if (isAdmin) {
+        toast.success('¡Bienvenido al panel de administración!');
+      } else {
+        toast.success('¡Bienvenido de vuelta!');
+      }
 
       // Verificar que la cookie esté establecida antes de redirigir
       // Esto es importante porque el middleware del servidor necesita ver la cookie
@@ -83,26 +96,27 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-md">
+    <div className="container mx-auto px-4 py-6 md:py-12 max-w-md">
       <Link
         href="/"
-        className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-6 transition-colors"
+        className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4 md:mb-6 transition-colors min-h-[44px]"
+        aria-label="Volver a la página de inicio"
       >
-        <ArrowLeft className="w-4 h-4" />
+        <ArrowLeft className="w-4 h-4" aria-hidden="true" />
         Volver al inicio
       </Link>
 
       <Card>
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">
+          <CardTitle className="text-xl md:text-2xl font-bold text-center">
             Iniciar Sesión
           </CardTitle>
-          <CardDescription className="text-center">
+          <CardDescription className="text-center text-sm md:text-base">
             Ingresa tus credenciales para acceder a tu cuenta
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 md:space-y-4">
             {/* Email */}
             <div className="space-y-2">
               <label
@@ -112,7 +126,10 @@ export default function LoginPage() {
                 Email
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Mail
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+                  aria-hidden="true"
+                />
                 <Input
                   id="email"
                   type="email"
@@ -120,10 +137,17 @@ export default function LoginPage() {
                   className="pl-10"
                   {...register('email')}
                   aria-invalid={errors.email ? 'true' : 'false'}
+                  aria-describedby={
+                    errors.email ? 'email-error' : undefined
+                  }
                 />
               </div>
               {errors.email && (
-                <p className="text-sm text-red-600" role="alert">
+                <p
+                  id="email-error"
+                  className="text-sm text-red-600"
+                  role="alert"
+                >
                   {errors.email.message}
                 </p>
               )}
@@ -138,7 +162,10 @@ export default function LoginPage() {
                 Contraseña
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Lock
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+                  aria-hidden="true"
+                />
                 <Input
                   id="password"
                   type="password"
@@ -146,10 +173,17 @@ export default function LoginPage() {
                   className="pl-10"
                   {...register('password')}
                   aria-invalid={errors.password ? 'true' : 'false'}
+                  aria-describedby={
+                    errors.password ? 'password-error' : undefined
+                  }
                 />
               </div>
               {errors.password && (
-                <p className="text-sm text-red-600" role="alert">
+                <p
+                  id="password-error"
+                  className="text-sm text-red-600"
+                  role="alert"
+                >
                   {errors.password.message}
                 </p>
               )}
@@ -158,7 +192,14 @@ export default function LoginPage() {
             <Separator />
 
             {/* Botón de envío */}
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isSubmitting}
+              aria-label={
+                isSubmitting ? 'Iniciando sesión...' : 'Iniciar sesión'
+              }
+            >
               {isSubmitting ? 'Iniciando sesión...' : 'Iniciar Sesión'}
             </Button>
           </form>
@@ -170,7 +211,7 @@ export default function LoginPage() {
             <span className="text-gray-600">¿No tienes una cuenta? </span>
             <Link
               href="/registro"
-              className="text-[#FF5454] hover:text-[#CC0000] font-medium transition-colors"
+              className="text-brand hover:text-brand-hover font-medium transition-colors"
             >
               Regístrate aquí
             </Link>
@@ -178,5 +219,21 @@ export default function LoginPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto px-4 py-12 max-w-md">
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center">Cargando...</div>
+          </CardContent>
+        </Card>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }

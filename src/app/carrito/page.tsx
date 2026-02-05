@@ -1,14 +1,14 @@
 'use client'; // Componente del cliente (necesita interactividad con Zustand)
 
-import { useCartStore } from '@/features/cart/store/cart-store';
-import { Button } from '@/shared/ui/button';
+import { useCartStore } from '@features/cart/store/cart-store';
+import { Button } from '@shared/ui/button';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import { useCartCalculations } from '@/features/cart/hooks/useCartCalculations';
-import { useCartActions } from '@/features/cart/hooks/useCartActions';
-import CartItem from '@/features/cart/components/CartItem';
-import CartSummary from '@/features/cart/components/CartSummary';
-import CartEmptyState from '@/features/cart/components/CartEmptyState';
+import { useCartCalculations } from '@features/cart/hooks/useCartCalculations';
+import { useCartActions } from '@features/cart/hooks/useCartActions';
+import CartItem from '@features/cart/components/CartItem';
+import CartSummary from '@features/cart/components/CartSummary';
+import CartEmptyState from '@features/cart/components/CartEmptyState';
 
 export default function CarritoPage() {
   // Obtener items del carrito
@@ -26,18 +26,23 @@ export default function CarritoPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Header de la página */}
       <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center gap-4 mb-4">
+        <div className="container mx-auto px-4 py-4 md:py-8">
+          <div className="flex items-center gap-3 md:gap-4 mb-3 md:mb-4">
             <Link href="/productos">
-              <Button variant="ghost" size="icon" className="h-10 w-10">
-                <ArrowLeft className="h-5 w-5" />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-10 w-10"
+                aria-label="Volver a productos"
+              >
+                <ArrowLeft className="h-5 w-5" aria-hidden="true" />
               </Button>
             </Link>
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+              <h1 className="text-2xl md:text-4xl font-bold text-gray-900">
                 Carrito de Compras
               </h1>
-              <p className="text-gray-800 mt-2 text-lg font-semibold">
+              <p className="text-gray-800 mt-1 md:mt-2 text-base md:text-lg font-semibold">
                 Revisa tus productos antes de comprar
               </p>
             </div>
@@ -46,7 +51,7 @@ export default function CarritoPage() {
       </div>
 
       {/* Contenido del carrito */}
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-4 md:py-8">
         {items.length === 0 ? (
           // Empty state: carrito vacío usando componente reutilizable
           <CartEmptyState variant="page" />

@@ -1,10 +1,10 @@
 'use client'; // Indica que este componente se ejecuta en el cliente (necesario para hooks y eventos)
 
 import { useState } from 'react';
-import { Button } from '@/shared/ui/button';
+import { Button } from '@shared/ui/button';
 import QuantitySelector from './QuantitySelector';
-import { Product } from '@/features/product/types';
-import { useAddToCart } from '@/features/cart/hooks/useAddToCart';
+import { Product } from '@features/product/types';
+import { useAddToCart } from '@features/cart/hooks/useAddToCart';
 
 interface ProductQuantitySectionProps {
   product: Product;
@@ -82,7 +82,7 @@ export default function ProductQuantitySection({
         // Clases CSS: colores, animaciones de hover y escala
         // hover:scale: crece ligeramente al pasar el mouse
         // active:scale: se reduce al hacer clic (efecto de "presionar")
-        className={`w-full bg-[#FF5454] hover:bg-[#E63939] text-white text-lg py-6 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ${
+        className={`w-full bg-brand hover:bg-brand-hover text-white text-base md:text-lg py-4 md:py-6 min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ${
           !isButtonDisabled
             ? 'hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl'
             : ''

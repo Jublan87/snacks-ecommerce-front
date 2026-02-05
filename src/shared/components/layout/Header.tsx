@@ -3,18 +3,24 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { User, LogOut, LogIn, Package } from 'lucide-react';
+import { User, LogOut, LogIn, Package, LayoutDashboard } from 'lucide-react';
 import { toast } from 'sonner';
-import { Badge } from '@/shared/ui/badge';
-import { Button } from '@/shared/ui/button';
-import ProductSearch from '@/features/filters/components/ProductSearch';
-import { useSearch } from '@/shared/contexts/SearchContext';
+import { Badge } from '@shared/ui/badge';
+import { Button } from '@shared/ui/button';
+import ProductSearch from '@features/filters/components/ProductSearch';
+import { useSearch } from '@shared/contexts/SearchContext';
 // useCartStore: Hook para obtener la cantidad de items en el carrito
-import { useCartStore } from '@/features/cart/store/cart-store';
-// CartDrawer: Componente del drawer lateral del carrito
-import CartDrawer from '@/features/cart/components/CartDrawer';
+import { useCartStore } from '@features/cart/store/cart-store';
+// CartDrawer: Componente del drawer lateral del carrito (lazy loaded)
+import dynamic from 'next/dynamic';
+const CartDrawer = dynamic(
+  () => import('@features/cart/components/CartDrawer'),
+  {
+    ssr: false, // No renderizar en servidor ya que usa estado del cliente
+  }
+);
 // Auth store
-import { useAuthStore } from '@/features/auth/store/auth-store';
+import { useAuthStore } from '@features/auth/store/auth-store';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,7 +28,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/shared/ui/dropdown-menu';
+} from '@shared/ui/dropdown-menu';
 
 export default function Header() {
   const router = useRouter();
@@ -34,7 +40,7 @@ export default function Header() {
   // Obtener la cantidad total de items en el carrito (se actualiza automáticamente)
   const itemCount = useCartStore((state) => state.getItemCount());
   // Auth state
-  const { user, isAuthenticated, logout } = useAuthStore();
+  const { user, isAuthenticated, logout, isAdmin } = useAuthStore();
 
   // Esperar a que el componente se monte en el cliente
   useEffect(() => {
@@ -63,31 +69,46 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-[#FF5454] sticky top-0 z-50 border-b border-[#E63939]">
-      <div className="container mx-auto px-4">
+    <header
+      id="navigation"
+      className="bg-brand sticky top-0 z-50 border-b border-brand-hover"
+      role="banner"
+    >
+      <nav className="container mx-auto px-4" aria-label="Navegación principal">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <span className="text-2xl font-bold text-white">🛒</span>
+          <Link
+            href="/"
+            className="flex items-center space-x-2"
+            aria-label="Snacks Ecommerce - Ir al inicio"
+          >
+            <span className="text-2xl font-bold text-white" aria-hidden="true">
+              🛒
+            </span>
             <span className="text-xl font-bold text-white hidden sm:block">
               Snacks Ecommerce
             </span>
           </Link>
 
           {/* Desktop Navigation: Búsqueda y acciones */}
-          <div className="hidden md:flex items-center space-x-4 flex-1 max-w-2xl mx-4">
+          <div
+            className="hidden md:flex items-center space-x-4 flex-1 max-w-2xl mx-4"
+            role="search"
+            aria-label="Búsqueda de productos"
+          >
             {/* Botón Productos */}
             <Link href="/productos">
               <Button
                 variant="ghost"
                 className="text-white hover:bg-[#CC0000] hover:text-white transition-all duration-200 hover:scale-105 text-base font-semibold"
+                aria-label="Ver todos los productos"
               >
                 Todos los productos
               </Button>
             </Link>
 
             {/* Barra de búsqueda */}
-            <div className="flex-1 max-w-md">
+            <div className="flex-1 max-w-md" role="search">
               <ProductSearch
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
@@ -104,8 +125,10 @@ export default function Header() {
                   <Button
                     variant="ghost"
                     className="text-white hover:bg-[#CC0000] hover:text-white transition-all duration-200 hover:scale-105"
+                    aria-label={`Menú de usuario: ${user.firstName} ${user.lastName}`}
+                    aria-haspopup="true"
                   >
-                    <User className="w-5 h-5 mr-2" />
+                    <User className="w-5 h-5 mr-2" aria-hidden="true" />
                     <span className="text-base font-semibold">
                       {user.firstName}
                     </span>
@@ -135,6 +158,18 @@ export default function Header() {
                       Mis Pedidos
                     </Link>
                   </DropdownMenuItem>
+                  {/* Panel Administrativo - Solo para admins */}
+                  {isAdmin() && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin" className="cursor-pointer">
+                          <LayoutDashboard className="mr-2 h-4 w-4" />
+                          Panel Administrativo
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={handleLogout}
@@ -163,7 +198,14 @@ export default function Header() {
             <button
               onClick={toggleCart} // Al hacer clic, abre el drawer del carrito
               className="relative flex items-center gap-2 px-3 py-2 text-white hover:bg-[#CC0000] rounded-full transition-all duration-200 hover:scale-105"
-              aria-label="Ver carrito"
+              aria-label={
+                mounted && itemCount > 0
+                  ? `Ver carrito, ${itemCount} ${
+                      itemCount === 1 ? 'producto' : 'productos'
+                    }`
+                  : 'Ver carrito'
+              }
+              aria-expanded={isCartOpen}
             >
               {/* Icono SVG del carrito */}
               <svg
@@ -171,6 +213,7 @@ export default function Header() {
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
@@ -184,7 +227,12 @@ export default function Header() {
                   Solo se muestra si hay items (itemCount > 0)
                   Si hay más de 99, muestra "99+" */}
               {mounted && itemCount > 0 && (
-                <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs animate-in fade-in zoom-in-50 bg-red-600 text-white border-transparent">
+                <Badge
+                  className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs animate-in fade-in zoom-in-50 bg-red-600 text-white border-transparent"
+                  aria-label={`${itemCount} ${
+                    itemCount === 1 ? 'producto' : 'productos'
+                  } en el carrito`}
+                >
                   {itemCount > 99 ? '99+' : itemCount}
                 </Badge>
               )}
@@ -195,8 +243,9 @@ export default function Header() {
           <button
             onClick={toggleMobileMenu}
             className="md:hidden p-2 text-white hover:text-gray-100 transition-colors"
-            aria-label="Toggle menu"
+            aria-label={isMobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
             aria-expanded={isMobileMenuOpen}
+            aria-controls="mobile-menu"
           >
             {isMobileMenuOpen ? (
               <svg
@@ -204,6 +253,7 @@ export default function Header() {
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
@@ -218,6 +268,7 @@ export default function Header() {
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
@@ -241,7 +292,12 @@ export default function Header() {
             />
 
             {/* Drawer */}
-            <div className="fixed top-16 left-0 right-0 bg-[#FF5454] shadow-lg z-50 md:hidden animate-slide-down border-b border-[#E63939]">
+            <div
+              id="mobile-menu"
+              className="fixed top-16 left-0 right-0 bg-brand shadow-lg z-50 md:hidden animate-slide-down border-b border-brand-hover"
+              role="navigation"
+              aria-label="Menú de navegación móvil"
+            >
               <nav className="flex flex-col py-4">
                 <div className="px-4 mb-4">
                   <ProductSearch
@@ -252,7 +308,7 @@ export default function Header() {
                 <Link
                   href="/productos"
                   onClick={closeMobileMenu}
-                  className="px-4 py-3 text-white hover:bg-[#E63939] hover:text-white transition-colors text-base font-semibold"
+                  className="px-4 py-3 text-white hover:bg-brand-hover hover:text-white transition-colors text-base font-semibold"
                 >
                   Todos los productos
                 </Link>
@@ -262,7 +318,7 @@ export default function Header() {
                     <Link
                       href="/perfil"
                       onClick={closeMobileMenu}
-                      className="px-4 py-3 text-white hover:bg-[#E63939] hover:text-white transition-colors text-base font-semibold flex items-center gap-2"
+                      className="px-4 py-3 text-white hover:bg-brand-hover hover:text-white transition-colors text-base font-semibold flex items-center gap-2"
                     >
                       <User className="w-5 h-5" />
                       Mi Perfil
@@ -270,17 +326,28 @@ export default function Header() {
                     <Link
                       href="/perfil/pedidos"
                       onClick={closeMobileMenu}
-                      className="px-4 py-3 text-white hover:bg-[#E63939] hover:text-white transition-colors text-base font-semibold flex items-center gap-2"
+                      className="px-4 py-3 text-white hover:bg-brand-hover hover:text-white transition-colors text-base font-semibold flex items-center gap-2"
                     >
                       <Package className="w-5 h-5" />
                       Mis Pedidos
                     </Link>
+                    {/* Panel Administrativo - Solo para admins */}
+                    {isAdmin() && (
+                      <Link
+                        href="/admin"
+                        onClick={closeMobileMenu}
+                        className="px-4 py-3 text-white hover:bg-brand-hover hover:text-white transition-colors text-base font-semibold flex items-center gap-2"
+                      >
+                        <LayoutDashboard className="w-5 h-5" />
+                        Panel Administrativo
+                      </Link>
+                    )}
                     <button
                       onClick={() => {
                         closeMobileMenu();
                         handleLogout();
                       }}
-                      className="px-4 py-3 text-white hover:bg-[#E63939] hover:text-white transition-colors text-base font-semibold flex items-center gap-2"
+                      className="px-4 py-3 text-white hover:bg-brand-hover hover:text-white transition-colors text-base font-semibold flex items-center gap-2"
                     >
                       <LogOut className="w-5 h-5" />
                       Cerrar Sesión
@@ -290,7 +357,7 @@ export default function Header() {
                   <Link
                     href="/login"
                     onClick={closeMobileMenu}
-                    className="px-4 py-3 text-white hover:bg-[#E63939] hover:text-white transition-colors text-base font-semibold flex items-center gap-2"
+                    className="px-4 py-3 text-white hover:bg-brand-hover hover:text-white transition-colors text-base font-semibold flex items-center gap-2"
                   >
                     <LogIn className="w-5 h-5" />
                     Iniciar Sesión
@@ -302,13 +369,21 @@ export default function Header() {
                     closeMobileMenu(); // Cierra el menú móvil
                     toggleCart(); // Abre el drawer del carrito
                   }}
-                  className="relative px-4 py-3 text-white hover:bg-[#E63939] hover:text-white transition-colors text-base font-semibold flex items-center gap-2"
+                  className="relative px-4 py-3 text-white hover:bg-brand-hover hover:text-white transition-colors text-base font-semibold flex items-center gap-2"
+                  aria-label={
+                    mounted && itemCount > 0
+                      ? `Ver carrito, ${itemCount} ${
+                          itemCount === 1 ? 'producto' : 'productos'
+                        }`
+                      : 'Ver carrito'
+                  }
                 >
                   <svg
                     className="w-5 h-5"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
+                    aria-hidden="true"
                   >
                     <path
                       strokeLinecap="round"
@@ -320,7 +395,12 @@ export default function Header() {
                   Mi carrito
                   {/* Badge con cantidad también en móvil */}
                   {mounted && itemCount > 0 && (
-                    <Badge className="h-5 w-5 flex items-center justify-center p-0 text-xs bg-red-600 text-white border-transparent">
+                    <Badge
+                      className="h-5 w-5 flex items-center justify-center p-0 text-xs bg-red-600 text-white border-transparent"
+                      aria-label={`${itemCount} ${
+                        itemCount === 1 ? 'producto' : 'productos'
+                      } en el carrito`}
+                    >
                       {itemCount > 99 ? '99+' : itemCount}
                     </Badge>
                   )}
@@ -329,7 +409,7 @@ export default function Header() {
             </div>
           </>
         )}
-      </div>
+      </nav>
 
       {/* Cart Drawer: Drawer lateral que muestra el contenido del carrito
           isOpen: Controla si está abierto o cerrado

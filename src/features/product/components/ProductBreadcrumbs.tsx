@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import type { Product } from '@/features/product/types';
+import type { Product } from '@features/product/types';
 
 interface ProductBreadcrumbsProps {
   product: Product;

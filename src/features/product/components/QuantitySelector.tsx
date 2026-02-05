@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Input } from '@/shared/ui/input';
-import { cn } from '@/shared/utils/utils';
+import { Input } from '@shared/ui/input';
+import { cn } from '@shared/utils/utils';
 
 interface QuantitySelectorProps {
   maxStock: number;

@@ -1,0 +1,9 @@
+/**
+ * Paleta de colores. Única fuente: cambiar aquí y se aplica en toda la app.
+ */
+:root {
+  --COLOR_PRINCIPAL: 255 84 84;
+  --COLOR_PRINCIPAL_HOVER: 231 57 57;
+  --COLOR_PRINCIPAL_HEX: #ff5454;
+  --COLOR_PRINCIPAL_HOVER_HEX: #e63939;
+}

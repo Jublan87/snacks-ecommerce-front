@@ -3,9 +3,9 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Minus, Plus, Trash2 } from 'lucide-react';
-import { Button } from '@/shared/ui/button';
-import { Card, CardContent } from '@/shared/ui/card';
-import type { CartItem as CartItemType } from '@/features/cart/types';
+import { Button } from '@shared/ui/button';
+import { Card, CardContent } from '@shared/ui/card';
+import type { CartItem as CartItemType } from '@features/cart/types';
 
 interface CartItemProps {
   item: CartItemType;
@@ -64,10 +64,10 @@ export default function CartItem({
 
   const titleStyles =
     variant === 'card'
-      ? 'font-bold text-xl text-gray-900 hover:text-[#FF5454] transition-colors mb-2'
-      : 'font-bold text-lg text-gray-900 truncate hover:text-[#FF5454] transition-colors';
+      ? 'font-bold text-lg md:text-xl text-gray-900 hover:text-brand transition-colors mb-2'
+      : 'font-bold text-base md:text-lg text-gray-900 truncate hover:text-brand transition-colors';
 
-  const buttonSize = variant === 'card' ? 'h-9 w-9' : 'h-8 w-8';
+  const buttonSize = variant === 'card' ? 'min-h-[44px] min-w-[44px] h-9 w-9 md:h-9 md:w-9' : 'min-h-[44px] min-w-[44px] h-8 w-8 md:h-8 md:w-8';
   const quantityTextSize = variant === 'card' ? 'text-lg' : '';
 
   const content = (
@@ -100,11 +100,11 @@ export default function CartItem({
         >
           <h3 className={titleStyles}>{item.product.name}</h3>
         </Link>
-        <p className="text-base font-semibold text-gray-800 mb-1">
+        <p className="text-sm md:text-base font-semibold text-gray-800 mb-1">
           ${currentPrice.toLocaleString('es-AR')} c/u
         </p>
         {item.product.discountPrice && (
-          <p className="text-sm font-semibold text-gray-500 line-through">
+          <p className="text-xs md:text-sm font-semibold text-gray-500 line-through">
             ${item.product.price.toLocaleString('es-AR')}
           </p>
         )}
@@ -118,12 +118,13 @@ export default function CartItem({
               className={buttonSize}
               onClick={() => onQuantityChange(item.id, item.quantity - 1)}
               disabled={item.quantity <= 1}
-              aria-label="Reducir cantidad"
+              aria-label={`Reducir cantidad de ${item.product.name}`}
             >
-              <Minus className="h-4 w-4" />
+              <Minus className="h-4 w-4" aria-hidden="true" />
             </Button>
             <span
-              className={`w-10 text-center font-bold ${quantityTextSize || 'text-lg'}`}
+              className={`w-10 text-center font-bold ${quantityTextSize || 'text-base md:text-lg'}`}
+              aria-label={`Cantidad: ${item.quantity}`}
             >
               {item.quantity}
             </span>
@@ -133,9 +134,9 @@ export default function CartItem({
               className={buttonSize}
               onClick={() => onQuantityChange(item.id, item.quantity + 1)}
               disabled={item.quantity >= item.product.stock}
-              aria-label="Aumentar cantidad"
+              aria-label={`Aumentar cantidad de ${item.product.name}`}
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-4 w-4" aria-hidden="true" />
             </Button>
           </div>
 
@@ -143,7 +144,7 @@ export default function CartItem({
           <div className="flex items-center gap-4">
             <span
               className={`font-bold text-gray-900 ${
-                variant === 'card' ? 'text-2xl' : 'text-xl'
+                variant === 'card' ? 'text-xl md:text-2xl' : 'text-lg md:text-xl'
               }`}
             >
               ${itemTotal.toLocaleString('es-AR')}
@@ -153,9 +154,9 @@ export default function CartItem({
               size="icon"
               className={`${buttonSize} text-red-600 hover:text-red-700 hover:bg-red-50`}
               onClick={() => onRemove(item.id)}
-              aria-label="Eliminar producto"
+              aria-label={`Eliminar ${item.product.name} del carrito`}
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash2 className="h-4 w-4" aria-hidden="true" />
             </Button>
           </div>
         </div>

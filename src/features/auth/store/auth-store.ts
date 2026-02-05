@@ -4,14 +4,14 @@ import {
   User,
   LoginCredentials,
   RegisterCredentials,
-} from '@/features/auth/types';
+} from '@features/auth/types';
 import {
   addMockUser,
   emailExists,
   findMockUser,
   updateMockUser,
   updateMockUserPassword,
-} from '@/features/auth/utils/storage.utils';
+} from '@features/auth/utils/storage.utils';
 
 interface AuthStore {
   user: User | null;
@@ -21,6 +21,7 @@ interface AuthStore {
   register: (credentials: RegisterCredentials) => Promise<void>;
   logout: () => void;
   checkAuth: () => boolean;
+  isAdmin: () => boolean;
   updateUser: (updatedData: Partial<User>) => Promise<void>;
   updatePassword: (currentPassword: string, newPassword: string) => Promise<void>;
 }
@@ -79,6 +80,13 @@ export const useAuthStore = create<AuthStore>()(
 
         // Establecer cookie para el middleware
         setAuthCookie(token);
+        
+        // Establecer cookie de rol para el middleware (temporal hasta tener backend)
+        if (foundUser.user.role === 'admin' && typeof document !== 'undefined') {
+          const expires = new Date();
+          expires.setDate(expires.getDate() + 7);
+          document.cookie = `user-role=admin; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
+        }
       },
 
       register: async (credentials: RegisterCredentials) => {
@@ -107,6 +115,7 @@ export const useAuthStore = create<AuthStore>()(
           firstName: credentials.firstName,
           lastName: credentials.lastName,
           phone: credentials.phone,
+          role: 'customer', // Por defecto todos los usuarios son clientes
           createdAt: new Date().toISOString(),
           // Si se proporcionaron datos de dirección, guardarlos
           shippingAddress:
@@ -147,6 +156,13 @@ export const useAuthStore = create<AuthStore>()(
 
         // Establecer cookie para el middleware
         setAuthCookie(token);
+        
+        // Establecer cookie de rol para el middleware (temporal hasta tener backend)
+        if (newUser.role === 'admin' && typeof document !== 'undefined') {
+          const expires = new Date();
+          expires.setDate(expires.getDate() + 7);
+          document.cookie = `user-role=${newUser.role}; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
+        }
       },
 
       logout: () => {
@@ -156,12 +172,20 @@ export const useAuthStore = create<AuthStore>()(
           token: null,
         });
 
-        // Eliminar cookie
+        // Eliminar cookies
         setAuthCookie(null);
+        if (typeof document !== 'undefined') {
+          document.cookie = 'user-role=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        }
       },
 
       checkAuth: () => {
         return get().isAuthenticated;
+      },
+
+      isAdmin: () => {
+        const user = get().user;
+        return user?.role === 'admin';
       },
 
       updateUser: async (updatedData: Partial<User>) => {
@@ -227,6 +251,13 @@ export const useAuthStore = create<AuthStore>()(
       onRehydrateStorage: () => (state) => {
         if (state?.token && typeof window !== 'undefined') {
           setAuthCookie(state.token);
+          
+          // También restaurar la cookie de rol si el usuario es admin
+          if (state?.user?.role === 'admin') {
+            const expires = new Date();
+            expires.setDate(expires.getDate() + 7);
+            document.cookie = `user-role=admin; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
+          }
         }
       },
     }

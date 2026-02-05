@@ -1,13 +1,26 @@
-import ProductCard from '@/features/product/components/ProductCard';
-import { MOCK_PRODUCTS } from '@/features/product/mocks/products.mock';
+import type { Metadata } from 'next';
+import ProductCard from '@features/product/components/ProductCard';
+import { MOCK_PRODUCTS } from '@features/product/mocks/products.mock';
+
+export const metadata: Metadata = {
+  title: 'Inicio',
+  description:
+    'Descubre nuestra amplia selección de snacks. Productos de calidad, envíos rápidos y los mejores precios. ¡Encuentra tus snacks favoritos!',
+  openGraph: {
+    title: 'Snacks Ecommerce - Inicio',
+    description:
+      'Descubre nuestra amplia selección de snacks. Productos de calidad, envíos rápidos y los mejores precios.',
+    url: '/',
+  },
+};
 
 export default function Home() {
   return (
     <main className="min-h-screen">
       {/* Hero Section - Diseño compacto y centrado */}
-      <div className="pt-6 pb-8 md:pt-8 md:pb-12">
+      <div className="pt-4 pb-6 md:pt-8 md:pb-12">
         <div className="container mx-auto px-4">
-          <div className="bg-gradient-to-b from-[#CC0000] via-[#FF5454] to-[#FF6B6B] rounded-2xl shadow-2xl overflow-hidden relative">
+          <div className="bg-gradient-to-b from-brand-hover via-brand to-red-400 rounded-xl md:rounded-2xl shadow-2xl overflow-hidden relative">
             {/* Patrón decorativo de fondo */}
             <div className="absolute inset-0 opacity-10">
               <div
@@ -21,14 +34,14 @@ export default function Home() {
             </div>
 
             {/* Contenido */}
-            <div className="relative px-8 py-10 md:px-12 md:py-14 text-center text-white">
-              <div className="mb-4">
-                <span className="text-6xl md:text-7xl">🛒</span>
+            <div className="relative px-4 py-8 md:px-12 md:py-14 text-center text-white">
+              <div className="mb-3 md:mb-4">
+                <span className="text-5xl md:text-7xl">🛒</span>
               </div>
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 drop-shadow-lg">
+              <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold mb-3 md:mb-4 drop-shadow-lg">
                 Snacks Ecommerce
               </h1>
-              <p className="text-lg md:text-xl text-white/90 font-medium">
+              <p className="text-base md:text-xl text-white/90 font-medium">
                 Tu distribuidor de snacks favorito
               </p>
 
@@ -41,8 +54,8 @@ export default function Home() {
       </div>
 
       {/* Productos Destacados */}
-      <div className="container mx-auto px-4 py-12">
-        <h2 className="text-3xl font-bold text-gray-900 mb-8">
+      <div className="container mx-auto px-4 py-6 md:py-12">
+        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 md:mb-8">
           Productos Destacados
         </h2>
 

@@ -7,21 +7,21 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import { ArrowLeft, Mail, Lock, User, Phone, MapPin } from 'lucide-react';
 
-import { useAuthStore } from '@/features/auth/store/auth-store';
+import { useAuthStore } from '@features/auth/store/auth-store';
 import {
   registerSchema,
   type RegisterFormInput,
-} from '@/features/auth/schemas/auth.schema';
-import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
+} from '@features/auth/schemas/auth.schema';
+import { Button } from '@shared/ui/button';
+import { Input } from '@shared/ui/input';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/shared/ui/card';
-import { Separator } from '@/shared/ui/separator';
+} from '@shared/ui/card';
+import { Separator } from '@shared/ui/separator';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -62,28 +62,29 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-md">
+    <div className="container mx-auto px-4 py-6 md:py-12 max-w-md">
       <Link
         href="/"
-        className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-6 transition-colors"
+        className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4 md:mb-6 transition-colors min-h-[44px]"
+        aria-label="Volver a la página de inicio"
       >
-        <ArrowLeft className="w-4 h-4" />
+        <ArrowLeft className="w-4 h-4" aria-hidden="true" />
         Volver al inicio
       </Link>
 
       <Card>
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">
+          <CardTitle className="text-xl md:text-2xl font-bold text-center">
             Crear Cuenta
           </CardTitle>
-          <CardDescription className="text-center">
+          <CardDescription className="text-center text-sm md:text-base">
             Completa el formulario para registrarte
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 md:space-y-4">
             {/* Nombre y Apellido en la misma fila */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3 md:gap-4">
               {/* Nombre */}
               <div className="space-y-2">
                 <label
@@ -227,7 +228,7 @@ export default function RegisterPage() {
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3 md:gap-4">
                 <div className="space-y-2">
                   <label
                     htmlFor="city"
@@ -386,7 +387,7 @@ export default function RegisterPage() {
             <span className="text-gray-600">¿Ya tienes una cuenta? </span>
             <Link
               href="/login"
-              className="text-[#FF5454] hover:text-[#CC0000] font-medium transition-colors"
+              className="text-brand hover:text-brand-hover font-medium transition-colors"
             >
               Inicia sesión aquí
             </Link>

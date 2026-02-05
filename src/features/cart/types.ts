@@ -1,4 +1,4 @@
-import { Product } from '@/features/product/types';
+import { Product } from '@features/product/types';
 
 export interface CartItem {
   id: string;

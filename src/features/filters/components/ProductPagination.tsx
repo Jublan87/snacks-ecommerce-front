@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@/shared/ui/button';
+import { Button } from '@shared/ui/button';
 
 interface ProductPaginationProps {
   currentPage: number;
@@ -87,7 +87,7 @@ export default function ProductPagination({
               variant={isActive ? 'default' : 'outline'}
               className={
                 isActive
-                  ? 'bg-[#FF5454] hover:bg-[#E63939] text-white border-[#FF5454]'
+                  ? 'bg-brand hover:bg-brand-hover text-white border-brand'
                   : ''
               }
               onClick={() => onPageChange(pageNum)}

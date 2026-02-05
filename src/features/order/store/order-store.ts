@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { Order, OrderItem, OrderStatus } from '@/features/order/types';
-import { CartItem } from '@/features/cart/types';
-import { ShippingAddress, PaymentMethod } from '@/features/checkout/types';
+import { Order, OrderItem, OrderStatus } from '@features/order/types';
+import { CartItem } from '@features/cart/types';
+import { ShippingAddress, PaymentMethod } from '@features/checkout/types';
 
 interface OrderStore {
   orders: Order[];
@@ -18,6 +18,8 @@ interface OrderStore {
   getOrderById: (orderId: string) => Order | undefined;
   getOrderByOrderNumber: (orderNumber: string) => Order | undefined;
   getOrdersByUserId: (userId: string) => Order[];
+  /** Lista todos los pedidos (para admin), ordenados por fecha más reciente */
+  getAllOrders: () => Order[];
   updateOrderStatus: (orderId: string, status: OrderStatus) => void;
 }
 
@@ -117,6 +119,14 @@ export const useOrderStore = create<OrderStore>()(
               new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
             );
           });
+      },
+
+      getAllOrders: () => {
+        return [...get().orders].sort((a, b) => {
+          return (
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+        });
       },
 
       updateOrderStatus: (orderId: string, status: OrderStatus) => {

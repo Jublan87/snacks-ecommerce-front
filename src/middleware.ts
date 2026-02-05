@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { authMiddleware } from '@/shared/middleware/auth.middleware';
+import { authMiddleware } from '@shared/middleware/auth.middleware';
+import { adminMiddleware } from '@shared/middleware/admin.middleware';
 
 /**
  * Middleware principal de Next.js
@@ -13,19 +14,18 @@ export function middleware(request: NextRequest) {
     return authResponse;
   }
 
-  // Aquí se pueden agregar más middlewares en el futuro
-  // Ejemplo:
-  // const adminResponse = adminMiddleware(request);
-  // if (adminResponse) {
-  //   return adminResponse;
-  // }
+  // Ejecutar middleware de administración
+  const adminResponse = adminMiddleware(request);
+  if (adminResponse) {
+    return adminResponse;
+  }
 
   return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-    // Excluir: API routes, archivos estáticos de Next.js, imágenes y favicon
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    // Excluir: API routes, archivos estáticos de Next.js, imágenes, favicon, robots.txt y sitemap.xml
+    '/((?!api|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };

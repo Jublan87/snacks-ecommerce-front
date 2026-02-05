@@ -1,10 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { Button } from '@/shared/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
-import { Separator } from '@/shared/ui/separator';
-import type { ShippingCalculationResult } from '@/features/shipping/services/shipping.service';
+import { Button } from '@shared/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@shared/ui/card';
+import { Separator } from '@shared/ui/separator';
+import type { ShippingCalculationResult } from '@features/shipping/services/shipping.service';
 import type { ReactNode } from 'react';
 
 interface CartSummaryProps {
@@ -99,7 +99,7 @@ export default function CartSummary({
         <>
           {/* Botón Ir a Checkout */}
           <Link href="/checkout" className="block">
-            <Button className="w-full bg-[#FF5454] hover:bg-[#E63939] text-base font-bold">
+            <Button className="w-full bg-brand hover:bg-brand-hover text-base font-bold">
               Ir a Checkout
             </Button>
           </Link>

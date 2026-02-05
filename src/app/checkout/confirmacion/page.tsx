@@ -1,24 +1,24 @@
 'use client';
 
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { CheckCircle2, ArrowLeft, Package } from 'lucide-react';
 import { toast } from 'sonner';
-import ProtectedRoute from '@/features/auth/components/ProtectedRoute';
-import { useOrderStore } from '@/features/order/store/order-store';
-import { useAuthStore } from '@/features/auth/store/auth-store';
-import { Button } from '@/shared/ui/button';
+import ProtectedRoute from '@features/auth/components/ProtectedRoute';
+import { useOrderStore } from '@features/order/store/order-store';
+import { useAuthStore } from '@features/auth/store/auth-store';
+import { Button } from '@shared/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/shared/ui/card';
-import { Separator } from '@/shared/ui/separator';
-import { Badge } from '@/shared/ui/badge';
+} from '@shared/ui/card';
+import { Separator } from '@shared/ui/separator';
+import { Badge } from '@shared/ui/badge';
 
 function ConfirmacionPageContent() {
   const router = useRouter();
@@ -212,7 +212,7 @@ function ConfirmacionPageContent() {
                           href={`/productos/${item.product.slug}`}
                           className="block"
                         >
-                          <h4 className="font-bold text-lg text-gray-900 hover:text-[#FF5454] transition-colors mb-1">
+                          <h4 className="font-bold text-lg text-gray-900 hover:text-brand transition-colors mb-1">
                             {item.product.name}
                           </h4>
                         </Link>
@@ -328,7 +328,13 @@ function ConfirmacionPageContent() {
 export default function ConfirmacionPage() {
   return (
     <ProtectedRoute>
-      <ConfirmacionPageContent />
+      <Suspense fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">Cargando...</div>
+        </div>
+      }>
+        <ConfirmacionPageContent />
+      </Suspense>
     </ProtectedRoute>
   );
 }

@@ -5,14 +5,14 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { Edit2, Save, X } from 'lucide-react';
-import { useAuthStore } from '@/features/auth/store/auth-store';
+import { useAuthStore } from '@features/auth/store/auth-store';
 import {
   updateProfileSchema,
   type UpdateProfileFormInput,
-} from '@/features/auth/schemas/profile.schema';
-import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
-import { Separator } from '@/shared/ui/separator';
+} from '@features/auth/schemas/profile.schema';
+import { Button } from '@shared/ui/button';
+import { Input } from '@shared/ui/input';
+import { Separator } from '@shared/ui/separator';
 
 export default function ProfileInfoTab() {
   const { user, updateUser } = useAuthStore();

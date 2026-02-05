@@ -2,10 +2,10 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import type { Product } from '@/features/product/types';
-import { Button } from '@/shared/ui/button';
-import { Badge } from '@/shared/ui/badge';
-import { useAddToCart } from '@/features/cart/hooks/useAddToCart';
+import type { Product } from '@features/product/types';
+import { Button } from '@shared/ui/button';
+import { Badge } from '@shared/ui/badge';
+import { useAddToCart } from '@features/cart/hooks/useAddToCart';
 
 interface ProductCardProps {
   product: Product;
@@ -130,7 +130,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         {/* Botón agregar al carrito */}
         <Button
-          className="mt-auto w-full bg-[#FF5454] hover:bg-[#E63939] text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+          className="mt-auto w-full bg-brand hover:bg-brand-hover text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
           variant={isOutOfStock ? 'secondary' : 'default'}
           disabled={isOutOfStock || isAdding}
           onClick={onButtonClick}
