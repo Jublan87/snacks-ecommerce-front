@@ -26,4 +26,3 @@ export function useSearch() {
   }
   return context;
 }
-

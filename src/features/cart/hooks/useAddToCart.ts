@@ -1,17 +1,18 @@
 import { useState } from 'react';
 import { useCartStore } from '@features/cart/store/cart-store';
-import { Product } from '@features/product/types';
+import { ProductListItem } from '@features/product/types';
 import { toast } from 'sonner';
 
 interface UseAddToCartOptions {
-  product: Product;
+  product: ProductListItem;
   quantity?: number; // Cantidad opcional, por defecto 1
   onSuccess?: () => void; // Callback opcional después de agregar exitosamente
 }
 
 /**
- * Hook personalizado para agregar productos al carrito
- * Maneja validación de stock, estados de carga y notificaciones
+ * Hook personalizado para agregar productos al carrito.
+ * Maneja validación local de stock, estados de carga y notificaciones.
+ * La validación final de stock la hace el backend.
  */
 export function useAddToCart({
   product,
@@ -25,7 +26,7 @@ export function useAddToCart({
   const isOutOfStock = product.stock === 0;
 
   /**
-   * Función para agregar el producto al carrito
+   * Función para agregar el producto al carrito.
    * @param customQuantity - Cantidad personalizada (opcional, sobrescribe la del hook)
    */
   const handleAddToCart = async (customQuantity?: number) => {
@@ -37,14 +38,12 @@ export function useAddToCart({
     try {
       setIsAdding(true);
 
-      // Validar stock: verificar si el producto ya está en el carrito
-      // Si está, sumar la cantidad actual + la nueva cantidad
+      // Validación local de stock para dar feedback inmediato antes de llamar al API.
+      // El backend también valida, pero esto evita un round-trip innecesario.
       const existingItem = getItemByProductId(product.id);
-      const totalQuantity = existingItem
-        ? existingItem.quantity + finalQuantity
-        : finalQuantity;
+      const currentQuantity = existingItem ? existingItem.quantity : 0;
+      const totalQuantity = currentQuantity + finalQuantity;
 
-      // Si no hay suficiente stock, mostrar error y salir
       if (product.stock < totalQuantity) {
         toast.error(
           `Stock insuficiente. Solo hay ${product.stock} unidades disponibles.`
@@ -52,19 +51,14 @@ export function useAddToCart({
         return;
       }
 
-      // Agregar producto al carrito usando el store de Zustand
-      addItem(product, finalQuantity);
+      // Llamar al store que hace la petición al backend con productId + quantity
+      await addItem(product.id, finalQuantity);
 
       // Mostrar notificación de éxito
-      // El mensaje cambia según si es singular o plural
       const message =
         finalQuantity === 1
           ? `${product.name} agregado al carrito`
-          : `${finalQuantity} ${
-              finalQuantity === 1 ? 'unidad' : 'unidades'
-            } de ${product.name} agregada${
-              finalQuantity === 1 ? '' : 's'
-            } al carrito`;
+          : `${finalQuantity} unidades de ${product.name} agregadas al carrito`;
 
       toast.success(message, {
         duration: 3000,
@@ -73,14 +67,13 @@ export function useAddToCart({
       // Ejecutar callback de éxito si existe
       onSuccess?.();
     } catch (error) {
-      // Si hay un error, mostrar mensaje de error
+      // El backend puede rechazar por stock insuficiente u otros motivos
       if (error instanceof Error) {
         toast.error(error.message);
       } else {
         toast.error('Error al agregar el producto al carrito');
       }
     } finally {
-      // Siempre desactivar el estado de carga, incluso si hay error
       setIsAdding(false);
     }
   };
@@ -91,4 +84,3 @@ export function useAddToCart({
     isOutOfStock,
   };
 }
-

@@ -1,161 +1,140 @@
+/**
+ * Order store — client-side cache for fetched orders.
+ *
+ * Orders are no longer persisted in localStorage. Instead:
+ *  - Reading orders: Server Components call order.service.ts directly,
+ *    or Client Components call loadOrders() / loadOrderByNumber().
+ *  - Creating orders: use createOrderAction (Server Action) from order.actions.ts,
+ *    then call upsertOrder() to put the result in the local cache.
+ *
+ * This keeps the store thin: just a cache + loading state, no business logic.
+ */
+
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
-import { Order, OrderItem, OrderStatus } from '@features/order/types';
-import { CartItem } from '@features/cart/types';
-import { ShippingAddress, PaymentMethod } from '@features/checkout/types';
+import type { Order, OrderFilters, OrderStatus, PaginatedOrders } from '@features/order/types';
 
 interface OrderStore {
+  // ── State ──────────────────────────────────────────────────
   orders: Order[];
-  createOrder: (
-    cartItems: CartItem[],
-    shippingAddress: ShippingAddress,
-    paymentMethod: PaymentMethod,
-    subtotal: number,
-    shipping: number,
-    total: number,
-    userId: string
-  ) => Order;
-  getOrderById: (orderId: string) => Order | undefined;
+  pagination: PaginatedOrders['pagination'] | null;
+  isLoading: boolean;
+  error: string | null;
+
+  // ── Actions ────────────────────────────────────────────────
+
+  /**
+   * Load / refresh the order list for the current user via the API.
+   * Only call from Client Components; Server Components should use
+   * getOrders() from order.service.ts directly.
+   */
+  loadOrders: (filters?: OrderFilters) => Promise<void>;
+
+  /**
+   * Fetch a single order by order number and store it in the cache.
+   * Useful on the confirmation page right after checkout.
+   */
+  loadOrderByNumber: (orderNumber: string) => Promise<Order | null>;
+
+  /** Synchronous lookup in the local cache by UUID. */
+  getOrderById: (id: string) => Order | undefined;
+
+  /** Synchronous lookup in the local cache by order number. */
   getOrderByOrderNumber: (orderNumber: string) => Order | undefined;
-  getOrdersByUserId: (userId: string) => Order[];
-  /** Lista todos los pedidos (para admin), ordenados por fecha más reciente */
-  getAllOrders: () => Order[];
+
+  /**
+   * Add or update an order in the local cache.
+   * Call this after createOrderAction() returns to make the order
+   * available immediately to other Client Components.
+   */
+  upsertOrder: (order: Order) => void;
+
+  /** @deprecated Use loadOrders() — kept temporarily to avoid breaking admin page */
   updateOrderStatus: (orderId: string, status: OrderStatus) => void;
+
+  /** Clear all loaded state (e.g. on logout). */
+  reset: () => void;
 }
 
-// Función para generar ID único de pedido
-const generateOrderId = (): string => {
-  return `order-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-};
+export const useOrderStore = create<OrderStore>()((set, get) => ({
+  orders: [],
+  pagination: null,
+  isLoading: false,
+  error: null,
 
-// Función para generar número de orden legible
-// Formato: ORD-YYYY-MMDD-HHMMSS-XXX
-const generateOrderNumber = (): string => {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  const seconds = String(now.getSeconds()).padStart(2, '0');
-  const random = Math.random().toString(36).substr(2, 3).toUpperCase();
+  loadOrders: async (filters?: OrderFilters) => {
+    set({ isLoading: true, error: null });
+    try {
+      // Dynamic import keeps server-only modules out of the client bundle
+      const { getOrders } = await import('@features/order/services/order.service');
+      const result = await getOrders(filters);
 
-  return `ORD-${year}-${month}${day}-${hours}${minutes}${seconds}-${random}`;
-};
+      if (!result) {
+        // null → unauthenticated; clear without error
+        set({ orders: [], pagination: null, isLoading: false });
+        return;
+      }
 
-// Convertir CartItem a OrderItem
-const cartItemToOrderItem = (cartItem: CartItem): OrderItem => {
-  // Usar el precio con descuento si existe, sino el precio normal
-  const price = cartItem.product.discountPrice || cartItem.product.price;
-  const subtotal = price * cartItem.quantity;
-
-  return {
-    id: `order-item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-    product: cartItem.product,
-    quantity: cartItem.quantity,
-    price,
-    subtotal,
-  };
-};
-
-export const useOrderStore = create<OrderStore>()(
-  persist(
-    (set, get) => ({
-      orders: [],
-
-      createOrder: (
-        cartItems: CartItem[],
-        shippingAddress: ShippingAddress,
-        paymentMethod: PaymentMethod,
-        subtotal: number,
-        shipping: number,
-        total: number,
-        userId: string
-      ) => {
-        const orderId = generateOrderId();
-        const orderNumber = generateOrderNumber();
-        const now = new Date().toISOString();
-
-        // Convertir cart items a order items
-        const orderItems: OrderItem[] = cartItems.map(cartItemToOrderItem);
-
-        const newOrder: Order = {
-          id: orderId,
-          orderNumber,
-          userId,
-          items: orderItems,
-          shippingAddress,
-          paymentMethod,
-          subtotal,
-          shipping,
-          total,
-          status: 'pending',
-          createdAt: now,
-          updatedAt: now,
-        };
-
-        // Agregar el pedido a la lista
-        set({
-          orders: [...get().orders, newOrder],
-        });
-
-        return newOrder;
-      },
-
-      getOrderById: (orderId: string) => {
-        return get().orders.find((order) => order.id === orderId);
-      },
-
-      getOrderByOrderNumber: (orderNumber: string) => {
-        return get().orders.find((order) => order.orderNumber === orderNumber);
-      },
-
-      getOrdersByUserId: (userId: string) => {
-        return get()
-          .orders.filter((order) => order.userId === userId)
-          .sort((a, b) => {
-            // Ordenar por fecha más reciente primero
-            return (
-              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-            );
-          });
-      },
-
-      getAllOrders: () => {
-        return [...get().orders].sort((a, b) => {
-          return (
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          );
-        });
-      },
-
-      updateOrderStatus: (orderId: string, status: OrderStatus) => {
-        const currentOrders = get().orders;
-        const order = currentOrders.find((o) => o.id === orderId);
-
-        if (!order) {
-          throw new Error('Pedido no encontrado');
-        }
-
-        set({
-          orders: currentOrders.map((o) =>
-            o.id === orderId
-              ? {
-                  ...o,
-                  status,
-                  updatedAt: new Date().toISOString(),
-                }
-              : o
-          ),
-        });
-      },
-    }),
-    {
-      name: 'order-storage', // Nombre de la clave en localStorage
-      storage: createJSONStorage(() => localStorage),
-      // Solo persistir los orders, no las funciones
-      partialize: (state) => ({ orders: state.orders }),
+      set({
+        orders: result.orders,
+        pagination: result.pagination,
+        isLoading: false,
+      });
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : 'Error al cargar los pedidos.';
+      set({ error: message, isLoading: false });
     }
-  )
-);
+  },
+
+  loadOrderByNumber: async (orderNumber: string) => {
+    try {
+      const { getOrderByNumber } = await import('@features/order/services/order.service');
+      const order = await getOrderByNumber(orderNumber);
+
+      if (order) {
+        get().upsertOrder(order);
+      }
+
+      return order;
+    } catch {
+      return null;
+    }
+  },
+
+  getOrderById: (id: string) => get().orders.find((o) => o.id === id),
+
+  getOrderByOrderNumber: (orderNumber: string) =>
+    get().orders.find((o) => o.orderNumber === orderNumber),
+
+  upsertOrder: (order: Order) => {
+    const current = get().orders;
+    const idx = current.findIndex((o) => o.id === order.id);
+
+    if (idx === -1) {
+      // Prepend so newest order appears first
+      set({ orders: [order, ...current] });
+    } else {
+      const updated = [...current];
+      updated[idx] = order;
+      set({ orders: updated });
+    }
+  },
+
+  // ── Deprecated: local-only status update (admin page) ──────
+  updateOrderStatus: (orderId: string, status: OrderStatus) => {
+    const current = get().orders;
+    const exists = current.some((o) => o.id === orderId);
+    if (!exists) throw new Error('Pedido no encontrado');
+
+    set({
+      orders: current.map((o) =>
+        o.id === orderId
+          ? { ...o, status, updatedAt: new Date().toISOString() }
+          : o
+      ),
+    });
+  },
+
+  reset: () => set({ orders: [], pagination: null, isLoading: false, error: null }),
+}));
 

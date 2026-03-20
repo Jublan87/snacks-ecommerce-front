@@ -9,7 +9,6 @@ import {
 } from '@features/order/utils/order.utils';
 import { Button } from '@shared/ui/button';
 import { Input } from '@shared/ui/input';
-import { Badge } from '@shared/ui/badge';
 import {
   Select,
   SelectContent,
@@ -23,7 +22,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@shared/ui/dropdown-menu';
-import { Search, Eye, MoreHorizontal, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
+import {
+  Search,
+  Eye,
+  MoreHorizontal,
+  ChevronUp,
+  ChevronDown,
+  ChevronsUpDown,
+} from 'lucide-react';
 import { formatDateShort } from '@shared/utils/date.utils';
 import { cn } from '@shared/utils/utils';
 
@@ -44,7 +50,7 @@ function getClientDisplayName(order: Order): string {
 
 function filterOrdersByDate(
   orders: Order[],
-  preset: DateFilterPreset
+  preset: DateFilterPreset,
 ): Order[] {
   if (preset === 'all') return orders;
   const now = new Date();
@@ -68,7 +74,10 @@ function filterOrdersByDate(
   });
 }
 
-export default function OrderTable({ orders, onStatusChange }: OrderTableProps) {
+export default function OrderTable({
+  orders,
+  onStatusChange,
+}: OrderTableProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [dateFilter, setDateFilter] = useState<DateFilterPreset>('all');
@@ -90,11 +99,7 @@ export default function OrderTable({ orders, onStatusChange }: OrderTableProps) 
         const client = getClientDisplayName(order).toLowerCase();
         const email = order.shippingAddress.email.toLowerCase();
         const orderNum = order.orderNumber.toLowerCase();
-        return (
-          client.includes(q) ||
-          email.includes(q) ||
-          orderNum.includes(q)
-        );
+        return client.includes(q) || email.includes(q) || orderNum.includes(q);
       });
     }
 
@@ -110,13 +115,24 @@ export default function OrderTable({ orders, onStatusChange }: OrderTableProps) 
         case 'orderNumber':
           return mult * a.orderNumber.localeCompare(b.orderNumber);
         case 'client':
-          return mult * getClientDisplayName(a).localeCompare(getClientDisplayName(b));
+          return (
+            mult *
+            getClientDisplayName(a).localeCompare(getClientDisplayName(b))
+          );
         case 'date':
-          return mult * (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+          return (
+            mult *
+            (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+          );
         case 'total':
           return mult * (a.total - b.total);
         case 'status':
-          return mult * ORDER_STATUS_CONFIG[a.status].label.localeCompare(ORDER_STATUS_CONFIG[b.status].label);
+          return (
+            mult *
+            ORDER_STATUS_CONFIG[a.status].label.localeCompare(
+              ORDER_STATUS_CONFIG[b.status].label,
+            )
+          );
         default:
           return 0;
       }
@@ -151,7 +167,12 @@ export default function OrderTable({ orders, onStatusChange }: OrderTableProps) 
   }) => {
     const isActive = sortBy === column;
     return (
-      <th className={cn('px-6 py-3 text-xs font-semibold text-brand uppercase tracking-wider', className)}>
+      <th
+        className={cn(
+          'px-6 py-3 text-xs font-semibold text-brand uppercase tracking-wider',
+          className,
+        )}
+      >
         <button
           type="button"
           onClick={() => handleSort(column)}
@@ -274,7 +295,10 @@ export default function OrderTable({ orders, onStatusChange }: OrderTableProps) 
                 </tr>
               ) : (
                 paginatedOrders.map((order) => (
-                  <tr key={order.id} className="hover:bg-[rgb(var(--brand)/0.03)]">
+                  <tr
+                    key={order.id}
+                    className="hover:bg-[rgb(var(--brand)/0.03)]"
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="text-sm font-medium text-gray-900">
                         {order.orderNumber}
@@ -295,7 +319,11 @@ export default function OrderTable({ orders, onStatusChange }: OrderTableProps) 
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end gap-2">
                         <Link href={`/admin/pedidos/${order.id}`}>
-                          <Button variant="ghost" size="icon" title="Ver detalle">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title="Ver detalle"
+                          >
                             <Eye className="h-4 w-4" />
                           </Button>
                         </Link>
@@ -352,7 +380,7 @@ export default function OrderTable({ orders, onStatusChange }: OrderTableProps) 
                     (page) =>
                       page === 1 ||
                       page === totalPages ||
-                      (page >= currentPage - 1 && page <= currentPage + 1)
+                      (page >= currentPage - 1 && page <= currentPage + 1),
                   )
                   .map((page, index, array) => (
                     <div key={page} className="flex items-center gap-1">

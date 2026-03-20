@@ -1,8 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { Product, Category, ProductImage } from '@features/product/types';
-import { ProductFormInput } from '@features/admin/schemas/product.schema';
-import { MOCK_PRODUCTS, MOCK_CATEGORIES } from '@features/product/mocks/products.mock';
+import { ProductFormInput, CategoryFormInput } from '@features/admin/schemas/product.schema';
 
 /** Asegura que cada imagen tenga id requerido para Product. */
 function normalizeImages(
@@ -27,8 +26,8 @@ interface ProductStore {
   getProductById: (id: string) => Product | undefined;
   
   // Categorías
-  createCategory: (category: Omit<Category, 'id'>) => Category;
-  updateCategory: (id: string, updates: Partial<Category>) => Category;
+  createCategory: (category: CategoryFormInput) => Category;
+  updateCategory: (id: string, updates: Partial<CategoryFormInput>) => Category;
   deleteCategory: (id: string) => void;
   getCategoryById: (id: string) => Category | undefined;
   getAllCategoriesFlat: () => Category[];
@@ -58,22 +57,13 @@ export const useProductStore = create<ProductStore>()(
       products: [],
       categories: [],
 
-      // Inicializar con datos mock si está vacío
-      initializeWithMocks: () => {
-        const state = get();
-        if (state.products.length === 0 && state.categories.length === 0) {
-          set({
-            products: MOCK_PRODUCTS,
-            categories: MOCK_CATEGORIES,
-          });
-        }
-      },
+      // No-op: mock initialization removed. Admin data comes from API (Phase 5).
+      initializeWithMocks: () => {},
 
       // Crear producto
       createProduct: (productData) => {
-        // Calcular discountPrice desde discountPercentage (el formulario solo envía porcentaje)
-        let discountPrice: number | undefined;
-        let discountPercentage: number | undefined;
+        let discountPrice: number | null = null;
+        let discountPercentage: number | null = null;
 
         if (productData.discountPercentage !== undefined && productData.discountPercentage > 0) {
           discountPercentage = productData.discountPercentage;
@@ -81,17 +71,28 @@ export const useProductStore = create<ProductStore>()(
         }
 
         const newProduct: Product = {
-          ...productData,
           id: generateId('prod'),
+          name: productData.name,
           slug: productData.slug || generateSlug(productData.name),
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          images: normalizeImages(productData.images || []),
-          tags: productData.tags || [],
-          isActive: productData.isActive ?? true,
-          isFeatured: productData.isFeatured ?? false,
+          description: productData.description,
+          shortDescription: productData.shortDescription ?? null,
+          sku: productData.sku,
+          price: productData.price,
           discountPrice,
           discountPercentage,
+          stock: productData.stock,
+          categoryId: productData.categoryId,
+          category: { id: productData.categoryId, name: '', slug: '' },
+          specifications: null,
+          isActive: productData.isActive ?? true,
+          isFeatured: productData.isFeatured ?? false,
+          tags: productData.tags || [],
+          weight: productData.weight ?? null,
+          dimensions: productData.dimensions ?? null,
+          images: normalizeImages(productData.images || []),
+          variants: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         };
 
         set((state) => ({
@@ -110,33 +111,43 @@ export const useProductStore = create<ProductStore>()(
           throw new Error('Producto no encontrado');
         }
 
-        // Calcular discountPrice y discountPercentage si hay descuento
         const finalPrice = updates.price ?? product.price;
-        let discountPrice: number | undefined;
-        let discountPercentage: number | undefined;
+        let discountPrice: number | null;
+        let discountPercentage: number | null;
 
         if (updates.discountPercentage !== undefined) {
           if (updates.discountPercentage > 0) {
             discountPercentage = updates.discountPercentage;
             discountPrice = finalPrice * (1 - discountPercentage / 100);
           } else {
-            discountPrice = undefined;
-            discountPercentage = undefined;
+            discountPrice = null;
+            discountPercentage = null;
           }
         } else {
           discountPrice = product.discountPrice;
           discountPercentage = product.discountPercentage;
         }
 
-        const merged = { ...product, ...updates };
         const updatedProduct: Product = {
-          ...merged,
+          ...product,
           id,
-          slug: updates.slug || updates.name ? generateSlug(updates.name || product.name) : product.slug,
-          updatedAt: new Date().toISOString(),
+          name: updates.name ?? product.name,
+          slug: (updates.slug || updates.name) ? generateSlug(updates.name ?? product.name) : product.slug,
+          description: updates.description ?? product.description,
+          shortDescription: updates.shortDescription !== undefined ? (updates.shortDescription ?? null) : product.shortDescription,
+          sku: updates.sku ?? product.sku,
+          price: updates.price ?? product.price,
           discountPrice,
           discountPercentage,
+          stock: updates.stock ?? product.stock,
+          categoryId: updates.categoryId ?? product.categoryId,
+          isActive: updates.isActive ?? product.isActive,
+          isFeatured: updates.isFeatured ?? product.isFeatured,
+          tags: updates.tags ?? product.tags,
+          weight: updates.weight !== undefined ? (updates.weight ?? null) : product.weight,
+          dimensions: updates.dimensions !== undefined ? (updates.dimensions ?? null) : product.dimensions,
           images: updates.images ? normalizeImages(updates.images) : product.images,
+          updatedAt: new Date().toISOString(),
         };
 
         set({
@@ -179,12 +190,19 @@ export const useProductStore = create<ProductStore>()(
 
       // Crear categoría
       createCategory: (categoryData) => {
+        const now = new Date().toISOString();
         const newCategory: Category = {
-          ...categoryData,
           id: generateId('cat'),
+          name: categoryData.name,
           slug: categoryData.slug || generateSlug(categoryData.name),
-          isActive: categoryData.isActive ?? true,
+          description: categoryData.description ?? null,
+          parentId: categoryData.parentId ?? null,
+          image: null,
           order: categoryData.order ?? 0,
+          isActive: categoryData.isActive ?? true,
+          createdAt: now,
+          updatedAt: now,
+          children: [],
         };
 
         set((state) => ({
@@ -205,9 +223,14 @@ export const useProductStore = create<ProductStore>()(
 
         const updatedCategory: Category = {
           ...category,
-          ...updates,
-          id, // Asegurar que el ID no cambie
-          slug: updates.slug || updates.name ? generateSlug(updates.name || category.name) : category.slug,
+          name: updates.name ?? category.name,
+          slug: (updates.slug || updates.name) ? generateSlug(updates.name ?? category.name) : category.slug,
+          description: updates.description !== undefined ? (updates.description ?? null) : category.description,
+          parentId: updates.parentId !== undefined ? (updates.parentId ?? null) : category.parentId,
+          order: updates.order ?? category.order,
+          isActive: updates.isActive ?? category.isActive,
+          updatedAt: new Date().toISOString(),
+          id,
         };
 
         set({

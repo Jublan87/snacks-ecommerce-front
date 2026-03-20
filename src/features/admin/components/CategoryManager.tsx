@@ -50,7 +50,7 @@ export default function CategoryManager({
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(
-    null
+    null,
   );
 
   const {
@@ -130,7 +130,7 @@ export default function CategoryManager({
         toast.error(
           error instanceof Error
             ? error.message
-            : 'Error al eliminar la categoría'
+            : 'Error al eliminar la categoría',
         );
       }
     }
@@ -157,7 +157,9 @@ export default function CategoryManager({
       reset();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : 'Error al guardar la categoría'
+        error instanceof Error
+          ? error.message
+          : 'Error al guardar la categoría',
       );
     }
   };
@@ -403,8 +405,8 @@ export default function CategoryManager({
           <DialogHeader>
             <DialogTitle>¿Eliminar categoría?</DialogTitle>
             <DialogDescription>
-              Esta acción no se puede deshacer. La categoría "
-              {categoryToDelete?.name}" será eliminada permanentemente.
+              Esta acción no se puede deshacer. La categoría &quot;
+              {categoryToDelete?.name}&quot; será eliminada permanentemente.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import ProtectedRoute from '@features/auth/components/ProtectedRoute';
 import { useOrderStore } from '@features/order/store/order-store';
 import { useAuthStore } from '@features/auth/store/auth-store';
+import type { Order } from '@features/order/types';
 import { Button } from '@shared/ui/button';
 import {
   Card,
@@ -20,19 +21,93 @@ import {
 import { Separator } from '@shared/ui/separator';
 import { Badge } from '@shared/ui/badge';
 
+// ─────────────────────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────────────────────
+
+function formatDate(dateString: string) {
+  return new Date(dateString).toLocaleDateString('es-AR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+function getPaymentMethodText(method: string) {
+  const methods: Record<string, string> = {
+    credit_card: 'Tarjeta de Crédito',
+    debit_card: 'Tarjeta de Débito',
+    cash_on_delivery: 'Efectivo contra Entrega',
+    bank_transfer: 'Transferencia Bancaria',
+  };
+  return methods[method] || method;
+}
+
+function getStatusBadge(status: string) {
+  const statusConfig: Record<
+    string,
+    { label: string; variant: 'default' | 'secondary' | 'outline' }
+  > = {
+    pending: { label: 'Pendiente', variant: 'outline' },
+    confirmed: { label: 'Confirmado', variant: 'default' },
+    processing: { label: 'En Proceso', variant: 'default' },
+    shipped: { label: 'Enviado', variant: 'secondary' },
+    delivered: { label: 'Entregado', variant: 'default' },
+    cancelled: { label: 'Cancelado', variant: 'outline' },
+  };
+
+  const config = statusConfig[status] ?? {
+    label: status,
+    variant: 'outline' as const,
+  };
+
+  return (
+    <Badge variant={config.variant} className="text-sm">
+      {config.label}
+    </Badge>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Page content
+// ─────────────────────────────────────────────────────────────
+
 function ConfirmacionPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const orderNumber = searchParams.get('orderNumber');
+
   const getOrderByOrderNumber = useOrderStore(
-    (state) => state.getOrderByOrderNumber
+    (state) => state.getOrderByOrderNumber,
   );
+  const loadOrderByNumber = useOrderStore((state) => state.loadOrderByNumber);
   const user = useAuthStore((state) => state.user);
 
-  // Obtener el pedido
-  const order = orderNumber ? getOrderByOrderNumber(orderNumber) : null;
+  // The order may already be in the cache (put there by checkout page after creation),
+  // or we need to fetch it from the API (e.g. after a page refresh).
+  const cachedOrder = orderNumber ? getOrderByOrderNumber(orderNumber) : null;
+  const [order, setOrder] = useState<Order | null>(cachedOrder ?? null);
+  const [isFetching, setIsFetching] = useState(!cachedOrder && !!orderNumber);
 
-  // Validar que el pedido existe y pertenece al usuario
+  useEffect(() => {
+    if (cachedOrder) {
+      setOrder(cachedOrder);
+      return;
+    }
+
+    if (!orderNumber) return;
+
+    setIsFetching(true);
+    loadOrderByNumber(orderNumber)
+      .then((fetched) => {
+        setOrder(fetched);
+        setIsFetching(false);
+      })
+      .catch(() => setIsFetching(false));
+  }, [orderNumber, cachedOrder, loadOrderByNumber]);
+
   useEffect(() => {
     if (!orderNumber) {
       toast.error('Número de pedido no válido');
@@ -40,75 +115,33 @@ function ConfirmacionPageContent() {
       return;
     }
 
-    if (!order) {
+    if (!isFetching && !order) {
       toast.error('Pedido no encontrado');
       router.push('/carrito');
       return;
     }
 
-    if (user && order.userId !== user.id) {
+    if (order && user && order.userId !== user.id) {
       toast.error('No tienes permiso para ver este pedido');
       router.push('/carrito');
-      return;
     }
-  }, [orderNumber, order, user, router]);
+  }, [orderNumber, order, isFetching, user, router]);
 
-  if (!order) {
-    return null; // El useEffect redirigirá
+  if (isFetching) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-600">Cargando pedido...</p>
+      </div>
+    );
   }
 
-  // Formatear fecha
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('es-AR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  // Obtener texto del método de pago
-  const getPaymentMethodText = (method: string) => {
-    const methods: Record<string, string> = {
-      credit_card: 'Tarjeta de Crédito',
-      debit_card: 'Tarjeta de Débito',
-      cash_on_delivery: 'Efectivo contra Entrega',
-      bank_transfer: 'Transferencia Bancaria',
-    };
-    return methods[method] || method;
-  };
-
-  // Obtener badge de estado
-  const getStatusBadge = (status: string) => {
-    const statusConfig: Record<
-      string,
-      { label: string; variant: 'default' | 'secondary' | 'outline' }
-    > = {
-      pending: { label: 'Pendiente', variant: 'outline' },
-      confirmed: { label: 'Confirmado', variant: 'default' },
-      processing: { label: 'En Proceso', variant: 'default' },
-      shipped: { label: 'Enviado', variant: 'secondary' },
-      delivered: { label: 'Entregado', variant: 'default' },
-      cancelled: { label: 'Cancelado', variant: 'outline' },
-    };
-
-    const config = statusConfig[status] || {
-      label: status,
-      variant: 'outline' as const,
-    };
-
-    return (
-      <Badge variant={config.variant} className="text-sm">
-        {config.label}
-      </Badge>
-    );
-  };
+  if (!order) {
+    return null; // useEffect will redirect
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header de la página */}
+      {/* Header */}
       <div className="bg-white border-b">
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center gap-4 mb-4">
@@ -169,7 +202,6 @@ function ConfirmacionPageContent() {
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Fecha del pedido */}
               <div>
                 <p className="text-sm text-gray-600 mb-1">Fecha del pedido</p>
                 <p className="font-semibold">{formatDate(order.createdAt)}</p>
@@ -219,17 +251,9 @@ function ConfirmacionPageContent() {
                         <p className="text-sm text-gray-600 mb-2">
                           Cantidad: {item.quantity}
                         </p>
-                        <div className="flex items-center gap-2">
-                          <p className="text-base font-semibold text-gray-800">
-                            ${item.price.toLocaleString('es-AR')} c/u
-                          </p>
-                          {item.product.discountPrice &&
-                            item.price === item.product.discountPrice && (
-                              <p className="text-sm text-gray-500 line-through">
-                                ${item.product.price.toLocaleString('es-AR')}
-                              </p>
-                            )}
-                        </div>
+                        <p className="text-base font-semibold text-gray-800">
+                          ${item.price.toLocaleString('es-AR')} c/u
+                        </p>
                       </div>
 
                       {/* Total del item */}
@@ -328,11 +352,13 @@ function ConfirmacionPageContent() {
 export default function ConfirmacionPage() {
   return (
     <ProtectedRoute>
-      <Suspense fallback={
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="text-center">Cargando...</div>
-        </div>
-      }>
+      <Suspense
+        fallback={
+          <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="text-center">Cargando...</div>
+          </div>
+        }
+      >
         <ConfirmacionPageContent />
       </Suspense>
     </ProtectedRoute>

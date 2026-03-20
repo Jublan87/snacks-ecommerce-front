@@ -1,12 +1,12 @@
-import { Product } from '@features/product/types';
+import { ProductListItem } from '@features/product/types';
 import type { SortOption } from '@features/filters/types';
 
 export function filterProducts(
-  products: Product[],
+  products: ProductListItem[],
   searchQuery: string,
   selectedCategories: string[],
   hasDiscount?: boolean
-): Product[] {
+): ProductListItem[] {
   let filtered = [...products];
 
   // Filtro por búsqueda
@@ -15,7 +15,6 @@ export function filterProducts(
     filtered = filtered.filter(
       (product) =>
         product.name.toLowerCase().includes(query) ||
-        product.description.toLowerCase().includes(query) ||
         product.shortDescription?.toLowerCase().includes(query) ||
         product.tags.some((tag) => tag.toLowerCase().includes(query))
     );
@@ -37,9 +36,9 @@ export function filterProducts(
 }
 
 export function sortProducts(
-  products: Product[],
+  products: ProductListItem[],
   sortBy: SortOption
-): Product[] {
+): ProductListItem[] {
   const sorted = [...products];
 
   switch (sortBy) {

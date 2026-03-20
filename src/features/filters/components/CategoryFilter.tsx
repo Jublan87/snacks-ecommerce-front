@@ -1,44 +1,39 @@
 'use client';
 
 import { Category } from '@features/product/types';
-import { MOCK_CATEGORIES } from '@features/product/mocks/products.mock';
 import { Button } from '@shared/ui/button';
 
 interface CategoryFilterProps {
+  categories: Category[];
   selectedCategories: string[];
   onCategoryChange: (categoryId: string) => void;
   onClearCategories: () => void;
 }
 
+function flattenCategories(categories: Category[]): Category[] {
+  const flat: Category[] = [];
+  for (const category of categories) {
+    flat.push(category);
+    if (category.children?.length) {
+      flat.push(...category.children);
+    }
+  }
+  return flat.filter((cat) => cat.isActive);
+}
+
 export default function CategoryFilter({
+  categories,
   selectedCategories,
   onCategoryChange,
   onClearCategories,
 }: CategoryFilterProps) {
-  // Función para obtener todas las categorías (incluyendo subcategorías)
-  const getAllCategories = (): Category[] => {
-    const allCategories: Category[] = [];
-
-    MOCK_CATEGORIES.forEach((category) => {
-      // Agregar categoría principal
-      allCategories.push(category);
-
-      // Agregar subcategorías si existen
-      if (category.children) {
-        allCategories.push(...category.children);
-      }
-    });
-
-    return allCategories.filter((cat) => cat.isActive);
-  };
-
-  const categories = getAllCategories();
+  const flatCategories = flattenCategories(categories);
 
   return (
     <div className="space-y-4">
       <h3 className="font-semibold text-lg text-gray-900 mb-4">Categorías</h3>
       <div className="space-y-2">
-        {categories.map((category) => {
+        {flatCategories.map((category) => {
           const isSelected = selectedCategories.includes(category.id);
 
           return (

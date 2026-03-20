@@ -50,13 +50,19 @@ export default function RegisterPage() {
 
   const onSubmit = async (data: RegisterFormInput) => {
     try {
-      await register(data);
+      await register({
+        email: data.email,
+        password: data.password,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        phone: data.phone,
+      });
       toast.success('¡Cuenta creada exitosamente!');
       router.push('/');
       router.refresh();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : 'Error al crear la cuenta'
+        error instanceof Error ? error.message : 'Error al crear la cuenta',
       );
     }
   };
@@ -82,7 +88,10 @@ export default function RegisterPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 md:space-y-4">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="space-y-3 md:space-y-4"
+          >
             {/* Nombre y Apellido en la misma fila */}
             <div className="grid grid-cols-2 gap-3 md:gap-4">
               {/* Nombre */}

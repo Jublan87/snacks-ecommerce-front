@@ -1,265 +1,84 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import type { User, LoginCredentials, RegisterData, UpdateProfileData, ChangePasswordData } from '@features/auth/types/auth.types';
 import {
-  User,
-  LoginCredentials,
-  RegisterCredentials,
-} from '@features/auth/types';
-import {
-  addMockUser,
-  emailExists,
-  findMockUser,
-  updateMockUser,
-  updateMockUserPassword,
-} from '@features/auth/utils/storage.utils';
+  loginAction,
+  registerAction,
+  logoutAction,
+  getMeAction,
+  updateProfileAction,
+  changePasswordAction,
+} from '@features/auth/actions/auth.actions';
 
 interface AuthStore {
   user: User | null;
   isAuthenticated: boolean;
-  token: string | null;
+  isLoading: boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
-  register: (credentials: RegisterCredentials) => Promise<void>;
-  logout: () => void;
+  register: (data: RegisterData) => Promise<void>;
+  logout: () => Promise<void>;
   checkAuth: () => boolean;
   isAdmin: () => boolean;
-  updateUser: (updatedData: Partial<User>) => Promise<void>;
+  updateUser: (data: UpdateProfileData) => Promise<void>;
   updatePassword: (currentPassword: string, newPassword: string) => Promise<void>;
+  initialize: () => Promise<void>;
 }
 
-// Función para generar ID único
-const generateUserId = (): string => {
-  return `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-};
+export const useAuthStore = create<AuthStore>()((set, get) => ({
+  user: null,
+  isAuthenticated: false,
+  isLoading: false,
 
-// Función para generar token mock (en producción vendrá del backend)
-const generateMockToken = (): string => {
-  return `mock-token-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-};
-
-// Función para establecer cookie de autenticación
-const setAuthCookie = (token: string | null) => {
-  if (typeof document === 'undefined') return;
-
-  if (token) {
-    // Establecer cookie con expiración de 7 días
-    const expires = new Date();
-    expires.setDate(expires.getDate() + 7);
-    document.cookie = `auth-token=${token}; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
-  } else {
-    // Eliminar cookie
-    document.cookie =
-      'auth-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-  }
-};
-
-export const useAuthStore = create<AuthStore>()(
-  persist(
-    (set, get) => ({
-      user: null,
-      isAuthenticated: false,
-      token: null,
-
-      login: async (credentials: LoginCredentials) => {
-        // Simular delay de red
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
-        // Buscar usuario en localStorage
-        const foundUser = findMockUser(credentials.email, credentials.password);
-
-        if (!foundUser) {
-          throw new Error('Email o contraseña incorrectos');
-        }
-
-        const token = generateMockToken();
-
-        set({
-          user: foundUser.user,
-          isAuthenticated: true,
-          token,
-        });
-
-        // Establecer cookie para el middleware
-        setAuthCookie(token);
-        
-        // Establecer cookie de rol para el middleware (temporal hasta tener backend)
-        if (foundUser.user.role === 'admin' && typeof document !== 'undefined') {
-          const expires = new Date();
-          expires.setDate(expires.getDate() + 7);
-          document.cookie = `user-role=admin; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
-        }
-      },
-
-      register: async (credentials: RegisterCredentials) => {
-        // Simular delay de red
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
-        // Validar que las contraseñas coincidan
-        if (credentials.password !== credentials.confirmPassword) {
-          throw new Error('Las contraseñas no coinciden');
-        }
-
-        // Validar que el email no esté en uso
-        if (emailExists(credentials.email)) {
-          throw new Error('Este email ya está registrado');
-        }
-
-        // Validar longitud de contraseña
-        if (credentials.password.length < 6) {
-          throw new Error('La contraseña debe tener al menos 6 caracteres');
-        }
-
-        // Crear nuevo usuario
-        const newUser: User = {
-          id: generateUserId(),
-          email: credentials.email,
-          firstName: credentials.firstName,
-          lastName: credentials.lastName,
-          phone: credentials.phone,
-          role: 'customer', // Por defecto todos los usuarios son clientes
-          createdAt: new Date().toISOString(),
-          // Si se proporcionaron datos de dirección, guardarlos
-          shippingAddress:
-            credentials.shippingAddress &&
-            credentials.shippingAddress.address &&
-            credentials.shippingAddress.city &&
-            credentials.shippingAddress.province &&
-            credentials.shippingAddress.postalCode
-              ? {
-                  firstName: credentials.firstName,
-                  lastName: credentials.lastName,
-                  email: credentials.email,
-                  phone: credentials.phone || '',
-                  address: credentials.shippingAddress.address,
-                  city: credentials.shippingAddress.city,
-                  province: credentials.shippingAddress.province,
-                  postalCode: credentials.shippingAddress.postalCode,
-                  notes: credentials.shippingAddress.notes,
-                }
-              : undefined,
-        };
-
-        // Agregar a mock y guardar en localStorage (en producción esto se haría en el backend)
-        const mockUserData = {
-          email: credentials.email,
-          password: credentials.password, // En producción esto nunca se guardaría en texto plano
-          user: newUser,
-        };
-        addMockUser(mockUserData);
-
-        const token = generateMockToken();
-
-        set({
-          user: newUser,
-          isAuthenticated: true,
-          token,
-        });
-
-        // Establecer cookie para el middleware
-        setAuthCookie(token);
-        
-        // Establecer cookie de rol para el middleware (temporal hasta tener backend)
-        if (newUser.role === 'admin' && typeof document !== 'undefined') {
-          const expires = new Date();
-          expires.setDate(expires.getDate() + 7);
-          document.cookie = `user-role=${newUser.role}; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
-        }
-      },
-
-      logout: () => {
-        set({
-          user: null,
-          isAuthenticated: false,
-          token: null,
-        });
-
-        // Eliminar cookies
-        setAuthCookie(null);
-        if (typeof document !== 'undefined') {
-          document.cookie = 'user-role=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-        }
-      },
-
-      checkAuth: () => {
-        return get().isAuthenticated;
-      },
-
-      isAdmin: () => {
-        const user = get().user;
-        return user?.role === 'admin';
-      },
-
-      updateUser: async (updatedData: Partial<User>) => {
-        const currentUser = get().user;
-        if (!currentUser) {
-          throw new Error('No hay usuario autenticado');
-        }
-
-        // Simular delay de red
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
-        // Actualizar en localStorage
-        updateMockUser(currentUser.id, updatedData);
-
-        // Actualizar en el store
-        const updatedUser: User = {
-          ...currentUser,
-          ...updatedData,
-          id: currentUser.id, // No permitir cambiar el ID
-          email: currentUser.email, // No permitir cambiar el email
-          createdAt: currentUser.createdAt, // No permitir cambiar la fecha de creación
-        };
-
-        set({
-          user: updatedUser,
-        });
-      },
-
-      updatePassword: async (currentPassword: string, newPassword: string) => {
-        const currentUser = get().user;
-        if (!currentUser) {
-          throw new Error('No hay usuario autenticado');
-        }
-
-        // Simular delay de red
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
-        // Verificar que la contraseña actual sea correcta
-        const foundUser = findMockUser(currentUser.email, currentPassword);
-        if (!foundUser) {
-          throw new Error('La contraseña actual es incorrecta');
-        }
-
-        // Validar longitud de nueva contraseña
-        if (newPassword.length < 6) {
-          throw new Error('La contraseña debe tener al menos 6 caracteres');
-        }
-
-        // Actualizar contraseña en localStorage
-        updateMockUserPassword(currentUser.id, newPassword);
-      },
-    }),
-    {
-      name: 'auth-storage', // Nombre de la clave en localStorage
-      storage: createJSONStorage(() => localStorage),
-      // Solo persistir user, isAuthenticated y token, no las funciones
-      partialize: (state) => ({
-        user: state.user,
-        isAuthenticated: state.isAuthenticated,
-        token: state.token,
-      }),
-      // Sincronizar cookie cuando se restaura el estado desde localStorage
-      onRehydrateStorage: () => (state) => {
-        if (state?.token && typeof window !== 'undefined') {
-          setAuthCookie(state.token);
-          
-          // También restaurar la cookie de rol si el usuario es admin
-          if (state?.user?.role === 'admin') {
-            const expires = new Date();
-            expires.setDate(expires.getDate() + 7);
-            document.cookie = `user-role=admin; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
-          }
-        }
-      },
+  initialize: async () => {
+    set({ isLoading: true });
+    const result = await getMeAction();
+    if (result.success && result.data) {
+      set({ user: result.data, isAuthenticated: true, isLoading: false });
+    } else {
+      set({ user: null, isAuthenticated: false, isLoading: false });
     }
-  )
-);
+  },
+
+  login: async (credentials: LoginCredentials) => {
+    const result = await loginAction(credentials);
+    if (!result.success || !result.data) {
+      throw new Error(result.error ?? 'Error al iniciar sesión');
+    }
+    set({ user: result.data, isAuthenticated: true });
+  },
+
+  register: async (data: RegisterData) => {
+    const result = await registerAction(data);
+    if (!result.success || !result.data) {
+      throw new Error(result.error ?? 'Error al registrarse');
+    }
+    set({ user: result.data, isAuthenticated: true });
+  },
+
+  logout: async () => {
+    await logoutAction();
+    set({ user: null, isAuthenticated: false });
+  },
+
+  checkAuth: () => {
+    return get().isAuthenticated;
+  },
+
+  isAdmin: () => {
+    return get().user?.role === 'admin';
+  },
+
+  updateUser: async (data: UpdateProfileData) => {
+    const result = await updateProfileAction(data);
+    if (!result.success || !result.data) {
+      throw new Error(result.error ?? 'Error al actualizar perfil');
+    }
+    set({ user: result.data });
+  },
+
+  updatePassword: async (currentPassword: string, newPassword: string) => {
+    const result = await changePasswordAction({ currentPassword, newPassword });
+    if (!result.success) {
+      throw new Error(result.error ?? 'Error al cambiar contraseña');
+    }
+  },
+}));

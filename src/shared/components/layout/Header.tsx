@@ -17,7 +17,7 @@ const CartDrawer = dynamic(
   () => import('@features/cart/components/CartDrawer'),
   {
     ssr: false, // No renderizar en servidor ya que usa estado del cliente
-  }
+  },
 );
 // Auth store
 import { useAuthStore } from '@features/auth/store/auth-store';
@@ -60,9 +60,8 @@ export default function Header() {
     setIsCartOpen(!isCartOpen);
   };
 
-  // Función para cerrar sesión
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     toast.success('Sesión cerrada exitosamente');
     router.push('/');
     router.refresh();

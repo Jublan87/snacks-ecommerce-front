@@ -1,32 +1,3 @@
-export interface Product {
-  id: string;
-  name: string;
-  slug: string;
-  description: string;
-  shortDescription?: string;
-  sku: string;
-  price: number;
-  discountPrice?: number;
-  discountPercentage?: number;
-  stock: number;
-  images: ProductImage[];
-  categoryId: string;
-  category?: Category;
-  variants?: ProductVariant[];
-  specifications?: Record<string, string>;
-  isActive: boolean;
-  isFeatured: boolean;
-  tags: string[];
-  weight?: number;
-  dimensions?: {
-    width: number;
-    height: number;
-    depth: number;
-  };
-  createdAt: string;
-  updatedAt: string;
-}
-
 export interface ProductImage {
   id: string;
   url: string;
@@ -35,29 +6,126 @@ export interface ProductImage {
   order: number;
 }
 
+export interface VariantOption {
+  id: string;
+  value: string;
+  priceModifier: number | null;
+  stock: number;
+  sku: string | null;
+}
+
 export interface ProductVariant {
   id: string;
   name: string;
   options: VariantOption[];
 }
 
-export interface VariantOption {
+export interface ProductCategory {
   id: string;
-  value: string;
-  priceModifier?: number;
+  name: string;
+  slug: string;
+}
+
+/**
+ * Dimensiones físicas del producto en centímetros.
+ * Corresponde al campo Json? `dimensions` en Prisma.
+ */
+export interface ProductDimensions {
+  width: number;
+  height: number;
+  depth: number;
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  shortDescription: string | null;
+  sku: string;
+  price: number;
+  discountPrice: number | null;
+  discountPercentage: number | null;
   stock: number;
-  sku?: string;
+  categoryId: string;
+  category: ProductCategory;
+  specifications: unknown;
+  isActive: boolean;
+  isFeatured: boolean;
+  tags: string[];
+  weight: number | null;
+  dimensions: ProductDimensions | null;
+  images: ProductImage[];
+  variants: ProductVariant[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProductListItem {
+  id: string;
+  name: string;
+  slug: string;
+  shortDescription: string | null;
+  price: number;
+  discountPrice: number | null;
+  discountPercentage: number | null;
+  stock: number;
+  isActive: boolean;
+  isFeatured: boolean;
+  tags: string[];
+  categoryId: string;
+  category: ProductCategory;
+  images: ProductImage[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Category {
   id: string;
   name: string;
   slug: string;
-  description?: string;
-  parentId?: string | null;
-  children?: Category[];
-  image?: string;
+  description: string | null;
+  parentId: string | null;
+  image: string | null;
   order: number;
   isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  children: Category[];
+}
+
+export interface PaginationMeta {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
+export interface ProductsResponse {
+  items: ProductListItem[];
+  meta: PaginationMeta;
+}
+
+export type ProductSortBy =
+  | 'name-asc'
+  | 'name-desc'
+  | 'price-asc'
+  | 'price-desc'
+  | 'newest'
+  | 'oldest';
+
+export interface ProductFilters {
+  search?: string;
+  category?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  inStock?: boolean;
+  isFeatured?: boolean;
+  hasDiscount?: boolean;
+  sortBy?: ProductSortBy;
+  page?: number;
+  limit?: number;
 }
 

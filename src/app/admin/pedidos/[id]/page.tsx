@@ -1,5 +1,12 @@
 'use client';
 
+/**
+ * Admin order detail page — Client Component.
+ *
+ * Tries to find the order in the store cache first.
+ * If not there (e.g. direct navigation), fetches it from the API.
+ */
+
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -16,6 +23,7 @@ import {
 import { toast } from 'sonner';
 import { useOrderStore } from '@features/order/store/order-store';
 import { OrderStatus } from '@features/order/types';
+import type { Order } from '@features/order/types';
 import {
   getStatusBadge,
   getPaymentMethodText,
@@ -50,11 +58,36 @@ export default function AdminOrderDetailPage() {
   const router = useRouter();
   const params = useParams();
   const orderId = params.id as string;
-  const order = useOrderStore((state) =>
-    orderId ? state.orders.find((o) => o.id === orderId) ?? null : null
-  );
+
+  const getOrderById = useOrderStore((state) => state.getOrderById);
+  const loadOrderByNumber = useOrderStore((state) => state.loadOrderByNumber);
   const updateOrderStatus = useOrderStore((state) => state.updateOrderStatus);
+
+  const [order, setOrder] = useState<Order | null>(
+    orderId ? (getOrderById(orderId) ?? null) : null
+  );
+  const [isFetching, setIsFetching] = useState(!order && !!orderId);
   const [isUpdating, setIsUpdating] = useState(false);
+
+  // If not in cache, fetch by ID from the API
+  useEffect(() => {
+    if (order || !orderId) return;
+
+    setIsFetching(true);
+
+    // We use loadOrderByNumber but for IDs we import getOrderById from service
+    import('@features/order/services/order.service')
+      .then(({ getOrderById: fetchById }) => fetchById(orderId))
+      .then((fetched) => {
+        if (fetched) {
+          setOrder(fetched);
+          useOrderStore.getState().upsertOrder(fetched);
+        }
+        setIsFetching(false);
+      })
+      .catch(() => setIsFetching(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orderId]);
 
   useEffect(() => {
     if (!orderId) {
@@ -62,18 +95,22 @@ export default function AdminOrderDetailPage() {
       router.push('/admin/pedidos');
       return;
     }
-    if (!order) {
+    if (!isFetching && !order) {
       toast.error('Pedido no encontrado');
       router.push('/admin/pedidos');
-      return;
     }
-  }, [orderId, order, router]);
+  }, [orderId, order, isFetching, router, loadOrderByNumber]);
 
   const handleStatusChange = async (newStatus: OrderStatus) => {
     if (!order) return;
     setIsUpdating(true);
     try {
+      // Local-only update for instant feedback (no PATCH endpoint yet)
       updateOrderStatus(order.id, newStatus);
+      // Reflect the change in local state too
+      setOrder((prev) =>
+        prev ? { ...prev, status: newStatus, updatedAt: new Date().toISOString() } : prev
+      );
       toast.success('Estado actualizado correctamente');
     } catch (e) {
       toast.error(
@@ -83,6 +120,14 @@ export default function AdminOrderDetailPage() {
       setIsUpdating(false);
     }
   };
+
+  if (isFetching) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
+        <p className="text-gray-500">Cargando pedido...</p>
+      </div>
+    );
+  }
 
   if (!order) {
     return null;
@@ -110,7 +155,7 @@ export default function AdminOrderDetailPage() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            {getStatusBadge(order.status)}
+            {getStatusBadge(order.status as OrderStatus)}
             <Select
               value={order.status}
               onValueChange={(value) => handleStatusChange(value as OrderStatus)}
@@ -293,13 +338,16 @@ export default function AdminOrderDetailPage() {
                 </div>
                 {/* Estados del flujo */}
                 {STATUS_FLOW.map((status, index) => {
-                  const currentFlowIndex = STATUS_FLOW.indexOf(order.status);
+                  const currentFlowIndex = STATUS_FLOW.indexOf(
+                    order.status as OrderStatus
+                  );
                   const isReached =
                     order.status === status ||
                     (!isCancelled && currentFlowIndex >= index) ||
                     (isCancelled && index === 0);
                   const isCurrent = order.status === status && !isCancelled;
-                  const isLastStep = !isCancelled && order.status === status;
+                  const isLastStep =
+                    !isCancelled && order.status === status;
                   const showLineBelow = isCancelled || !isLastStep;
                   return (
                     <div
@@ -311,7 +359,9 @@ export default function AdminOrderDetailPage() {
                       )}
                       <div
                         className={`relative z-10 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full ${
-                          isReached ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-400'
+                          isReached
+                            ? 'bg-green-500 text-white'
+                            : 'bg-gray-200 text-gray-400'
                         }`}
                       >
                         {isReached ? (
@@ -323,22 +373,25 @@ export default function AdminOrderDetailPage() {
                       <div>
                         <p
                           className={
-                            isCurrent ? 'font-bold text-gray-900' : 'font-medium text-gray-900'
+                            isCurrent
+                              ? 'font-bold text-gray-900'
+                              : 'font-medium text-gray-900'
                           }
                         >
                           {ORDER_STATUS_CONFIG[status].label}
                         </p>
-                        {isCurrent && order.updatedAt !== order.createdAt && (
-                          <p className="text-sm text-gray-500">
-                            Actualizado:{' '}
-                            {formatDate(order.updatedAt, true)}
-                          </p>
-                        )}
+                        {isCurrent &&
+                          order.updatedAt !== order.createdAt && (
+                            <p className="text-sm text-gray-500">
+                              Actualizado:{' '}
+                              {formatDate(order.updatedAt, true)}
+                            </p>
+                          )}
                       </div>
                     </div>
                   );
                 })}
-                {/* Cancelado (si aplica): único con cruz roja, sin línea después */}
+                {/* Cancelado */}
                 {isCancelled && (
                   <div className="relative flex gap-4">
                     <div className="relative z-10 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-red-500 text-white">

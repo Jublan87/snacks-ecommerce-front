@@ -27,7 +27,6 @@ import { Separator } from '@shared/ui/separator';
 function LoginForm() {
   const searchParams = useSearchParams();
   const login = useAuthStore((state) => state.login);
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   const {
     register,
@@ -45,52 +44,21 @@ function LoginForm() {
     try {
       await login(data);
 
-      // Obtener el usuario después del login para verificar su rol
       const user = useAuthStore.getState().user;
       const isAdmin = user?.role === 'admin';
-
-      // Obtener la URL de redirect antes de redirigir
       const redirectUrl = searchParams.get('redirect');
-      
-      // Si el usuario es admin, redirigir al panel admin (a menos que haya un redirect específico)
-      // Si hay un redirect específico, respetarlo (por ejemplo, si venía de /admin)
-      let targetUrl = redirectUrl || (isAdmin ? '/admin' : '/');
+      const targetUrl = redirectUrl || (isAdmin ? '/admin' : '/');
 
-      // Mensaje de bienvenida personalizado para admins
       if (isAdmin) {
         toast.success('¡Bienvenido al panel de administración!');
       } else {
         toast.success('¡Bienvenido de vuelta!');
       }
 
-      // Verificar que la cookie esté establecida antes de redirigir
-      // Esto es importante porque el middleware del servidor necesita ver la cookie
-      const checkCookie = () => {
-        const cookies = document.cookie.split(';');
-        const authCookie = cookies.find((cookie) =>
-          cookie.trim().startsWith('auth-token=')
-        );
-        return !!authCookie && authCookie.trim().length > 0;
-      };
-
-      // Esperar un momento para que la cookie se establezca completamente
-      // Luego verificar que esté disponible antes de redirigir
-      setTimeout(() => {
-        // Verificar que la cookie esté disponible
-        if (checkCookie()) {
-          // Usar window.location.href para forzar una navegación completa del navegador
-          // Esto asegura que el middleware vea la cookie actualizada
-          window.location.href = targetUrl;
-        } else {
-          // Si la cookie no está disponible después del delay, intentar de nuevo
-          // o redirigir de todas formas (el ProtectedRoute del cliente manejará la autenticación)
-          console.warn('Cookie no detectada, redirigiendo de todas formas');
-          window.location.href = targetUrl;
-        }
-      }, 500); // Aumentar delay a 500ms para dar más tiempo a la cookie
+      window.location.href = targetUrl;
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : 'Error al iniciar sesión'
+        error instanceof Error ? error.message : 'Error al iniciar sesión',
       );
     }
   };
@@ -116,8 +84,10 @@ function LoginForm() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 md:space-y-4">
-            {/* Email */}
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="space-y-3 md:space-y-4"
+          >
             <div className="space-y-2">
               <label
                 htmlFor="email"
@@ -137,9 +107,7 @@ function LoginForm() {
                   className="pl-10"
                   {...register('email')}
                   aria-invalid={errors.email ? 'true' : 'false'}
-                  aria-describedby={
-                    errors.email ? 'email-error' : undefined
-                  }
+                  aria-describedby={errors.email ? 'email-error' : undefined}
                 />
               </div>
               {errors.email && (
@@ -153,7 +121,6 @@ function LoginForm() {
               )}
             </div>
 
-            {/* Contraseña */}
             <div className="space-y-2">
               <label
                 htmlFor="password"
@@ -191,7 +158,6 @@ function LoginForm() {
 
             <Separator />
 
-            {/* Botón de envío */}
             <Button
               type="submit"
               className="w-full"
@@ -206,7 +172,6 @@ function LoginForm() {
 
           <Separator className="my-6" />
 
-          {/* Link a registro */}
           <div className="text-center text-sm">
             <span className="text-gray-600">¿No tienes una cuenta? </span>
             <Link
@@ -224,15 +189,17 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={
-      <div className="container mx-auto px-4 py-12 max-w-md">
-        <Card>
-          <CardContent className="p-6">
-            <div className="text-center">Cargando...</div>
-          </CardContent>
-        </Card>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="container mx-auto px-4 py-12 max-w-md">
+          <Card>
+            <CardContent className="p-6">
+              <div className="text-center">Cargando...</div>
+            </CardContent>
+          </Card>
+        </div>
+      }
+    >
       <LoginForm />
     </Suspense>
   );

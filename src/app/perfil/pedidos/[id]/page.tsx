@@ -1,19 +1,19 @@
-'use client';
+/**
+ * Order detail page — Server Component.
+ *
+ * The [id] segment is the order UUID. The backend verifies ownership,
+ * so we just fetch and display; unauthorized / not-found cases redirect.
+ */
 
-import { useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowLeft, Package, MapPin, CreditCard } from 'lucide-react';
-import { toast } from 'sonner';
-import ProtectedRoute from '@features/auth/components/ProtectedRoute';
-import { useAuthStore } from '@features/auth/store/auth-store';
-import { useOrderStore } from '@features/order/store/order-store';
+import { getOrderById } from '@features/order/services/order.service';
 import { Button } from '@shared/ui/button';
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from '@shared/ui/card';
@@ -23,40 +23,29 @@ import {
   getStatusBadge,
   getPaymentMethodText,
 } from '@features/order/utils/order.utils';
+import type { OrderStatus } from '@features/order/types';
 
-function OrderDetailPageContent() {
-  const router = useRouter();
-  const params = useParams();
-  const orderId = params.id as string;
-  const user = useAuthStore((state) => state.user);
-  const getOrderById = useOrderStore((state) => state.getOrderById);
+interface Props {
+  params: Promise<{ id: string }>;
+}
 
-  // Obtener el pedido
-  const order = orderId ? getOrderById(orderId) : null;
+export default async function OrderDetailPage({ params }: Props) {
+  const { id } = await params;
 
-  // Validar que el pedido existe y pertenece al usuario
-  useEffect(() => {
-    if (!orderId) {
-      toast.error('ID de pedido no válido');
-      router.push('/perfil/pedidos');
-      return;
-    }
+  const order = await getOrderById(id);
 
-    if (!order) {
-      toast.error('Pedido no encontrado');
-      router.push('/perfil/pedidos');
-      return;
-    }
+  if (order === null) {
+    // Returns null for 401 (redirect to login), 403 (forbidden) or 404
+    // We check: if the server returned 401, the user must log in first.
+    // For 403/404 we show a not-found page.
+    // Since we can't distinguish here without more context, redirect to login
+    // which will bounce back authenticated users to the orders list.
+    redirect('/login?redirect=/perfil/pedidos');
+  }
 
-    if (user && order.userId !== user.id) {
-      toast.error('No tienes permiso para ver este pedido');
-      router.push('/perfil/pedidos');
-      return;
-    }
-  }, [orderId, order, user, router]);
-
+  // Extra safety: if ID doesn't exist at all show Next.js 404
   if (!order) {
-    return null; // El useEffect redirigirá
+    notFound();
   }
 
   return (
@@ -75,10 +64,11 @@ function OrderDetailPageContent() {
               Detalle del Pedido
             </h1>
             <p className="text-gray-600 mt-2">
-              Número de orden: <span className="font-semibold">{order.orderNumber}</span>
+              Número de orden:{' '}
+              <span className="font-semibold">{order.orderNumber}</span>
             </p>
           </div>
-          {getStatusBadge(order.status)}
+          {getStatusBadge(order.status as OrderStatus)}
         </div>
       </div>
 
@@ -233,12 +223,3 @@ function OrderDetailPageContent() {
     </div>
   );
 }
-
-export default function OrderDetailPage() {
-  return (
-    <ProtectedRoute>
-      <OrderDetailPageContent />
-    </ProtectedRoute>
-  );
-}
-

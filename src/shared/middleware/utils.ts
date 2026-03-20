@@ -12,10 +12,10 @@ export function matchesRoute(pathname: string, routes: string[]): boolean {
 }
 
 /**
- * Obtiene el token de autenticación de las cookies
+ * Obtiene el token de autenticación de las cookies (HttpOnly JWT del backend)
  */
 export function getAuthToken(request: NextRequest): string | undefined {
-  return request.cookies.get('auth-token')?.value;
+  return request.cookies.get('access_token')?.value;
 }
 
 /**
@@ -24,7 +24,7 @@ export function getAuthToken(request: NextRequest): string | undefined {
 export function createRedirectUrl(
   baseUrl: string,
   request: NextRequest,
-  params?: Record<string, string>
+  params?: Record<string, string>,
 ): URL {
   const url = new URL(baseUrl, request.url);
   if (params) {

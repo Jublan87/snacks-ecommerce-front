@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import ProductCard from '@features/product/components/ProductCard';
-import { MOCK_PRODUCTS } from '@features/product/mocks/products.mock';
+import { getProducts } from '@features/product/services/product.service';
 
 export const metadata: Metadata = {
   title: 'Inicio',
@@ -14,7 +14,9 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Home() {
+export default async function Home() {
+  const { items: featuredProducts } = await getProducts({ isFeatured: true, limit: 8 });
+
   return (
     <main className="min-h-screen">
       {/* Hero Section - Diseño compacto y centrado */}
@@ -61,7 +63,7 @@ export default function Home() {
 
         {/* Grilla de productos */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {MOCK_PRODUCTS.map((product) => (
+          {featuredProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>

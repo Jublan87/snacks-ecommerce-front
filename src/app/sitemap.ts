@@ -1,10 +1,9 @@
 import { MetadataRoute } from 'next';
-import { MOCK_PRODUCTS } from '@features/product/mocks/products.mock';
+import { getProducts } from '@features/product/services/product.service';
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  // Rutas estáticas principales
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
@@ -38,13 +37,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
 
-  // Rutas dinámicas de productos
-  const productRoutes: MetadataRoute.Sitemap = MOCK_PRODUCTS.map((product) => ({
-    url: `${baseUrl}/productos/${product.slug}`,
-    lastModified: new Date(),
-    changeFrequency: 'weekly',
-    priority: 0.8,
-  }));
-
-  return [...staticRoutes, ...productRoutes];
+  try {
+    const { items: products } = await getProducts({ limit: 100 });
+    const productRoutes: MetadataRoute.Sitemap = products.map((product) => ({
+      url: `${baseUrl}/productos/${product.slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    }));
+    return [...staticRoutes, ...productRoutes];
+  } catch {
+    return staticRoutes;
+  }
 }
