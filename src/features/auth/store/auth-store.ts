@@ -8,6 +8,8 @@ import {
   updateProfileAction,
   changePasswordAction,
 } from '@features/auth/actions/auth.actions';
+// Cart store — imported lazily to avoid circular dependencies
+import { useCartStore } from '@features/cart/store/cart-store';
 
 interface AuthStore {
   user: User | null;
@@ -26,7 +28,7 @@ interface AuthStore {
 export const useAuthStore = create<AuthStore>()((set, get) => ({
   user: null,
   isAuthenticated: false,
-  isLoading: false,
+  isLoading: true,
 
   initialize: async () => {
     set({ isLoading: true });
@@ -56,7 +58,9 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
 
   logout: async () => {
     await logoutAction();
+    // Clear auth state and cart — cart items are user-specific
     set({ user: null, isAuthenticated: false });
+    useCartStore.getState().resetCart();
   },
 
   checkAuth: () => {

@@ -3,29 +3,49 @@
 /**
  * Admin orders page — Client Component.
  *
- * Loads orders via the store (which calls the API) on mount.
- * The store's deprecated updateOrderStatus keeps local state in sync
- * for instant UI feedback while a proper PATCH endpoint is added later.
+ * Uses the admin-specific order service (GET /admin/orders) — NOT the user
+ * order store — so it can see all orders and access admin-only filters.
+ * Status changes call PUT /admin/orders/:id/status for a real backend update.
  */
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { OrderStatus } from '@features/order/types';
-import { useOrderStore } from '@features/order/store/order-store';
+import {
+  getAdminOrders,
+  updateOrderStatus,
+  type AdminOrderDetail,
+  type AdminPaginatedOrders,
+} from '@features/admin/services/order.service';
 import OrderTable from '@features/admin/components/OrderTable';
 import { toast } from 'sonner';
 
 export default function AdminPedidosPage() {
-  const orders = useOrderStore((state) => state.orders);
-  const isLoading = useOrderStore((state) => state.isLoading);
-  const loadOrders = useOrderStore((state) => state.loadOrders);
-  const updateOrderStatus = useOrderStore((state) => state.updateOrderStatus);
+  const [orders, setOrders] = useState<AdminOrderDetail[]>([]);
+  const [pagination, setPagination] = useState<AdminPaginatedOrders['meta'] | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch all orders on mount (no user filter — admin sees everything)
+  // Load all orders on mount — admin sees everything, newest first
+  const loadOrders = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const result = await getAdminOrders({ sort: 'newest', limit: 50 });
+      // Backend returns { items, meta, summary } — NOT { orders, pagination }
+      setOrders(result.items);
+      setPagination(result.meta);
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : 'Error al cargar los pedidos';
+      toast.error(message);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    loadOrders({ sort: 'newest', limit: 50 });
+    loadOrders();
   }, [loadOrders]);
 
-  // Sort by newest first for the table (already sorted by API, but keep it explicit)
+  // Sort by newest first (API already does this, but keep explicit for safety)
   const sortedOrders = useMemo(
     () =>
       [...orders].sort(
@@ -35,14 +55,29 @@ export default function AdminPedidosPage() {
     [orders]
   );
 
-  const handleStatusChange = (orderId: string, status: OrderStatus) => {
+  const handleStatusChange = async (orderId: string, status: OrderStatus) => {
+    // Optimistic update — apply locally first for instant feedback
+    setOrders((prev) =>
+      prev.map((o) =>
+        o.id === orderId
+          ? { ...o, status, updatedAt: new Date().toISOString() }
+          : o
+      )
+    );
+
     try {
-      // Local-only update for instant feedback.
-      // TODO: call a PATCH /orders/:id/status Server Action when the endpoint is ready.
-      updateOrderStatus(orderId, status);
+      // Persist to backend and sync with the confirmed server state
+      const updated = await updateOrderStatus(orderId, status);
+      setOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? updated : o))
+      );
       toast.success('Estado del pedido actualizado');
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Error al actualizar');
+      // Rollback optimistic update by reloading from server
+      toast.error(
+        e instanceof Error ? e.message : 'Error al actualizar el estado'
+      );
+      loadOrders();
     }
   };
 
@@ -54,13 +89,19 @@ export default function AdminPedidosPage() {
         </h1>
         <p className="text-gray-600 mt-1">
           Administra los pedidos de los clientes
+          {pagination && (
+            <span className="ml-2 text-sm text-gray-400">
+              ({pagination.total} en total)
+            </span>
+          )}
         </p>
       </div>
 
       {isLoading ? (
         <p className="text-gray-500">Cargando pedidos...</p>
       ) : (
-        <OrderTable orders={sortedOrders} onStatusChange={handleStatusChange} />
+        // AdminOrderDetail is structurally compatible with Order for table display purposes
+        <OrderTable orders={sortedOrders as unknown as import('@features/order/types').Order[]} onStatusChange={handleStatusChange} />
       )}
     </div>
   );

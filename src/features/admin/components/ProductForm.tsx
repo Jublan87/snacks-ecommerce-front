@@ -25,7 +25,7 @@ import { toast } from 'sonner';
 interface ProductFormProps {
   product?: Product;
   categories: Category[];
-  onSubmit: (data: ProductFormInput) => void;
+  onSubmit: (data: ProductFormInput) => Promise<void> | void;
   onCancel: () => void;
   isLoading?: boolean;
 }
@@ -127,9 +127,9 @@ export default function ProductForm({
 
   const flatCategories = getAllCategoriesFlat(categories);
 
-  const onFormSubmit = (data: ProductFormInput) => {
+  const onFormSubmit = async (data: ProductFormInput) => {
     try {
-      onSubmit(data);
+      await onSubmit(data);
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : 'Error al guardar el producto',
@@ -188,7 +188,9 @@ export default function ProductForm({
             </label>
             <Input
               id="sku"
-              {...register('sku')}
+              {...register('sku', {
+                  setValueAs: (v) => (typeof v === 'string' ? v.toUpperCase() : v),
+                })}
               placeholder="DOR-NAC-150"
               className="uppercase"
             />
@@ -314,8 +316,7 @@ export default function ProductForm({
                 min="0"
                 max="100"
                 {...register('discountPercentage', {
-                  valueAsNumber: true,
-                  setValueAs: (v) => (v === '' ? undefined : Number(v)),
+                  setValueAs: (v) => (v === '' || v === undefined ? undefined : Number(v)),
                 })}
                 placeholder="0"
               />
@@ -437,8 +438,7 @@ export default function ProductForm({
                   min="0"
                   placeholder="Ancho"
                   {...register('dimensions.width', {
-                    valueAsNumber: true,
-                    setValueAs: (v) => (v === '' ? undefined : Number(v)),
+                    setValueAs: (v) => (v === '' || v === undefined ? undefined : Number(v)),
                   })}
                 />
                 {errors.dimensions?.width && (
@@ -454,8 +454,7 @@ export default function ProductForm({
                   min="0"
                   placeholder="Alto"
                   {...register('dimensions.height', {
-                    valueAsNumber: true,
-                    setValueAs: (v) => (v === '' ? undefined : Number(v)),
+                    setValueAs: (v) => (v === '' || v === undefined ? undefined : Number(v)),
                   })}
                 />
                 {errors.dimensions?.height && (
@@ -471,8 +470,7 @@ export default function ProductForm({
                   min="0"
                   placeholder="Profundidad"
                   {...register('dimensions.depth', {
-                    valueAsNumber: true,
-                    setValueAs: (v) => (v === '' ? undefined : Number(v)),
+                    setValueAs: (v) => (v === '' || v === undefined ? undefined : Number(v)),
                   })}
                 />
                 {errors.dimensions?.depth && (

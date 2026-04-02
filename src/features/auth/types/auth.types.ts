@@ -1,4 +1,4 @@
-import { ShippingAddress } from '@features/checkout/types';
+import { StoredShippingAddress } from '@features/checkout/types';
 
 export type UserRole = 'customer' | 'admin';
 
@@ -8,7 +8,8 @@ export interface User {
   firstName: string;
   lastName: string;
   phone?: string;
-  shippingAddress?: ShippingAddress;
+  // Only address/city/province/postalCode/notes — matches backend ShippingAddressDto
+  shippingAddress?: StoredShippingAddress;
   role: UserRole;
   createdAt: string;
 }
@@ -30,7 +31,7 @@ export interface UpdateProfileData {
   firstName?: string;
   lastName?: string;
   phone?: string;
-  shippingAddress?: ShippingAddress | null;
+  shippingAddress?: StoredShippingAddress | null;
 }
 
 export interface ChangePasswordData {

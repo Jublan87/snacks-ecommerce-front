@@ -2,7 +2,8 @@
 
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
-import { serverGet, serverPost, serverPut, ApiError } from '@shared/api';
+import { serverGet, serverPost, serverPut } from '@shared/api/server';
+import { ApiError } from '@shared/api';
 import type {
   User,
   LoginCredentials,
@@ -36,8 +37,9 @@ async function fetchWithCookieForward(
   if (!response.ok) {
     let message = response.statusText;
     try {
-      const data = await response.json();
-      message = data.message ?? message;
+      const body = await response.json();
+      // Backend error envelope: { success: false, error: { message, code, statusCode, timestamp } }
+      message = body?.error?.message ?? body?.message ?? message;
     } catch {
       // non-JSON body
     }
@@ -72,7 +74,12 @@ async function fetchWithCookieForward(
     cookieStore.set(name, value, options);
   }
 
-  const data = await response.json() as User;
+  // Unwrap NestJS envelope: { success, data, timestamp } → data
+  // Login/register controller returns { user }, so unwrapped data = { user: User }
+  const json = await response.json();
+  const unwrapped = json?.data !== undefined ? json.data : json;
+  // Controllers wrap the User in { user }, extract it to match the User type
+  const data = (unwrapped?.user !== undefined ? unwrapped.user : unwrapped) as User;
   return { success: true, data };
 }
 
@@ -123,7 +130,10 @@ export async function logoutAction(): Promise<ActionResult> {
 
 export async function getMeAction(): Promise<ActionResult<User>> {
   try {
-    const data = await serverGet<User>('/auth/me');
+    // Backend GET /auth/me returns MeResponse = { user: UserWithoutPassword }
+    // After envelope unwrap: { user: User } — extract the user field
+    const result = await serverGet<{ user: User }>('/auth/me');
+    const data = result?.user ?? (result as unknown as User);
     return { success: true, data };
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) {
@@ -153,7 +163,10 @@ export async function verifyAction(): Promise<ActionResult<{ valid: boolean }>> 
 
 export async function updateProfileAction(data: UpdateProfileData): Promise<ActionResult<User>> {
   try {
-    const updated = await serverPut<User>('/auth/profile', data);
+    // Backend PUT /auth/profile returns MeResponse = { user: UserWithoutPassword }
+    // After envelope unwrap: { user: User } — extract the user field
+    const result = await serverPut<{ user: User }>('/auth/profile', data);
+    const updated = result?.user ?? (result as unknown as User);
     revalidatePath('/perfil');
     return { success: true, data: updated };
   } catch (error) {

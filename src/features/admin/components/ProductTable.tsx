@@ -31,7 +31,7 @@ import AdminDataTable, {
 interface ProductTableProps {
   products: Product[];
   onEdit: (product: Product) => void;
-  onDelete: (productId: string) => void;
+  onDelete: (productId: string) => Promise<void> | void;
   onCreate: () => void;
 }
 

@@ -16,12 +16,19 @@ export const productImageSchema = z.object({
   order: z.number().int().min(0),
 });
 
+// Helper: acepta number | undefined, convierte NaN a undefined
+const optionalPositiveNumber = (msg: string) =>
+  z.preprocess(
+    (v) => (v === undefined || (typeof v === 'number' && isNaN(v)) ? undefined : v),
+    z.number().positive(msg).optional(),
+  );
+
 // Esquema para dimensiones
 export const dimensionsSchema = z
   .object({
-    width: z.number().positive('El ancho debe ser positivo'),
-    height: z.number().positive('La altura debe ser positiva'),
-    depth: z.number().positive('La profundidad debe ser positiva'),
+    width: optionalPositiveNumber('El ancho debe ser positivo'),
+    height: optionalPositiveNumber('La altura debe ser positiva'),
+    depth: optionalPositiveNumber('La profundidad debe ser positiva'),
   })
   .optional();
 

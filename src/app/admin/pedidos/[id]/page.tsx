@@ -3,14 +3,13 @@
 /**
  * Admin order detail page — Client Component.
  *
- * Tries to find the order in the store cache first.
- * If not there (e.g. direct navigation), fetches it from the API.
+ * Fetches order via GET /admin/orders/:id (admin endpoint — not user-scoped).
+ * Status updates call PUT /admin/orders/:id/status for a real backend persist.
  */
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import {
   ArrowLeft,
   Package,
@@ -21,9 +20,12 @@ import {
   X,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useOrderStore } from '@features/order/store/order-store';
 import { OrderStatus } from '@features/order/types';
-import type { Order } from '@features/order/types';
+import {
+  getAdminOrderById,
+  updateOrderStatus,
+  type AdminOrderDetail,
+} from '@features/admin/services/order.service';
 import {
   getStatusBadge,
   getPaymentMethodText,
@@ -59,63 +61,57 @@ export default function AdminOrderDetailPage() {
   const params = useParams();
   const orderId = params.id as string;
 
-  const getOrderById = useOrderStore((state) => state.getOrderById);
-  const loadOrderByNumber = useOrderStore((state) => state.loadOrderByNumber);
-  const updateOrderStatus = useOrderStore((state) => state.updateOrderStatus);
-
-  const [order, setOrder] = useState<Order | null>(
-    orderId ? (getOrderById(orderId) ?? null) : null
-  );
-  const [isFetching, setIsFetching] = useState(!order && !!orderId);
+  const [order, setOrder] = useState<AdminOrderDetail | null>(null);
+  const [isFetching, setIsFetching] = useState(!!orderId);
   const [isUpdating, setIsUpdating] = useState(false);
 
-  // If not in cache, fetch by ID from the API
-  useEffect(() => {
-    if (order || !orderId) return;
-
-    setIsFetching(true);
-
-    // We use loadOrderByNumber but for IDs we import getOrderById from service
-    import('@features/order/services/order.service')
-      .then(({ getOrderById: fetchById }) => fetchById(orderId))
-      .then((fetched) => {
-        if (fetched) {
-          setOrder(fetched);
-          useOrderStore.getState().upsertOrder(fetched);
-        }
-        setIsFetching(false);
-      })
-      .catch(() => setIsFetching(false));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orderId]);
-
+  // Fetch via admin endpoint on mount — no store cache, always fresh
   useEffect(() => {
     if (!orderId) {
       toast.error('ID de pedido no válido');
       router.push('/admin/pedidos');
       return;
     }
-    if (!isFetching && !order) {
-      toast.error('Pedido no encontrado');
-      router.push('/admin/pedidos');
-    }
-  }, [orderId, order, isFetching, router, loadOrderByNumber]);
+
+    setIsFetching(true);
+    getAdminOrderById(orderId)
+      .then((fetched) => {
+        if (!fetched) {
+          toast.error('Pedido no encontrado');
+          router.push('/admin/pedidos');
+          return;
+        }
+        setOrder(fetched);
+      })
+      .catch(() => {
+        toast.error('Error al cargar el pedido');
+        router.push('/admin/pedidos');
+      })
+      .finally(() => setIsFetching(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orderId]);
 
   const handleStatusChange = async (newStatus: OrderStatus) => {
     if (!order) return;
     setIsUpdating(true);
+
+    // Optimistic update for instant UI feedback
+    setOrder((prev) =>
+      prev ? { ...prev, status: newStatus, updatedAt: new Date().toISOString() } : prev
+    );
+
     try {
-      // Local-only update for instant feedback (no PATCH endpoint yet)
-      updateOrderStatus(order.id, newStatus);
-      // Reflect the change in local state too
-      setOrder((prev) =>
-        prev ? { ...prev, status: newStatus, updatedAt: new Date().toISOString() } : prev
-      );
+      // Persist to backend and sync with confirmed server state
+      const updated = await updateOrderStatus(order.id, newStatus);
+      setOrder(updated);
       toast.success('Estado actualizado correctamente');
     } catch (e) {
+      // Rollback: refetch the real order
       toast.error(
         e instanceof Error ? e.message : 'Error al actualizar el estado'
       );
+      const refetched = await getAdminOrderById(order.id).catch(() => null);
+      if (refetched) setOrder(refetched);
     } finally {
       setIsUpdating(false);
     }
@@ -134,6 +130,8 @@ export default function AdminOrderDetailPage() {
   }
 
   const isCancelled = order.status === CANCELLED;
+  // shippingAddress is typed as Record<string,unknown> in the admin endpoint
+  const addr = order.shippingAddress as Record<string, string>;
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -190,20 +188,11 @@ export default function AdminOrderDetailPage() {
               <div className="space-y-4">
                 {order.items.map((item) => (
                   <div key={item.id} className="flex gap-4">
+                    {/* Admin order items don't include product images — show placeholder */}
                     <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-                      {item.product.images?.[0] ? (
-                        <Image
-                          src={item.product.images[0].url}
-                          alt={item.product.images[0].alt || item.product.name}
-                          fill
-                          className="object-cover"
-                          sizes="96px"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Package className="w-8 h-8 text-gray-400" />
-                        </div>
-                      )}
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Package className="w-8 h-8 text-gray-400" />
+                      </div>
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-gray-900 mb-1">
@@ -236,22 +225,22 @@ export default function AdminOrderDetailPage() {
             <CardContent>
               <div className="space-y-1 text-gray-700">
                 <p className="font-semibold">
-                  {order.shippingAddress.firstName}{' '}
-                  {order.shippingAddress.lastName}
+                  {addr.firstName}{' '}
+                  {addr.lastName}
                 </p>
-                <p>{order.shippingAddress.email}</p>
-                {order.shippingAddress.phone && (
-                  <p>Teléfono: {order.shippingAddress.phone}</p>
+                <p>{addr.email}</p>
+                {addr.phone && (
+                  <p>Teléfono: {addr.phone}</p>
                 )}
-                <p>{order.shippingAddress.address}</p>
+                <p>{addr.address}</p>
                 <p>
-                  {order.shippingAddress.city},{' '}
-                  {order.shippingAddress.province}
+                  {addr.city},{' '}
+                  {addr.province}
                 </p>
-                <p>Código Postal: {order.shippingAddress.postalCode}</p>
-                {order.shippingAddress.notes && (
+                <p>Código Postal: {addr.postalCode}</p>
+                {addr.notes && (
                   <p className="text-sm text-gray-600 mt-2">
-                    Notas: {order.shippingAddress.notes}
+                    Notas: {addr.notes}
                   </p>
                 )}
               </div>

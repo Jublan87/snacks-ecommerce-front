@@ -38,7 +38,9 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     return undefined as T;
   }
 
-  return response.json() as Promise<T>;
+  // Unwrap NestJS envelope: { success, data, timestamp } → data
+  const json = await response.json();
+  return (json?.data !== undefined ? json.data : json) as T;
 }
 
 const apiClient = {

@@ -43,10 +43,11 @@ export default function ProfileAddressTab() {
   } = useForm<UpdateAddressFormInput>({
     resolver: zodResolver(updateAddressSchema),
     defaultValues: {
+      // Profile-level fields (sent at top level of UpdateProfileDto)
       firstName: user?.firstName || '',
       lastName: user?.lastName || '',
-      email: user?.email || '',
       phone: user?.phone || '',
+      // Address-level fields (sent inside shippingAddress)
       address: user?.shippingAddress?.address || '',
       city: user?.shippingAddress?.city || '',
       province: user?.shippingAddress?.province || '',
@@ -57,12 +58,13 @@ export default function ProfileAddressTab() {
 
   const onSubmit = async (data: UpdateAddressFormInput) => {
     try {
+      // firstName / lastName / phone go to UpdateProfileDto top level.
+      // Only address fields accepted by ShippingAddressDto go inside shippingAddress.
       await updateUser({
+        firstName: data.firstName,
+        lastName: data.lastName,
+        phone: data.phone,
         shippingAddress: {
-          firstName: data.firstName,
-          lastName: data.lastName,
-          email: data.email,
-          phone: data.phone,
           address: data.address,
           city: data.city,
           province: data.province,
@@ -85,7 +87,6 @@ export default function ProfileAddressTab() {
     reset({
       firstName: user?.firstName || '',
       lastName: user?.lastName || '',
-      email: user?.email || '',
       phone: user?.phone || '',
       address: user?.shippingAddress?.address || '',
       city: user?.shippingAddress?.city || '',
@@ -117,10 +118,11 @@ export default function ProfileAddressTab() {
 
   const handleEdit = () => {
     if (user?.shippingAddress) {
-      setValue('firstName', user.shippingAddress.firstName);
-      setValue('lastName', user.shippingAddress.lastName);
-      setValue('email', user.shippingAddress.email);
-      setValue('phone', user.shippingAddress.phone);
+      // Profile fields come from user directly (top-level model fields)
+      setValue('firstName', user.firstName);
+      setValue('lastName', user.lastName);
+      setValue('phone', user.phone || '');
+      // Address fields come from user.shippingAddress
       setValue('address', user.shippingAddress.address);
       setValue('city', user.shippingAddress.city);
       setValue('province', user.shippingAddress.province);
@@ -177,7 +179,6 @@ export default function ProfileAddressTab() {
               reset({
                 firstName: user?.firstName || '',
                 lastName: user?.lastName || '',
-                email: user?.email || '',
                 phone: user?.phone || '',
                 address: '',
                 city: '',
@@ -207,11 +208,11 @@ export default function ProfileAddressTab() {
                     <MapPin className="w-5 h-5 text-gray-400 mt-0.5" />
                     <div>
                       <CardTitle className="text-lg">
-                        {user.shippingAddress.firstName}{' '}
-                        {user.shippingAddress.lastName}
+                        {user.firstName}{' '}
+                        {user.lastName}
                       </CardTitle>
                       <CardDescription className="mt-1">
-                        {user.shippingAddress.email}
+                        {user.email}
                       </CardDescription>
                     </div>
                   </div>
@@ -244,8 +245,8 @@ export default function ProfileAddressTab() {
                     {user.shippingAddress.city}, {user.shippingAddress.province}{' '}
                     {user.shippingAddress.postalCode}
                   </p>
-                  {user.shippingAddress.phone && (
-                    <p>Tel: {user.shippingAddress.phone}</p>
+                  {user.phone && (
+                    <p>Tel: {user.phone}</p>
                   )}
                   {user.shippingAddress.notes && (
                     <p className="text-gray-500 italic">
@@ -266,7 +267,6 @@ export default function ProfileAddressTab() {
                   reset({
                     firstName: user?.firstName || '',
                     lastName: user?.lastName || '',
-                    email: user?.email || '',
                     phone: user?.phone || '',
                     address: '',
                     city: '',
@@ -338,27 +338,6 @@ export default function ProfileAddressTab() {
                     </p>
                   )}
                 </div>
-              </div>
-
-              {/* Email */}
-              <div className="space-y-2">
-                <label
-                  htmlFor="address-email"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Email
-                </label>
-                <Input
-                  id="address-email"
-                  type="email"
-                  {...register('email')}
-                  aria-invalid={errors.email ? 'true' : 'false'}
-                />
-                {errors.email && (
-                  <p className="text-sm text-red-600" role="alert">
-                    {errors.email.message}
-                  </p>
-                )}
               </div>
 
               {/* Teléfono */}

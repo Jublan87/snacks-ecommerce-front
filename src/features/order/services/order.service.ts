@@ -5,7 +5,7 @@
  * so all calls are made on behalf of the currently authenticated user.
  */
 
-import { serverGet } from '@shared/api';
+import { serverGet } from '@shared/api/server';
 import type { Order, PaginatedOrders, OrderFilters } from '@features/order/types';
 
 const BASE = '/orders';

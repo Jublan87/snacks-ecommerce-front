@@ -21,6 +21,7 @@ const CartDrawer = dynamic(
 );
 // Auth store
 import { useAuthStore } from '@features/auth/store/auth-store';
+import { logoutAction } from '@features/auth/actions/auth.actions';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -61,10 +62,15 @@ export default function Header() {
   };
 
   const handleLogout = async () => {
-    await logout();
+    // Delete the cookie FIRST via the server action — this must complete before
+    // the browser navigates, otherwise the navigation cancels the request and
+    // the cookie is never cleared (causing AppInitializer to re-authenticate).
+    await logoutAction();
+    // Clear Zustand state and cart now that the cookie is gone.
+    logout();
     toast.success('Sesión cerrada exitosamente');
-    router.push('/');
-    router.refresh();
+    // Navigate only after the cookie has been deleted.
+    window.location.href = '/';
   };
 
   return (

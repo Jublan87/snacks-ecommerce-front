@@ -101,11 +101,13 @@ function CheckoutPageContent() {
   // Cargar dirección guardada al montar
   useEffect(() => {
     if (user?.shippingAddress) {
+      // StoredShippingAddress only has address/city/province/postalCode/notes.
+      // Personal fields (firstName, lastName, email, phone) come from the user directly.
       const a = user.shippingAddress;
-      setValue('shippingAddress.firstName', a.firstName);
-      setValue('shippingAddress.lastName', a.lastName);
-      setValue('shippingAddress.email', a.email);
-      setValue('shippingAddress.phone', a.phone);
+      setValue('shippingAddress.firstName', user.firstName);
+      setValue('shippingAddress.lastName', user.lastName);
+      setValue('shippingAddress.email', user.email);
+      if (user.phone) setValue('shippingAddress.phone', user.phone);
       setValue('shippingAddress.address', a.address);
       setValue('shippingAddress.city', a.city);
       setValue('shippingAddress.province', a.province);

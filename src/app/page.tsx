@@ -15,7 +15,14 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const { items: featuredProducts } = await getProducts({ isFeatured: true, limit: 8 });
+  // Fallback to empty array when the API is unreachable (e.g. backend not started)
+  let featuredProducts: Awaited<ReturnType<typeof getProducts>>['items'] = [];
+  try {
+    const result = await getProducts({ isFeatured: true, limit: 8 });
+    featuredProducts = result.items;
+  } catch {
+    // API unavailable — render the page without products
+  }
 
   return (
     <main className="min-h-screen">

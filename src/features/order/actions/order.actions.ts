@@ -9,7 +9,7 @@
  */
 
 import { revalidatePath } from 'next/cache';
-import { serverPost } from '@shared/api';
+import { serverPost } from '@shared/api/server';
 import { ApiError } from '@shared/api';
 import type { Order, CreateOrderPayload } from '@features/order/types';
 

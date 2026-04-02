@@ -1,4 +1,4 @@
-import { serverGet } from '@shared/api';
+import { serverGet } from '@shared/api/server';
 import type {
   Product,
   ProductListItem,

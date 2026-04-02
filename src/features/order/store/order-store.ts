@@ -8,10 +8,18 @@
  *    then call upsertOrder() to put the result in the local cache.
  *
  * This keeps the store thin: just a cache + loading state, no business logic.
+ *
+ * NOTE: imports order.client-service (uses apiClient / credentials:include) — NOT
+ * order.service.ts (uses serverGet / next/headers, server-only).
  */
 
 import { create } from 'zustand';
-import type { Order, OrderFilters, OrderStatus, PaginatedOrders } from '@features/order/types';
+import type { Order, OrderFilters, PaginatedOrders } from '@features/order/types';
+// Client-side order fetchers — safe to import in Zustand stores and Client Components
+import {
+  getOrdersClient,
+  getOrderByNumberClient,
+} from '@features/order/services/order.client-service';
 
 interface OrderStore {
   // ── State ──────────────────────────────────────────────────
@@ -48,9 +56,6 @@ interface OrderStore {
    */
   upsertOrder: (order: Order) => void;
 
-  /** @deprecated Use loadOrders() — kept temporarily to avoid breaking admin page */
-  updateOrderStatus: (orderId: string, status: OrderStatus) => void;
-
   /** Clear all loaded state (e.g. on logout). */
   reset: () => void;
 }
@@ -64,9 +69,7 @@ export const useOrderStore = create<OrderStore>()((set, get) => ({
   loadOrders: async (filters?: OrderFilters) => {
     set({ isLoading: true, error: null });
     try {
-      // Dynamic import keeps server-only modules out of the client bundle
-      const { getOrders } = await import('@features/order/services/order.service');
-      const result = await getOrders(filters);
+      const result = await getOrdersClient(filters);
 
       if (!result) {
         // null → unauthenticated; clear without error
@@ -88,8 +91,7 @@ export const useOrderStore = create<OrderStore>()((set, get) => ({
 
   loadOrderByNumber: async (orderNumber: string) => {
     try {
-      const { getOrderByNumber } = await import('@features/order/services/order.service');
-      const order = await getOrderByNumber(orderNumber);
+      const order = await getOrderByNumberClient(orderNumber);
 
       if (order) {
         get().upsertOrder(order);
@@ -118,21 +120,6 @@ export const useOrderStore = create<OrderStore>()((set, get) => ({
       updated[idx] = order;
       set({ orders: updated });
     }
-  },
-
-  // ── Deprecated: local-only status update (admin page) ──────
-  updateOrderStatus: (orderId: string, status: OrderStatus) => {
-    const current = get().orders;
-    const exists = current.some((o) => o.id === orderId);
-    if (!exists) throw new Error('Pedido no encontrado');
-
-    set({
-      orders: current.map((o) =>
-        o.id === orderId
-          ? { ...o, status, updatedAt: new Date().toISOString() }
-          : o
-      ),
-    });
   },
 
   reset: () => set({ orders: [], pagination: null, isLoading: false, error: null }),

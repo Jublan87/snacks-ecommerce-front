@@ -82,7 +82,9 @@ export async function calculateShipping(
       );
     }
 
-    return (await response.json()) as ShippingCalculationResult;
+    // Unwrap NestJS envelope: { success, data, timestamp } → data
+    const json = await response.json();
+    return (json?.data !== undefined ? json.data : json) as ShippingCalculationResult;
   } catch (error) {
     // Fallback silencioso: el usuario no se ve bloqueado
     console.warn(
