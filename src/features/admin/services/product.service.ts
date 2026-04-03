@@ -20,7 +20,7 @@ interface AdminProductBody {
   weight?: number;
   dimensions?: { width: number; height: number; depth: number };
   /** URLs de imágenes — se envían sólo las URLs, el backend gestiona las entidades */
-  images?: { url: string; alt: string; isPrimary: boolean; order: number }[];
+  images?: { url: string; storageKey?: string | null; alt: string; isPrimary: boolean; order: number }[];
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -48,6 +48,7 @@ function toAdminBody(data: ProductFormInput): AdminProductBody {
   if (data.images && data.images.length > 0) {
     body.images = data.images.map((img) => ({
       url: img.url,
+      storageKey: img.storageKey ?? undefined,
       alt: img.alt,
       isPrimary: img.isPrimary,
       order: img.order,

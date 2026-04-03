@@ -1,6 +1,7 @@
 export interface ProductImage {
   id: string;
   url: string;
+  storageKey?: string | null;
   alt: string;
   isPrimary: boolean;
   order: number;

@@ -8,6 +8,7 @@ import { z } from 'zod';
 export const productImageSchema = z.object({
   id: z.string().optional(),
   url: z.string().url('Debe ser una URL válida').min(1, 'La URL es requerida'),
+  storageKey: z.string().nullable().optional(),
   alt: z.string().min(1, 'El texto alternativo es requerido'),
   // Se usan valores fijos en lugar de .default() para que el tipo inferido
   // sea `boolean` y `number` (no `boolean | undefined` ni `number | undefined`),

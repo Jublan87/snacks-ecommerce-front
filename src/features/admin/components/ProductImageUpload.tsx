@@ -35,7 +35,7 @@ export default function ProductImageUpload({
 
       // Subir todos los archivos en paralelo
       const results = await Promise.allSettled(
-        fileArray.map((file) => uploadImage(file).then((res) => ({ file, url: res.url })))
+        fileArray.map((file) => uploadImage(file).then((res) => ({ file, url: res.url, storageKey: res.storageKey })))
       );
 
       const newImages: ProductImage[] = [];
@@ -43,10 +43,11 @@ export default function ProductImageUpload({
 
       results.forEach((result) => {
         if (result.status === 'fulfilled') {
-          const { file, url } = result.value;
+          const { file, url, storageKey } = result.value;
           newImages.push({
             id: `img-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             url,
+            storageKey,
             alt: file.name,
             isPrimary: images.length === 0 && newImages.length === 0, // primera imagen es primaria
             order: images.length + newImages.length,
