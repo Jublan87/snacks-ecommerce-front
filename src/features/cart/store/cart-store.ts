@@ -1,146 +1,172 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
 import { CartItem } from '@features/cart/types';
-import { Product } from '@features/product/types';
+import {
+  getCart,
+  addToCart,
+  updateCartItem,
+  removeCartItem,
+  clearCart as clearCartService,
+} from '@features/cart/services/cart.service';
 
 interface CartStore {
   items: CartItem[];
-  addItem: (product: Product, quantity?: number) => void;
-  removeItem: (itemId: string) => void;
-  updateQuantity: (itemId: string, quantity: number) => void;
-  clearCart: () => void;
+  isLoading: boolean;
+  error: string | null;
+
+  /** Fetch the cart from the backend (call once on mount when authenticated). */
+  fetchCart: () => Promise<void>;
+
+  /**
+   * Add a product to the cart by productId.
+   * Uses optimistic update: appends a temporary item immediately,
+   * then replaces it with the real item from the API response.
+   */
+  addItem: (productId: string, quantity?: number) => Promise<void>;
+
+  /**
+   * Update the quantity of an existing cart item.
+   * Uses optimistic update: applies the new quantity immediately,
+   * then reverts on API error.
+   */
+  updateQuantity: (itemId: string, quantity: number) => Promise<void>;
+
+  /**
+   * Remove a single item from the cart.
+   * Uses optimistic update: removes immediately, reverts on API error.
+   */
+  removeItem: (itemId: string) => Promise<void>;
+
+  /** Clear all items from the cart. Optimistic: clears immediately. */
+  clearCart: () => Promise<void>;
+
+  /** Total number of units across all cart items (for the badge). */
   getItemCount: () => number;
+
+  /** Find a cart item by its id. */
   getItemById: (itemId: string) => CartItem | undefined;
+
+  /** Find a cart item by the product id. */
   getItemByProductId: (productId: string) => CartItem | undefined;
+
+  /** Reset the cart to empty (used on logout). */
+  resetCart: () => void;
 }
 
-const generateItemId = (productId: string): string => {
-  return `${productId}-${Date.now()}`;
-};
+export const useCartStore = create<CartStore>()((set, get) => ({
+  items: [],
+  isLoading: false,
+  error: null,
 
-export const useCartStore = create<CartStore>()(
-  persist(
-    (set, get) => ({
-      items: [],
-
-      addItem: (product: Product, quantity: number = 1) => {
-        if (product.stock < quantity) {
-          throw new Error(
-            `Stock insuficiente. Solo hay ${product.stock} unidades disponibles.`
-          );
-        }
-
-        if (!product.isActive) {
-          throw new Error('Este producto no está disponible.');
-        }
-
-        const currentItems = get().items;
-        const existingItem = currentItems.find(
-          (item) => item.product.id === product.id
-        );
-
-        if (existingItem) {
-          // Si el item ya existe, actualizar la cantidad
-          const newQuantity = existingItem.quantity + quantity;
-
-          // Validar stock total
-          if (product.stock < newQuantity) {
-            throw new Error(
-              `Stock insuficiente. Solo puedes agregar ${
-                product.stock - existingItem.quantity
-              } unidades más.`
-            );
-          }
-
-          // Incrementa la cantidad del item existente manteniendo los demás sin cambios
-          set({
-            items: currentItems.map((item) =>
-              item.id === existingItem.id
-                ? {
-                    ...item,
-                    quantity: newQuantity,
-                  }
-                : item
-            ),
-          });
-        } else {
-          // Si no existe, agregar nuevo item
-          const newItem: CartItem = {
-            id: generateItemId(product.id),
-            product,
-            quantity,
-            addedAt: new Date().toISOString(),
-          };
-
-          set({
-            items: [...currentItems, newItem],
-          });
-        }
-      },
-
-      removeItem: (itemId: string) => {
-        set({
-          items: get().items.filter((item) => item.id !== itemId),
-        });
-      },
-
-      updateQuantity: (itemId: string, quantity: number) => {
-        if (quantity <= 0) {
-          // Si la cantidad es 0 o menor, eliminar el item
-          get().removeItem(itemId);
-          return;
-        }
-
-        const currentItems = get().items;
-        const item = currentItems.find((item) => item.id === itemId);
-
-        if (!item) {
-          throw new Error('Item no encontrado en el carrito.');
-        }
-
-        // Validar stock disponible
-        if (item.product.stock < quantity) {
-          throw new Error(
-            `Stock insuficiente. Solo hay ${item.product.stock} unidades disponibles.`
-          );
-        }
-
-        set({
-          items: currentItems.map((item) =>
-            item.id === itemId
-              ? {
-                  ...item,
-                  quantity,
-                }
-              : item
-          ),
-        });
-      },
-
-      clearCart: () => {
-        set({
-          items: [],
-        });
-      },
-
-      getItemCount: () => {
-        return get().items.reduce((total, item) => total + item.quantity, 0);
-      },
-
-      getItemById: (itemId: string) => {
-        return get().items.find((item) => item.id === itemId);
-      },
-
-      getItemByProductId: (productId: string) => {
-        return get().items.find((item) => item.product.id === productId);
-      },
-    }),
-    {
-      name: 'cart-storage', // Nombre de la clave en localStorage
-      storage: createJSONStorage(() => localStorage),
-      // Solo persistir los items, no las funciones
-      partialize: (state) => ({ items: state.items }),
+  fetchCart: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const cart = await getCart();
+      set({ items: cart.items, isLoading: false });
+    } catch {
+      // If unauthenticated (401), silently keep cart empty — the user isn't logged in.
+      set({ items: [], isLoading: false });
     }
-  )
-);
+  },
 
+  addItem: async (productId: string, quantity: number = 1) => {
+    // No optimistic update here because we don't have the full product data locally;
+    // the backend response includes the embedded product details.
+    set({ isLoading: true, error: null });
+    try {
+      const newItem = await addToCart(productId, quantity);
+
+      set((state) => {
+        // The backend upserts: if the item already existed it returns the updated item.
+        const exists = state.items.some((i) => i.id === newItem.id);
+        if (exists) {
+          return {
+            items: state.items.map((i) => (i.id === newItem.id ? newItem : i)),
+            isLoading: false,
+          };
+        }
+        return { items: [...state.items, newItem], isLoading: false };
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error al agregar al carrito';
+      set({ isLoading: false, error: message });
+      throw error; // Re-throw so callers (useAddToCart) can show toast
+    }
+  },
+
+  updateQuantity: async (itemId: string, quantity: number) => {
+    if (quantity <= 0) {
+      // Quantity 0 or less means remove the item
+      return get().removeItem(itemId);
+    }
+
+    // Optimistic update
+    const previousItems = get().items;
+    set({
+      items: previousItems.map((item) =>
+        item.id === itemId ? { ...item, quantity } : item
+      ),
+    });
+
+    try {
+      const updatedItem = await updateCartItem(itemId, quantity);
+      // Replace with the server-confirmed item
+      set((state) => ({
+        items: state.items.map((item) => (item.id === itemId ? updatedItem : item)),
+      }));
+    } catch (error) {
+      // Revert on failure
+      set({ items: previousItems });
+      const message = error instanceof Error ? error.message : 'Error al actualizar cantidad';
+      set({ error: message });
+      throw error;
+    }
+  },
+
+  removeItem: async (itemId: string) => {
+    // Optimistic update: remove immediately from local state
+    const previousItems = get().items;
+    set({ items: previousItems.filter((item) => item.id !== itemId) });
+
+    try {
+      await removeCartItem(itemId);
+    } catch (error) {
+      // Revert on failure
+      set({ items: previousItems });
+      const message = error instanceof Error ? error.message : 'Error al eliminar el producto';
+      set({ error: message });
+      throw error;
+    }
+  },
+
+  clearCart: async () => {
+    // Optimistic update
+    const previousItems = get().items;
+    set({ items: [] });
+
+    try {
+      await clearCartService();
+    } catch (error) {
+      // Revert on failure
+      set({ items: previousItems });
+      const message = error instanceof Error ? error.message : 'Error al vaciar el carrito';
+      set({ error: message });
+      throw error;
+    }
+  },
+
+  getItemCount: () => {
+    return get().items.reduce((total, item) => total + item.quantity, 0);
+  },
+
+  getItemById: (itemId: string) => {
+    return get().items.find((item) => item.id === itemId);
+  },
+
+  getItemByProductId: (productId: string) => {
+    return get().items.find((item) => item.productId === productId);
+  },
+
+  resetCart: () => {
+    set({ items: [], error: null, isLoading: false });
+  },
+}));

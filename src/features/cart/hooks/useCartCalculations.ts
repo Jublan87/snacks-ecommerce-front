@@ -1,48 +1,62 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useCartStore } from '@features/cart/store/cart-store';
 import { calculateShipping } from '@features/shipping/services/shipping.service';
+import type { ShippingCalculationResult } from '@features/shipping/services/shipping.service';
 import type { CartItem } from '@features/cart/types';
 
-// Selector estable para obtener items del carrito
-// Se define fuera del componente para que sea una referencia estable
-// Esto evita que ESLint marque advertencias sobre dependencias que cambian en cada render
+// Stable selector defined outside the component to avoid re-renders
 const selectItems = (state: { items: CartItem[] }) => state.items;
 
+// Default while the async shipping calculation is in-flight
+const DEFAULT_SHIPPING: ShippingCalculationResult = {
+  shipping: 0,
+  freeShippingThreshold: Number(process.env.NEXT_PUBLIC_FREE_SHIPPING_THRESHOLD || 10000),
+  isFreeShipping: false,
+  amountNeededForFreeShipping: Number(process.env.NEXT_PUBLIC_FREE_SHIPPING_THRESHOLD || 10000),
+};
+
 /**
- * Hook personalizado para calcular totales del carrito
+ * Hook to compute cart totals including real-time shipping cost.
  *
- * Centraliza toda la lógica de cálculos (subtotal, envío, total)
- * para evitar duplicación entre componentes.
+ * `calculateShipping` is now async (calls the backend), so the hook uses
+ * a `useState` + `useEffect` pattern instead of `useMemo` for the shipping
+ * calculation. The initial render uses default values and updates once the
+ * API responds.
  *
- * @returns Objeto con subtotal, shippingCalculation y total
+ * Returns: { subtotal, shippingCalculation, shipping, total }
  */
 export function useCartCalculations() {
-  // Obtener items del store usando selector estable definido fuera del componente
   const items = useCartStore(selectItems);
 
-  // Calcular subtotal: suma de todos los items (precio * cantidad)
-  // Usa discountPrice si existe, sino usa price
   const subtotal = useMemo(() => {
     if (!items || items.length === 0) return 0;
     return items.reduce(
-      (total, item) =>
-        total +
-        (item.product.discountPrice || item.product.price) * item.quantity,
+      (acc, item) =>
+        acc + (item.product.discountPrice || item.product.price) * item.quantity,
       0
     );
   }, [items]);
 
-  // Calcular envío usando el servicio parametrizable
-  const shippingCalculation = useMemo(
-    () => calculateShipping({ subtotal }),
-    [subtotal]
-  );
+  const [shippingCalculation, setShippingCalculation] =
+    useState<ShippingCalculationResult>(DEFAULT_SHIPPING);
 
-  // Calcular total: subtotal + envío
-  const total = useMemo(
-    () => subtotal + shippingCalculation.shipping,
-    [subtotal, shippingCalculation.shipping]
-  );
+  useEffect(() => {
+    let cancelled = false;
+
+    calculateShipping({ subtotal })
+      .then((result) => {
+        if (!cancelled) setShippingCalculation(result);
+      })
+      .catch(() => {
+        // Keep previous value on transient errors
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [subtotal]);
+
+  const total = subtotal + shippingCalculation.shipping;
 
   return {
     subtotal,
@@ -51,4 +65,3 @@ export function useCartCalculations() {
     total,
   };
 }
-

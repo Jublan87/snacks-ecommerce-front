@@ -62,7 +62,8 @@ export default function Footer() {
                   className="hover:underline"
                   aria-label="Enviar correo electrónico"
                 >
-                  <span aria-hidden="true">📧</span> contacto@snacksecommerce.com
+                  <span aria-hidden="true">📧</span>{' '}
+                  contacto@snacksecommerce.com
                 </a>
               </li>
               <li>

@@ -1,11 +1,11 @@
 import { notFound } from 'next/navigation';
-import Image from 'next/image';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import {
-  getMockProductBySlug,
-  MOCK_PRODUCTS,
-} from '@features/product/mocks/products.mock';
+  getProductBySlug,
+  getProducts,
+} from '@features/product/services/product.service';
+import type { Product } from '@features/product/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@shared/ui/card';
 import { Badge } from '@shared/ui/badge';
 import { Separator } from '@shared/ui/separator';
@@ -18,72 +18,69 @@ interface ProductDetailPageProps {
   params: Promise<{ slug: string }>;
 }
 
-// Generar metadata dinámica para SEO
 export async function generateMetadata({
   params,
 }: ProductDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const product = getMockProductBySlug(slug);
 
-  if (!product) {
+  try {
+    const product = await getProductBySlug(slug);
+    const currentPrice = product.discountPrice ?? product.price;
+    const description = product.shortDescription ?? product.description;
+
+    return {
+      title: `${product.name} - Snacks Ecommerce`,
+      description,
+      openGraph: {
+        title: product.name,
+        description,
+        images: product.images.map((img) => ({
+          url: img.url,
+          alt: img.alt,
+        })),
+        type: 'website',
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: product.name,
+        description,
+        images: product.images[0]?.url,
+      },
+    };
+  } catch {
     return {
       title: 'Producto no encontrado',
       description: 'El producto que buscas no está disponible.',
     };
   }
-
-  const currentPrice = product.discountPrice || product.price;
-  const description = product.shortDescription || product.description;
-
-  return {
-    title: `${product.name} - Snacks Ecommerce`,
-    description: description,
-    openGraph: {
-      title: product.name,
-      description: description,
-      images: product.images.map((img) => ({
-        url: img.url,
-        alt: img.alt,
-      })),
-      type: 'website',
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: product.name,
-      description: description,
-      images: product.images[0]?.url,
-    },
-  };
-}
-
-// Generar rutas estáticas para los productos (opcional, para mejor performance)
-export async function generateStaticParams() {
-  return MOCK_PRODUCTS.map((product) => ({
-    slug: product.slug,
-  }));
 }
 
 export default async function ProductDetailPage({
   params,
 }: ProductDetailPageProps) {
   const { slug } = await params;
-  const product = getMockProductBySlug(slug);
 
-  if (!product) {
+  // notFound() throws, but TypeScript needs an explicit type so it doesn't
+  // widen `product` to `Product | undefined` after the catch block.
+  let product: Product;
+  try {
+    product = await getProductBySlug(slug);
+  } catch {
     notFound();
   }
 
-  // Obtener productos relacionados (misma categoría, excluyendo el actual)
-  const relatedProducts = MOCK_PRODUCTS.filter(
-    (p) =>
-      p.categoryId === product.categoryId &&
-      p.id !== product.id &&
-      p.isActive &&
-      p.stock > 0
-  ).slice(0, 4);
+  const { items: relatedProducts } = await getProducts({
+    category: product.categoryId,
+    limit: 4,
+    inStock: true,
+  });
 
-  const currentPrice = product.discountPrice || product.price;
-  const hasDiscount = !!product.discountPrice;
+  const filteredRelated = relatedProducts
+    .filter((p) => p.id !== product.id)
+    .slice(0, 4);
+
+  const currentPrice = product.discountPrice ?? product.price;
+  const hasDiscount = product.discountPrice !== null;
   const isOutOfStock = product.stock === 0;
 
   return (
@@ -229,7 +226,9 @@ export default async function ProductDetailPage({
                           d="M6 18L18 6M6 6l12 12"
                         />
                       </svg>
-                      <span className="font-bold text-lg md:text-xl">Sin Stock</span>
+                      <span className="font-bold text-lg md:text-xl">
+                        Sin Stock
+                      </span>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2 text-green-600">
@@ -263,13 +262,13 @@ export default async function ProductDetailPage({
         </div>
 
         {/* Productos Relacionados */}
-        {relatedProducts.length > 0 && (
+        {filteredRelated.length > 0 && (
           <div className="mt-8 md:mt-16">
             <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 md:mb-6">
               Productos Relacionados
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {relatedProducts.map((relatedProduct) => (
+              {filteredRelated.map((relatedProduct) => (
                 <ProductCard key={relatedProduct.id} product={relatedProduct} />
               ))}
             </div>

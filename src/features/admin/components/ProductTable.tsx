@@ -31,7 +31,7 @@ import AdminDataTable, {
 interface ProductTableProps {
   products: Product[];
   onEdit: (product: Product) => void;
-  onDelete: (productId: string) => void;
+  onDelete: (productId: string) => Promise<void> | void;
   onCreate: () => void;
 }
 
@@ -42,7 +42,9 @@ export default function ProductTable({
   onCreate,
 }: ProductTableProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [statusFilter, setStatusFilter] = useState<
+    'all' | 'active' | 'inactive'
+  >('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -116,7 +118,9 @@ export default function ProductTable({
         case 'sku':
           return dir * a.sku.localeCompare(b.sku);
         case 'category':
-          return dir * (a.category?.name ?? '').localeCompare(b.category?.name ?? '');
+          return (
+            dir * (a.category?.name ?? '').localeCompare(b.category?.name ?? '')
+          );
         case 'price':
           return dir * (a.price - b.price);
         case 'stock':
@@ -162,7 +166,9 @@ export default function ProductTable({
 
   const getPrimaryImage = (product: Product) => {
     const primaryImage = product.images.find((img) => img.isPrimary);
-    return primaryImage?.url || product.images[0]?.url || '/placeholder-product.png';
+    return (
+      primaryImage?.url || product.images[0]?.url || '/placeholder-product.png'
+    );
   };
 
   return (
@@ -217,8 +223,8 @@ export default function ProductTable({
             ))}
           </SelectContent>
         </Select>
-        <Button 
-          onClick={onCreate} 
+        <Button
+          onClick={onCreate}
           className="w-full sm:w-auto bg-brand hover:bg-brand-hover text-white"
         >
           <Plus className="h-4 w-4 mr-2" />
@@ -238,7 +244,8 @@ export default function ProductTable({
           totalPages > 1 ? (
             <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
               <div className="text-sm text-gray-700">
-                Mostrando {paginatedProducts.length} de {sortedProducts.length} productos
+                Mostrando {paginatedProducts.length} de {sortedProducts.length}{' '}
+                productos
               </div>
               <div className="flex gap-2">
                 <Button
@@ -255,7 +262,7 @@ export default function ProductTable({
                       (page) =>
                         page === 1 ||
                         page === totalPages ||
-                        (page >= currentPage - 1 && page <= currentPage + 1)
+                        (page >= currentPage - 1 && page <= currentPage + 1),
                     )
                     .map((page, index, array) => (
                       <div key={page} className="flex items-center gap-1">
@@ -280,7 +287,9 @@ export default function ProductTable({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  }
                   disabled={currentPage === totalPages}
                 >
                   Siguiente
@@ -298,100 +307,102 @@ export default function ProductTable({
         ) : (
           paginatedProducts.map((product) => (
             <tr key={product.id} className="hover:bg-[rgb(var(--brand)/0.03)]">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
-                        <div className="relative h-12 w-12 flex-shrink-0 rounded-md overflow-hidden bg-gray-100">
-                          <Image
-                            src={getPrimaryImage(product)}
-                            alt={product.name}
-                            fill
-                            className="object-cover"
-                            sizes="48px"
-                          />
-                        </div>
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">
-                            {product.name}
-                          </div>
-                          {product.isFeatured && (
-                            <Badge variant="secondary" className="mt-1 text-xs">
-                              Destacado
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {product.sku}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {product.category?.name || 'Sin categoría'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <div>
-                        {product.discountPrice ? (
-                          <>
-                            <div className="line-through text-gray-400">
-                              {formatPrice(product.price)}
-                            </div>
-                            <div className="font-medium text-red-600">
-                              {formatPrice(product.discountPrice)}
-                            </div>
-                          </>
-                        ) : (
-                          <div className="font-medium">{formatPrice(product.price)}</div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <Badge
-                        className={
-                          product.stock > 0
-                            ? 'bg-green-500 text-white border-transparent hover:bg-green-600'
-                            : 'bg-red-500 text-white border-transparent hover:bg-red-600'
-                        }
-                      >
-                        {product.stock}
+              <td className="px-6 py-4 whitespace-nowrap">
+                <div className="flex items-center gap-3">
+                  <div className="relative h-12 w-12 flex-shrink-0 rounded-md overflow-hidden bg-gray-100">
+                    <Image
+                      src={getPrimaryImage(product)}
+                      alt={product.name}
+                      fill
+                      className="object-cover"
+                      sizes="48px"
+                    />
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-gray-900">
+                      {product.name}
+                    </div>
+                    {product.isFeatured && (
+                      <Badge variant="secondary" className="mt-1 text-xs">
+                        Destacado
                       </Badge>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Badge
-                        className={
-                          product.isActive
-                            ? 'bg-green-500 text-white border-transparent hover:bg-green-600'
-                            : 'bg-red-500 text-white border-transparent hover:bg-red-600'
-                        }
-                      >
-                        {product.isActive ? 'Activo' : 'Inactivo'}
-                      </Badge>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end gap-2">
-                        <Link href={`/productos/${product.slug}`} target="_blank">
-                          <Button variant="ghost" size="icon" title="Ver producto">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        </Link>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => onEdit(product)}
-                          title="Editar producto"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeleteClick(product)}
-                          title="Eliminar producto"
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                    )}
+                  </div>
+                </div>
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {product.sku}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {product.category?.name || 'Sin categoría'}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <div>
+                  {product.discountPrice ? (
+                    <>
+                      <div className="line-through text-gray-400">
+                        {formatPrice(product.price)}
                       </div>
-                    </td>
-                  </tr>
+                      <div className="font-medium text-red-600">
+                        {formatPrice(product.discountPrice)}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="font-medium">
+                      {formatPrice(product.price)}
+                    </div>
+                  )}
+                </div>
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <Badge
+                  className={
+                    product.stock > 0
+                      ? 'bg-green-500 text-white border-transparent hover:bg-green-600'
+                      : 'bg-red-500 text-white border-transparent hover:bg-red-600'
+                  }
+                >
+                  {product.stock}
+                </Badge>
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap">
+                <Badge
+                  className={
+                    product.isActive
+                      ? 'bg-green-500 text-white border-transparent hover:bg-green-600'
+                      : 'bg-red-500 text-white border-transparent hover:bg-red-600'
+                  }
+                >
+                  {product.isActive ? 'Activo' : 'Inactivo'}
+                </Badge>
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <div className="flex items-center justify-end gap-2">
+                  <Link href={`/productos/${product.slug}`} target="_blank">
+                    <Button variant="ghost" size="icon" title="Ver producto">
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onEdit(product)}
+                    title="Editar producto"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleDeleteClick(product)}
+                    title="Eliminar producto"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </td>
+            </tr>
           ))
         )}
       </AdminDataTable>
@@ -402,8 +413,8 @@ export default function ProductTable({
           <DialogHeader>
             <DialogTitle>¿Eliminar producto?</DialogTitle>
             <DialogDescription>
-              Esta acción no se puede deshacer. El producto "{productToDelete?.name}" será
-              eliminado permanentemente.
+              Esta acción no se puede deshacer. El producto &quot;
+              {productToDelete?.name}&quot; será eliminado permanentemente.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -425,4 +436,3 @@ export default function ProductTable({
     </div>
   );
 }
-

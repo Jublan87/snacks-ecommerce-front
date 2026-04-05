@@ -23,8 +23,9 @@ interface CartDrawerProps {
 }
 
 export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
-  // Obtener items del carrito
+  // Obtener items e isLoading del carrito
   const items = useCartStore((state) => state.items);
+  const isLoading = useCartStore((state) => state.isLoading);
 
   // Calcular totales usando hook reutilizable
   const { subtotal, shippingCalculation, total } = useCartCalculations();
@@ -62,8 +63,13 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
         {/* Contenido scrolleable del carrito */}
         <div className="flex-1 overflow-y-auto px-6 py-4">
-          {/* Si el carrito está vacío, mostrar componente reutilizable */}
-          {items.length === 0 ? (
+          {/* Loading state: spinner while cart is being fetched */}
+          {isLoading && items.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 gap-3">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand" aria-hidden="true" />
+              <p className="text-sm text-gray-500">Cargando carrito...</p>
+            </div>
+          ) : items.length === 0 ? (
             <CartEmptyState variant="drawer" onActionClick={onClose} />
           ) : (
             // Si hay items, mostrar la lista usando componente reutilizable

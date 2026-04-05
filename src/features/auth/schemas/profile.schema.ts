@@ -39,8 +39,13 @@ export const updateProfileSchema = z.object({
 
 export type UpdateProfileFormInput = z.infer<typeof updateProfileSchema>;
 
-// Esquema para actualizar dirección
+/**
+ * Esquema para actualizar dirección de envío.
+ * firstName / lastName / phone se envían al nivel raíz de UpdateProfileDto.
+ * Solo address, city, province, postalCode y notes van dentro de shippingAddress.
+ */
 export const updateAddressSchema = z.object({
+  // Campos de perfil (top-level en UpdateProfileDto)
   firstName: z
     .string()
     .min(1, 'El nombre es requerido')
@@ -51,10 +56,6 @@ export const updateAddressSchema = z.object({
     .min(1, 'El apellido es requerido')
     .min(2, 'El apellido debe tener al menos 2 caracteres')
     .max(50, 'El apellido no puede exceder 50 caracteres'),
-  email: z
-    .string()
-    .min(1, 'El email es requerido')
-    .email('Debe ser un email válido'),
   phone: z
     .string()
     .min(1, 'El teléfono es requerido')
@@ -63,6 +64,7 @@ export const updateAddressSchema = z.object({
       (val) => /^[0-9+\-\s()]+$/.test(val),
       'El teléfono solo puede contener números y caracteres especiales'
     ),
+  // Campos de dirección (van dentro de shippingAddress en UpdateProfileDto)
   address: z
     .string()
     .min(1, 'La dirección es requerida')

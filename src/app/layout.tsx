@@ -4,8 +4,8 @@ import { SearchProvider } from '@shared/contexts/SearchContext';
 import Header from '@shared/components/layout/Header';
 import Footer from '@shared/components/layout/Footer';
 import BottomNavigation from '@shared/components/layout/BottomNavigation';
+import AppInitializer from '@shared/components/AppInitializer';
 import { Toaster } from 'sonner';
-import { InitAdminUser } from '@features/admin/components/InitAdminUser';
 
 export const metadata: Metadata = {
   title: {
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     telephone: false,
   },
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+    process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
   ),
   alternates: {
     canonical: '/',
@@ -94,8 +94,9 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className="antialiased flex flex-col min-h-screen">
-        <InitAdminUser />
         <SearchProvider>
+          {/* AppInitializer: Initializes auth + cart state on every page load */}
+          <AppInitializer />
           {/* Skip Links: Permiten saltar al contenido principal para usuarios de teclado */}
           <a
             href="#main-content"

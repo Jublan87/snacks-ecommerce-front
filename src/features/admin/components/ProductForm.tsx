@@ -3,8 +3,11 @@
 import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Product, Category } from '@features/product/types';
-import { productFormSchema, type ProductFormInput } from '@features/admin/schemas/product.schema';
+import { Product, ProductImage, Category } from '@features/product/types';
+import {
+  productFormSchema,
+  type ProductFormInput,
+} from '@features/admin/schemas/product.schema';
 import { Button } from '@shared/ui/button';
 import { Input } from '@shared/ui/input';
 import {
@@ -22,7 +25,7 @@ import { toast } from 'sonner';
 interface ProductFormProps {
   product?: Product;
   categories: Category[];
-  onSubmit: (data: ProductFormInput) => void;
+  onSubmit: (data: ProductFormInput) => Promise<void> | void;
   onCancel: () => void;
   isLoading?: boolean;
 }
@@ -56,15 +59,15 @@ export default function ProductForm({
           shortDescription: product.shortDescription || '',
           sku: product.sku,
           price: product.price,
-          discountPercentage: product.discountPercentage,
+          discountPercentage: product.discountPercentage ?? undefined,
           stock: product.stock,
           categoryId: product.categoryId,
           images: product.images || [],
           isActive: product.isActive,
           isFeatured: product.isFeatured,
           tags: product.tags || [],
-          weight: product.weight,
-          dimensions: product.dimensions,
+          weight: product.weight ?? undefined,
+          dimensions: product.dimensions ?? undefined,
         }
       : {
           name: '',
@@ -102,9 +105,10 @@ export default function ProductForm({
   // Calcular precio con descuento basado en el porcentaje
   const price = watch('price');
   const discountPercentage = watch('discountPercentage');
-  const discountPrice = discountPercentage && price
-    ? price * (1 - discountPercentage / 100)
-    : undefined;
+  const discountPrice =
+    discountPercentage && price
+      ? price * (1 - discountPercentage / 100)
+      : undefined;
 
   // Obtener todas las categorías en formato plano
   const getAllCategoriesFlat = (cats: Category[]): Category[] => {
@@ -123,12 +127,12 @@ export default function ProductForm({
 
   const flatCategories = getAllCategoriesFlat(categories);
 
-  const onFormSubmit = (data: ProductFormInput) => {
+  const onFormSubmit = async (data: ProductFormInput) => {
     try {
-      onSubmit(data);
+      await onSubmit(data);
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : 'Error al guardar el producto'
+        error instanceof Error ? error.message : 'Error al guardar el producto',
       );
     }
   };
@@ -142,7 +146,10 @@ export default function ProductForm({
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Nombre del Producto *
             </label>
             <Input
@@ -156,7 +163,10 @@ export default function ProductForm({
           </div>
 
           <div>
-            <label htmlFor="slug" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="slug"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Slug (URL) *
             </label>
             <Input
@@ -170,12 +180,17 @@ export default function ProductForm({
           </div>
 
           <div>
-            <label htmlFor="sku" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="sku"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               SKU *
             </label>
             <Input
               id="sku"
-              {...register('sku')}
+              {...register('sku', {
+                  setValueAs: (v) => (typeof v === 'string' ? v.toUpperCase() : v),
+                })}
               placeholder="DOR-NAC-150"
               className="uppercase"
             />
@@ -185,7 +200,10 @@ export default function ProductForm({
           </div>
 
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="description"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Descripción *
             </label>
             <textarea
@@ -196,7 +214,9 @@ export default function ProductForm({
               placeholder="Descripción completa del producto..."
             />
             {errors.description && (
-              <p className="mt-1 text-sm text-red-600">{errors.description.message}</p>
+              <p className="mt-1 text-sm text-red-600">
+                {errors.description.message}
+              </p>
             )}
           </div>
 
@@ -213,12 +233,17 @@ export default function ProductForm({
               placeholder="Descripción breve para mostrar en listados..."
             />
             {errors.shortDescription && (
-              <p className="mt-1 text-sm text-red-600">{errors.shortDescription.message}</p>
+              <p className="mt-1 text-sm text-red-600">
+                {errors.shortDescription.message}
+              </p>
             )}
           </div>
 
           <div>
-            <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="categoryId"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Categoría *
             </label>
             <Controller
@@ -240,7 +265,9 @@ export default function ProductForm({
               )}
             />
             {errors.categoryId && (
-              <p className="mt-1 text-sm text-red-600">{errors.categoryId.message}</p>
+              <p className="mt-1 text-sm text-red-600">
+                {errors.categoryId.message}
+              </p>
             )}
           </div>
         </CardContent>
@@ -254,7 +281,10 @@ export default function ProductForm({
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="price"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Precio *
               </label>
               <Input
@@ -266,7 +296,9 @@ export default function ProductForm({
                 placeholder="0.00"
               />
               {errors.price && (
-                <p className="mt-1 text-sm text-red-600">{errors.price.message}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.price.message}
+                </p>
               )}
             </div>
 
@@ -284,35 +316,43 @@ export default function ProductForm({
                 min="0"
                 max="100"
                 {...register('discountPercentage', {
-                  valueAsNumber: true,
-                  setValueAs: (v) => (v === '' ? undefined : Number(v)),
+                  setValueAs: (v) => (v === '' || v === undefined ? undefined : Number(v)),
                 })}
                 placeholder="0"
               />
-              {discountPercentage && discountPercentage > 0 && discountPrice && (
-                <div className="mt-2 space-y-1">
-                  <p className="text-sm text-gray-600">
-                    Precio con descuento: {new Intl.NumberFormat('es-AR', {
-                      style: 'currency',
-                      currency: 'ARS',
-                    }).format(discountPrice)}
-                  </p>
-                  <p className="text-sm text-green-600 font-medium">
-                    Ahorro: {new Intl.NumberFormat('es-AR', {
-                      style: 'currency',
-                      currency: 'ARS',
-                    }).format(price - discountPrice)}
-                  </p>
-                </div>
-              )}
+              {discountPercentage &&
+                discountPercentage > 0 &&
+                discountPrice && (
+                  <div className="mt-2 space-y-1">
+                    <p className="text-sm text-gray-600">
+                      Precio con descuento:{' '}
+                      {new Intl.NumberFormat('es-AR', {
+                        style: 'currency',
+                        currency: 'ARS',
+                      }).format(discountPrice)}
+                    </p>
+                    <p className="text-sm text-green-600 font-medium">
+                      Ahorro:{' '}
+                      {new Intl.NumberFormat('es-AR', {
+                        style: 'currency',
+                        currency: 'ARS',
+                      }).format(price - discountPrice)}
+                    </p>
+                  </div>
+                )}
               {errors.discountPercentage && (
-                <p className="mt-1 text-sm text-red-600">{errors.discountPercentage.message}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.discountPercentage.message}
+                </p>
               )}
             </div>
           </div>
 
           <div>
-            <label htmlFor="stock" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="stock"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Stock *
             </label>
             <Input
@@ -323,7 +363,9 @@ export default function ProductForm({
               placeholder="0"
             />
             {errors.stock && (
-              <p className="mt-1 text-sm text-red-600">{errors.stock.message}</p>
+              <p className="mt-1 text-sm text-red-600">
+                {errors.stock.message}
+              </p>
             )}
           </div>
         </CardContent>
@@ -339,7 +381,13 @@ export default function ProductForm({
             name="images"
             control={control}
             render={({ field }) => (
-              <ProductImageUpload images={field.value} onChange={field.onChange} />
+              <ProductImageUpload
+                // `id` es opcional en el esquema Zod (imágenes nuevas aún no tienen id),
+                // pero ProductImageUpload requiere ProductImage[] con id requerido.
+                // Al renderizar, todas las imágenes ya tienen id asignado por el componente.
+                images={field.value as ProductImage[]}
+                onChange={field.onChange}
+              />
             )}
           />
           {errors.images && (
@@ -355,7 +403,10 @@ export default function ProductForm({
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label htmlFor="weight" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="weight"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Peso (gramos)
             </label>
             <Input
@@ -369,7 +420,9 @@ export default function ProductForm({
               placeholder="150"
             />
             {errors.weight && (
-              <p className="mt-1 text-sm text-red-600">{errors.weight.message}</p>
+              <p className="mt-1 text-sm text-red-600">
+                {errors.weight.message}
+              </p>
             )}
           </div>
 
@@ -385,8 +438,7 @@ export default function ProductForm({
                   min="0"
                   placeholder="Ancho"
                   {...register('dimensions.width', {
-                    valueAsNumber: true,
-                    setValueAs: (v) => (v === '' ? undefined : Number(v)),
+                    setValueAs: (v) => (v === '' || v === undefined ? undefined : Number(v)),
                   })}
                 />
                 {errors.dimensions?.width && (
@@ -402,8 +454,7 @@ export default function ProductForm({
                   min="0"
                   placeholder="Alto"
                   {...register('dimensions.height', {
-                    valueAsNumber: true,
-                    setValueAs: (v) => (v === '' ? undefined : Number(v)),
+                    setValueAs: (v) => (v === '' || v === undefined ? undefined : Number(v)),
                   })}
                 />
                 {errors.dimensions?.height && (
@@ -419,8 +470,7 @@ export default function ProductForm({
                   min="0"
                   placeholder="Profundidad"
                   {...register('dimensions.depth', {
-                    valueAsNumber: true,
-                    setValueAs: (v) => (v === '' ? undefined : Number(v)),
+                    setValueAs: (v) => (v === '' || v === undefined ? undefined : Number(v)),
                   })}
                 />
                 {errors.dimensions?.depth && (
@@ -441,7 +491,9 @@ export default function ProductForm({
                 {...register('isActive')}
                 className="h-4 w-4 rounded border-gray-300 text-brand focus:ring-brand"
               />
-              <span className="text-sm font-medium text-gray-700">Producto Activo</span>
+              <span className="text-sm font-medium text-gray-700">
+                Producto Activo
+              </span>
             </label>
 
             <label className="flex items-center gap-2 cursor-pointer">
@@ -450,7 +502,9 @@ export default function ProductForm({
                 {...register('isFeatured')}
                 className="h-4 w-4 rounded border-gray-300 text-brand focus:ring-brand"
               />
-              <span className="text-sm font-medium text-gray-700">Producto Destacado</span>
+              <span className="text-sm font-medium text-gray-700">
+                Producto Destacado
+              </span>
             </label>
           </div>
         </CardContent>
@@ -458,18 +512,26 @@ export default function ProductForm({
 
       {/* Botones de acción */}
       <div className="flex justify-end gap-4">
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          disabled={isLoading}
+        >
           Cancelar
         </Button>
-        <Button 
-          type="submit" 
+        <Button
+          type="submit"
           disabled={isLoading}
           className="bg-brand hover:bg-brand-hover text-white"
         >
-          {isLoading ? 'Guardando...' : isEditing ? 'Actualizar Producto' : 'Crear Producto'}
+          {isLoading
+            ? 'Guardando...'
+            : isEditing
+              ? 'Actualizar Producto'
+              : 'Crear Producto'}
         </Button>
       </div>
     </form>
   );
 }
-

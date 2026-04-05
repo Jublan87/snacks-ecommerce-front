@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
@@ -12,8 +12,11 @@ import ProtectedRoute from '@features/auth/components/ProtectedRoute';
 import { useCartStore } from '@features/cart/store/cart-store';
 import { useCartCalculations } from '@features/cart/hooks/useCartCalculations';
 import { calculateShipping } from '@features/shipping/services/shipping.service';
+import type { ShippingCalculationResult } from '@features/shipping/services/shipping.service';
 import { useAuthStore } from '@features/auth/store/auth-store';
 import { useOrderStore } from '@features/order/store/order-store';
+import { createOrderSafe } from '@features/order/actions/order.actions';
+import type { CreateOrderPayload } from '@features/order/types';
 import {
   checkoutFormSchema,
   type CheckoutFormInput,
@@ -43,6 +46,14 @@ import { Separator } from '@shared/ui/separator';
 import CartItem from '@features/cart/components/CartItem';
 import { useCartActions } from '@features/cart/hooks/useCartActions';
 
+// Default shipping state while the async calculation is in flight
+const DEFAULT_SHIPPING: ShippingCalculationResult = {
+  shipping: 0,
+  freeShippingThreshold: 10000,
+  isFreeShipping: false,
+  amountNeededForFreeShipping: 10000,
+};
+
 function CheckoutPageContent() {
   const router = useRouter();
   const items = useCartStore((state) => state.items);
@@ -52,8 +63,11 @@ function CheckoutPageContent() {
     showToasts: false,
   });
   const user = useAuthStore((state) => state.user);
-  const createOrder = useOrderStore((state) => state.createOrder);
+  const upsertOrder = useOrderStore((state) => state.upsertOrder);
+
   const [isProcessingOrder, setIsProcessingOrder] = useState(false);
+  const [shippingCalculation, setShippingCalculation] =
+    useState<ShippingCalculationResult>(DEFAULT_SHIPPING);
 
   // Formulario con React Hook Form y validación Zod
   const {
@@ -80,80 +94,73 @@ function CheckoutPageContent() {
     },
   });
 
-  // Observar código postal para recalcular envío
   const postalCode = watch('shippingAddress.postalCode');
   const paymentMethod = watch('paymentMethod');
   const shippingAddress = watch('shippingAddress');
 
-  // Cargar dirección guardada al montar el componente
-  // Prioridad: 1. Usuario autenticado con dirección guardada, 2. Dirección en localStorage
+  // Cargar dirección guardada al montar
   useEffect(() => {
-    // Si el usuario está autenticado y tiene dirección guardada, usarla
     if (user?.shippingAddress) {
-      const userAddress = user.shippingAddress;
-      setValue('shippingAddress.firstName', userAddress.firstName);
-      setValue('shippingAddress.lastName', userAddress.lastName);
-      setValue('shippingAddress.email', userAddress.email);
-      setValue('shippingAddress.phone', userAddress.phone);
-      setValue('shippingAddress.address', userAddress.address);
-      setValue('shippingAddress.city', userAddress.city);
-      setValue('shippingAddress.province', userAddress.province);
-      setValue('shippingAddress.postalCode', userAddress.postalCode);
-      if (userAddress.notes) {
-        setValue('shippingAddress.notes', userAddress.notes);
-      }
+      // StoredShippingAddress only has address/city/province/postalCode/notes.
+      // Personal fields (firstName, lastName, email, phone) come from the user directly.
+      const a = user.shippingAddress;
+      setValue('shippingAddress.firstName', user.firstName);
+      setValue('shippingAddress.lastName', user.lastName);
+      setValue('shippingAddress.email', user.email);
+      if (user.phone) setValue('shippingAddress.phone', user.phone);
+      setValue('shippingAddress.address', a.address);
+      setValue('shippingAddress.city', a.city);
+      setValue('shippingAddress.province', a.province);
+      setValue('shippingAddress.postalCode', a.postalCode);
+      if (a.notes) setValue('shippingAddress.notes', a.notes);
     } else {
-      // Si no hay usuario con dirección, intentar cargar desde localStorage
-      const savedAddress = getSavedShippingAddress();
-      if (savedAddress) {
-        // Mapear las claves de forma type-safe usando Path y PathValue
-        setValue('shippingAddress.firstName', savedAddress.firstName);
-        setValue('shippingAddress.lastName', savedAddress.lastName);
-        setValue('shippingAddress.email', savedAddress.email);
-        setValue('shippingAddress.phone', savedAddress.phone);
-        setValue('shippingAddress.address', savedAddress.address);
-        setValue('shippingAddress.city', savedAddress.city);
-        setValue('shippingAddress.province', savedAddress.province);
-        setValue('shippingAddress.postalCode', savedAddress.postalCode);
-        if (savedAddress.notes) {
-          setValue('shippingAddress.notes', savedAddress.notes);
-        }
+      const saved = getSavedShippingAddress();
+      if (saved) {
+        setValue('shippingAddress.firstName', saved.firstName);
+        setValue('shippingAddress.lastName', saved.lastName);
+        setValue('shippingAddress.email', saved.email);
+        setValue('shippingAddress.phone', saved.phone);
+        setValue('shippingAddress.address', saved.address);
+        setValue('shippingAddress.city', saved.city);
+        setValue('shippingAddress.province', saved.province);
+        setValue('shippingAddress.postalCode', saved.postalCode);
+        if (saved.notes) setValue('shippingAddress.notes', saved.notes);
       } else if (user) {
-        // Si hay usuario pero sin dirección guardada, precargar datos básicos
         setValue('shippingAddress.firstName', user.firstName);
         setValue('shippingAddress.lastName', user.lastName);
         setValue('shippingAddress.email', user.email);
-        if (user.phone) {
-          setValue('shippingAddress.phone', user.phone);
-        }
+        if (user.phone) setValue('shippingAddress.phone', user.phone);
       }
     }
   }, [setValue, user]);
 
-  // Guardar dirección cuando cambie el código postal (con debounce implícito)
+  // Guardar dirección con debounce cuando cambia el código postal
   useEffect(() => {
-    if (postalCode && shippingAddress.postalCode) {
-      // Solo guardar si hay código postal válido
-      const timeoutId = setTimeout(() => {
-        saveShippingAddress(shippingAddress);
-      }, 500); // Debounce de 500ms para evitar guardados excesivos
-
-      return () => clearTimeout(timeoutId);
-    }
+    if (!postalCode || !shippingAddress.postalCode) return;
+    const id = setTimeout(() => saveShippingAddress(shippingAddress), 500);
+    return () => clearTimeout(id);
   }, [postalCode, shippingAddress]);
 
-  // Calcular envío basado en código postal
-  const shippingCalculation = useMemo(() => {
-    return calculateShipping({
-      subtotal,
-      postalCode: postalCode || undefined,
-    });
+  // Recalcular envío de forma async cada vez que cambia el subtotal o código postal
+  useEffect(() => {
+    let cancelled = false;
+
+    calculateShipping({ subtotal, postalCode: postalCode || undefined })
+      .then((result) => {
+        if (!cancelled) setShippingCalculation(result);
+      })
+      .catch(() => {
+        // keep previous value on transient errors
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [subtotal, postalCode]);
 
   const total = subtotal + shippingCalculation.shipping;
 
-  // Validar que haya items en el carrito
-  // Solo redirigir si no estamos en proceso de envío del formulario o procesando el pedido
+  // Redirigir si el carrito queda vacío
   useEffect(() => {
     if (items.length === 0 && !isSubmitting && !isProcessingOrder) {
       toast.error('Tu carrito está vacío');
@@ -161,59 +168,59 @@ function CheckoutPageContent() {
     }
   }, [items.length, router, isSubmitting, isProcessingOrder]);
 
-  // Manejar envío del formulario
   const onSubmit = async (data: CheckoutFormInput) => {
+    if (items.length === 0) {
+      toast.error('Tu carrito está vacío');
+      router.push('/carrito');
+      return;
+    }
+
+    if (!user) {
+      toast.error('Debes iniciar sesión para completar la compra');
+      router.push('/login');
+      return;
+    }
+
+    setIsProcessingOrder(true);
+
     try {
-      // Marcar que estamos procesando el pedido
-      setIsProcessingOrder(true);
-
-      // Validar que haya items en el carrito
-      if (items.length === 0) {
-        setIsProcessingOrder(false);
-        toast.error('Tu carrito está vacío');
-        router.push('/carrito');
-        return;
-      }
-
-      // Validar que el usuario esté autenticado
-      if (!user) {
-        setIsProcessingOrder(false);
-        toast.error('Debes iniciar sesión para completar la compra');
-        router.push('/login');
-        return;
-      }
-
-      // Guardar dirección
       saveShippingAddress(data.shippingAddress);
 
-      // Crear el pedido (guardar el orderNumber antes de limpiar el carrito)
-      const order = createOrder(
-        items,
-        data.shippingAddress,
-        data.paymentMethod,
-        subtotal,
-        shippingCalculation.shipping,
-        total,
-        user.id
-      );
+      // Build the payload matching CreateOrderDto on the backend:
+      // items only need productId + quantity (backend calculates price from DB)
+      const payload: CreateOrderPayload = {
+        items: items.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+        })),
+        shippingAddress: data.shippingAddress,
+        paymentMethod: data.paymentMethod as CreateOrderPayload['paymentMethod'],
+        notes: data.shippingAddress.notes || undefined,
+      };
 
-      // Guardar el orderNumber antes de limpiar el carrito
-      const orderNumber = order.orderNumber;
+      const result = await createOrderSafe(payload);
 
-      // Limpiar el carrito
+      if (!result.success) {
+        setIsProcessingOrder(false);
+        toast.error(result.message);
+        return;
+      }
+
+      // Cache the created order so the confirmation page can display it
+      upsertOrder(result.order);
+
+      const orderNumber = result.order.orderNumber;
+
+      // Clear cart after successful order
       clearCart();
 
-      // Mostrar mensaje de éxito
       toast.success('¡Pedido creado exitosamente!');
 
-      // Redirigir a página de confirmación usando window.location para evitar conflictos
-      // con el useEffect que verifica el carrito vacío
-      // No resetear isProcessingOrder porque estamos saliendo de la página
+      // Use window.location to avoid the empty-cart redirect firing on the way out
       window.location.href = `/checkout/confirmacion?orderNumber=${orderNumber}`;
-    } catch (error) {
+    } catch {
       setIsProcessingOrder(false);
       toast.error('Error al procesar el checkout. Intenta nuevamente.');
-      console.error('Checkout error:', error);
     }
   };
 

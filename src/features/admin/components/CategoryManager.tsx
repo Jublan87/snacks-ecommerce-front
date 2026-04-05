@@ -32,9 +32,9 @@ import { toast } from 'sonner';
 
 interface CategoryManagerProps {
   categories: Category[];
-  onCreate: (data: CategoryFormInput) => void;
-  onUpdate: (id: string, data: Partial<CategoryFormInput>) => void;
-  onDelete: (id: string) => void;
+  onCreate: (data: CategoryFormInput) => Promise<void> | void;
+  onUpdate: (id: string, data: Partial<CategoryFormInput>) => Promise<void> | void;
+  onDelete: (id: string) => Promise<void> | void;
 }
 
 /**
@@ -50,7 +50,7 @@ export default function CategoryManager({
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(
-    null
+    null,
   );
 
   const {
@@ -119,10 +119,10 @@ export default function CategoryManager({
     setDeleteDialogOpen(true);
   };
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (categoryToDelete) {
       try {
-        onDelete(categoryToDelete.id);
+        await onDelete(categoryToDelete.id);
         toast.success('Categoría eliminada correctamente');
         setDeleteDialogOpen(false);
         setCategoryToDelete(null);
@@ -130,13 +130,13 @@ export default function CategoryManager({
         toast.error(
           error instanceof Error
             ? error.message
-            : 'Error al eliminar la categoría'
+            : 'Error al eliminar la categoría',
         );
       }
     }
   };
 
-  const onSubmit = (data: CategoryFormInput) => {
+  const onSubmit = async (data: CategoryFormInput) => {
     try {
       // Asegurar que order e isActive tengan valores por defecto
       const formData: CategoryFormInput = {
@@ -146,10 +146,10 @@ export default function CategoryManager({
       };
 
       if (editingCategory) {
-        onUpdate(editingCategory.id, formData);
+        await onUpdate(editingCategory.id, formData);
         toast.success('Categoría actualizada correctamente');
       } else {
-        onCreate(formData);
+        await onCreate(formData);
         toast.success('Categoría creada correctamente');
       }
       setIsDialogOpen(false);
@@ -157,7 +157,9 @@ export default function CategoryManager({
       reset();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : 'Error al guardar la categoría'
+        error instanceof Error
+          ? error.message
+          : 'Error al guardar la categoría',
       );
     }
   };
@@ -235,7 +237,7 @@ export default function CategoryManager({
 
       {/* Dialog de crear/editar categoría */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {editingCategory ? 'Editar Categoría' : 'Nueva Categoría'}
@@ -403,8 +405,8 @@ export default function CategoryManager({
           <DialogHeader>
             <DialogTitle>¿Eliminar categoría?</DialogTitle>
             <DialogDescription>
-              Esta acción no se puede deshacer. La categoría "
-              {categoryToDelete?.name}" será eliminada permanentemente.
+              Esta acción no se puede deshacer. La categoría &quot;
+              {categoryToDelete?.name}&quot; será eliminada permanentemente.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

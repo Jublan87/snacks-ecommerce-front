@@ -2,13 +2,12 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import type { Product } from '@features/product/types';
+import type { ProductListItem } from '@features/product/types';
 import { Button } from '@shared/ui/button';
-import { Badge } from '@shared/ui/badge';
 import { useAddToCart } from '@features/cart/hooks/useAddToCart';
 
 interface ProductCardProps {
-  product: Product;
+  product: ProductListItem;
 }
 
 export default function ProductCard({ product }: ProductCardProps) {

@@ -7,6 +7,7 @@ import {
   Package,
   ShoppingCart,
   PackageSearch,
+  Users,
   Home,
   X,
 } from 'lucide-react';
@@ -49,6 +50,11 @@ export default function AdminSidebar({ isMobileOpen, onMobileClose }: AdminSideb
       href: '/admin/stock',
       label: 'Stock',
       icon: PackageSearch,
+    },
+    {
+      href: '/admin/usuarios',
+      label: 'Usuarios',
+      icon: Users,
     },
   ];
 

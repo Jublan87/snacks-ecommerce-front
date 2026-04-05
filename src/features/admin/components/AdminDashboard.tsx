@@ -1,54 +1,143 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { Card } from '@shared/ui/card';
-import { Package, ShoppingCart, DollarSign, Users } from 'lucide-react';
+import { Package, ShoppingCart, DollarSign, Users, Loader2, RefreshCw } from 'lucide-react';
+import { toast } from 'sonner';
+import { getDashboardStats, type DashboardStats } from '@features/admin/services/dashboard.service';
 
-/**
- * Dashboard principal del panel de administración
- * Muestra métricas básicas y resumen general
- */
-export default function AdminDashboard() {
-  // TODO: Conectar con datos reales cuando tengamos backend
-  // Por ahora mostramos datos mock
-  const metrics = [
+// ─── Tipos locales ────────────────────────────────────────────────────────────
+
+interface MetricCard {
+  title: string;
+  value: string;
+  icon: React.ElementType;
+  color: string;
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/** Formatea un número monetario como $ con separador de miles */
+function formatCurrency(amount: number): string {
+  return `$${amount.toLocaleString('es-AR')}`;
+}
+
+/** Construye las tarjetas de métricas a partir de los stats reales */
+function buildMetrics(stats: DashboardStats): MetricCard[] {
+  return [
     {
       title: 'Total de Productos',
-      value: '0',
+      value: stats.totalProducts.toLocaleString('es-AR'),
       icon: Package,
       color: 'bg-blue-500',
-      change: '+12%',
     },
     {
       title: 'Pedidos del Mes',
-      value: '0',
+      value: stats.monthlyOrders.toLocaleString('es-AR'),
       icon: ShoppingCart,
       color: 'bg-green-500',
-      change: '+8%',
     },
     {
       title: 'Ingresos del Mes',
-      value: '$0',
+      value: formatCurrency(stats.monthlyRevenue),
       icon: DollarSign,
       color: 'bg-yellow-500',
-      change: '+15%',
     },
     {
       title: 'Total de Clientes',
-      value: '0',
+      value: stats.totalCustomers.toLocaleString('es-AR'),
       icon: Users,
       color: 'bg-purple-500',
-      change: '+5%',
     },
   ];
+}
+
+// ─── Componente ───────────────────────────────────────────────────────────────
+
+/**
+ * Dashboard principal del panel de administración.
+ * Muestra las 4 métricas clave del negocio obtenidas desde el backend.
+ */
+export default function AdminDashboard() {
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+
+  const fetchStats = async () => {
+    setIsLoading(true);
+    setHasError(false);
+    try {
+      const data = await getDashboardStats();
+      setStats(data);
+    } catch (error) {
+      setHasError(true);
+      toast.error('No se pudieron cargar las estadísticas', {
+        description: error instanceof Error ? error.message : 'Error al conectar con el servidor',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  // ── Estado de carga ────────────────────────────────────────────────────────
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-gray-600 mt-1">Resumen general del negocio</p>
+        </div>
+        <div className="flex items-center justify-center py-16">
+          <Loader2 className="h-8 w-8 animate-spin text-brand" />
+          <span className="ml-3 text-gray-600">Cargando estadísticas...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Estado de error ────────────────────────────────────────────────────────
+  if (hasError || !stats) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-gray-600 mt-1">Resumen general del negocio</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {(['Total de Productos', 'Pedidos del Mes', 'Ingresos del Mes', 'Total de Clientes'] as const).map((title) => (
+            <Card key={title} className="p-6">
+              <p className="text-sm font-medium text-gray-600">{title}</p>
+              <p className="text-2xl font-bold text-gray-400 mt-2">--</p>
+            </Card>
+          ))}
+        </div>
+        <div className="flex justify-center">
+          <button
+            onClick={fetchStats}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-brand border border-brand rounded-lg hover:bg-brand/5 transition-colors"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Vista principal ────────────────────────────────────────────────────────
+  const metrics = buildMetrics(stats);
 
   return (
     <div className="space-y-6">
       {/* Título */}
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600 mt-1">
-          Resumen general del negocio
-        </p>
+        <p className="text-gray-600 mt-1">Resumen general del negocio</p>
       </div>
 
       {/* Métricas */}
@@ -65,13 +154,8 @@ export default function AdminDashboard() {
                   <p className="text-2xl font-bold text-gray-900 mt-2">
                     {metric.value}
                   </p>
-                  <p className="text-sm text-green-600 mt-1">
-                    {metric.change} vs mes anterior
-                  </p>
                 </div>
-                <div
-                  className={`${metric.color} p-3 rounded-lg text-white`}
-                >
+                <div className={`${metric.color} p-3 rounded-lg text-white`}>
                   <Icon className="h-6 w-6" />
                 </div>
               </div>
@@ -80,13 +164,13 @@ export default function AdminDashboard() {
         })}
       </div>
 
-      {/* Sección de acciones rápidas */}
+      {/* Acciones rápidas */}
       <Card className="p-6">
         <h2 className="text-xl font-bold text-gray-900 mb-4">
           Acciones Rápidas
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <a
+          <Link
             href="/admin/productos"
             className="p-4 border border-gray-200 rounded-lg hover:border-brand hover:bg-gray-50 transition-colors"
           >
@@ -94,8 +178,8 @@ export default function AdminDashboard() {
             <p className="text-sm text-gray-600 mt-1">
               Agregar, editar o eliminar productos
             </p>
-          </a>
-          <a
+          </Link>
+          <Link
             href="/admin/pedidos"
             className="p-4 border border-gray-200 rounded-lg hover:border-brand hover:bg-gray-50 transition-colors"
           >
@@ -103,8 +187,8 @@ export default function AdminDashboard() {
             <p className="text-sm text-gray-600 mt-1">
               Revisar y gestionar pedidos
             </p>
-          </a>
-          <a
+          </Link>
+          <Link
             href="/admin/stock"
             className="p-4 border border-gray-200 rounded-lg hover:border-brand hover:bg-gray-50 transition-colors"
           >
@@ -112,17 +196,9 @@ export default function AdminDashboard() {
             <p className="text-sm text-gray-600 mt-1">
               Gestionar inventario
             </p>
-          </a>
+          </Link>
         </div>
-      </Card>
-
-      {/* Nota sobre datos mock */}
-      <Card className="p-6 bg-yellow-50 border-yellow-200">
-        <p className="text-sm text-yellow-800">
-          <strong>Nota:</strong> Los datos mostrados son de ejemplo. Se conectarán con datos reales cuando el backend esté disponible.
-        </p>
       </Card>
     </div>
   );
 }
-

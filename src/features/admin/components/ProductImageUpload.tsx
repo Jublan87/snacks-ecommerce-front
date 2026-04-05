@@ -4,7 +4,9 @@ import { useState, useRef } from 'react';
 import Image from 'next/image';
 import { ProductImage } from '@features/product/types';
 import { Button } from '@shared/ui/button';
-import { X, Upload, Image as ImageIcon } from 'lucide-react';
+import { X, Upload, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { uploadImage } from '@features/admin/services/upload.service';
 
 interface ProductImageUploadProps {
   images: ProductImage[];
@@ -12,47 +14,74 @@ interface ProductImageUploadProps {
 }
 
 /**
- * Componente para subir y gestionar imágenes de productos (mock)
- * En producción, esto se conectaría con un servicio de almacenamiento real
+ * Componente para subir y gestionar imágenes de productos.
+ * Sube cada archivo al backend vía POST /api/admin/upload y recibe la URL real.
  */
 export default function ProductImageUpload({
   images,
   onChange,
 }: ProductImageUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
-  // Simular upload de imagen (mock)
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    Array.from(files).forEach((file) => {
-      // En producción, aquí subirías el archivo a un servicio de almacenamiento
-      // Por ahora, creamos una URL mock usando placehold.co
-      const mockUrl = `https://placehold.co/600x600/FF6B35/FFFFFF/png?text=${encodeURIComponent(
-        file.name
-      )}`;
+    setIsUploading(true);
 
-      const newImage: ProductImage = {
-        id: `img-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        url: mockUrl,
-        alt: file.name,
-        isPrimary: images.length === 0, // La primera imagen es primaria por defecto
-        order: images.length,
-      };
+    try {
+      const fileArray = Array.from(files);
 
-      onChange([...images, newImage]);
-    });
+      // Subir todos los archivos en paralelo
+      const results = await Promise.allSettled(
+        fileArray.map((file) => uploadImage(file).then((res) => ({ file, url: res.url, storageKey: res.storageKey })))
+      );
 
-    // Limpiar input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      const newImages: ProductImage[] = [];
+      let failCount = 0;
+
+      results.forEach((result) => {
+        if (result.status === 'fulfilled') {
+          const { file, url, storageKey } = result.value;
+          newImages.push({
+            id: `img-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            url,
+            storageKey,
+            alt: file.name,
+            isPrimary: images.length === 0 && newImages.length === 0, // primera imagen es primaria
+            order: images.length + newImages.length,
+          });
+        } else {
+          failCount++;
+        }
+      });
+
+      if (newImages.length > 0) {
+        onChange([...images, ...newImages]);
+      }
+
+      if (failCount > 0) {
+        toast.error(
+          failCount === 1
+            ? 'No se pudo subir una imagen. Intentá de nuevo.'
+            : `No se pudieron subir ${failCount} imágenes. Intentá de nuevo.`
+        );
+      }
+    } catch {
+      toast.error('Error inesperado al subir las imágenes. Intentá de nuevo.');
+    } finally {
+      setIsUploading(false);
+      // Limpiar input para permitir volver a seleccionar el mismo archivo
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
   const handleRemoveImage = (imageId: string) => {
     const newImages = images.filter((img) => img.id !== imageId);
-    // Si eliminamos la imagen primaria y hay otras imágenes, hacer la primera primaria
+    // Si eliminamos la imagen primaria y quedan otras, hacer la primera primaria
     const removedWasPrimary = images.find((img) => img.id === imageId)?.isPrimary;
     if (removedWasPrimary && newImages.length > 0) {
       newImages[0].isPrimary = true;
@@ -105,10 +134,20 @@ export default function ProductImageUpload({
           type="button"
           variant="outline"
           onClick={() => fileInputRef.current?.click()}
+          disabled={isUploading}
           className="w-full"
         >
-          <Upload className="h-4 w-4 mr-2" />
-          Seleccionar Imágenes
+          {isUploading ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Subiendo...
+            </>
+          ) : (
+            <>
+              <Upload className="h-4 w-4 mr-2" />
+              Seleccionar Imágenes
+            </>
+          )}
         </Button>
       </div>
 
@@ -198,4 +237,3 @@ export default function ProductImageUpload({
     </div>
   );
 }
-

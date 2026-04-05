@@ -46,18 +46,25 @@ export default function CartSummary({
   actions,
   className = '',
 }: CartSummaryProps) {
-  const { shipping, isFreeShipping, amountNeededForFreeShipping } =
-    shippingCalculation;
+  // Destructure with safe defaults — API response may omit fields if backend shape mismatches
+  const {
+    shipping = 0,
+    isFreeShipping = false,
+    amountNeededForFreeShipping = 0,
+  } = shippingCalculation ?? {};
+
+  // Safe subtotal in case parent passes undefined during loading
+  const safeSubtotal = subtotal ?? 0;
 
   // Calcular total: subtotal + envío
-  const total = subtotal + shipping;
+  const total = safeSubtotal + shipping;
 
   const content = (
     <div className={variant === 'simple' ? 'space-y-3' : 'space-y-4'}>
       {/* Subtotal */}
       <div className="flex justify-between text-lg">
         <span className="font-bold text-gray-800">Subtotal</span>
-        <span className="font-bold text-gray-900">${subtotal.toLocaleString('es-AR')}</span>
+        <span className="font-bold text-gray-900">${safeSubtotal.toLocaleString('es-AR')}</span>
       </div>
 
       <Separator />

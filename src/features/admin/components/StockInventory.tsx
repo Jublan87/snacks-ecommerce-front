@@ -34,6 +34,7 @@ import {
   Edit2,
   Check,
   X,
+  Loader2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import AdminDataTable, {
@@ -53,15 +54,19 @@ export default function StockInventory() {
     products,
     categories,
     initializeWithMocks,
-    updateStock,
     getProductById,
     getAllCategoriesFlat,
   } = useProductStore();
 
   const {
     lowStockThreshold,
-    addEntry,
-    getHistoryByProduct,
+    productHistory,
+    isLoading,
+    isUpdating,
+    error,
+    fetchProductHistory,
+    updateProductStock,
+    clearProductHistory,
   } = useStockStore();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -76,9 +81,17 @@ export default function StockInventory() {
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
+  // Carga inicial de productos (el product-store los trae de la API)
   useEffect(() => {
     initializeWithMocks();
   }, [initializeWithMocks]);
+
+  // Muestra errores del store como toast
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
 
   const categoriesFlat = useMemo(() => getAllCategoriesFlat(), [categories, getAllCategoriesFlat]);
   const categoryNames = useMemo(() => {
@@ -151,63 +164,65 @@ export default function StockInventory() {
 
   const hasAlerts = metrics.lowStockCount > 0 || metrics.outOfStockCount > 0;
 
-  const handleQuickSave = (productId: string) => {
-    const product = getProductById(productId);
-    if (!product) return;
+  // ── Quick edit: actualiza stock de un producto vía API ──────────────────────
+  const handleQuickSave = async (productId: string) => {
     const value = parseInt(quickEditValue, 10);
     if (Number.isNaN(value) || value < 0) {
-      toast.error('Ingresa un número válido (≥ 0)');
+      toast.error('Ingresá un número válido (≥ 0)');
       return;
     }
     try {
-      const { previousStock } = updateStock(productId, value);
-      addEntry({
-        productId,
-        productName: product.name,
-        previousStock,
-        newStock: value,
-        reason: 'Ajuste manual',
-      });
+      await updateProductStock(productId, value, 'Ajuste manual');
       toast.success('Stock actualizado');
       setQuickEditId(null);
       setQuickEditValue('');
     } catch {
-      toast.error('Error al actualizar stock');
+      // El error ya fue mostrado por el useEffect que observa store.error
     }
   };
 
-  const handleBulkApply = () => {
+  // ── Bulk update: llama la API por cada producto seleccionado ────────────────
+  const handleBulkApply = async () => {
     const value = parseInt(bulkValue, 10);
     if (Number.isNaN(value) || selectedIds.size === 0) {
-      toast.error('Selecciona productos e ingresa un valor válido');
+      toast.error('Seleccioná productos e ingresá un valor válido');
       return;
     }
+
     let updated = 0;
-    selectedIds.forEach((id) => {
+    const reason = bulkMode === 'set' ? 'Ajuste masivo (valor fijo)' : 'Ajuste masivo (delta)';
+
+    // Procesamos en serie para no saturar al backend
+    for (const id of selectedIds) {
       const product = getProductById(id);
-      if (!product) return;
+      if (!product) continue;
+
+      const newStock =
+        bulkMode === 'set' ? value : Math.max(0, product.stock + value);
+
       try {
-        const { previousStock } = updateStock(
-          id,
-          bulkMode === 'set' ? value : product.stock + value
-        );
-        const newStock = bulkMode === 'set' ? value : Math.max(0, product.stock + value);
-        addEntry({
-          productId: id,
-          productName: product.name,
-          previousStock,
-          newStock,
-          reason: bulkMode === 'set' ? 'Ajuste masivo (valor fijo)' : 'Ajuste masivo (delta)',
-        });
+        await updateProductStock(id, newStock, reason);
         updated++;
       } catch {
-        // skip
+        // Continuar con el resto aunque uno falle
       }
-    });
+    }
+
     toast.success(`${updated} producto(s) actualizado(s)`);
     setBulkDialogOpen(false);
     setBulkValue('');
     setSelectedIds(new Set());
+  };
+
+  // ── Historial: abre el dialog y carga los datos del backend ────────────────
+  const handleOpenHistory = async (productId: string) => {
+    setHistoryProductId(productId);
+    await fetchProductHistory(productId);
+  };
+
+  const handleCloseHistory = () => {
+    setHistoryProductId(null);
+    clearProductHistory();
   };
 
   const toggleSelect = (id: string) => {
@@ -239,9 +254,6 @@ export default function StockInventory() {
     />
   );
 
-  const historyForProduct = historyProductId
-    ? getHistoryByProduct(historyProductId)
-    : [];
   const historyProduct = historyProductId ? getProductById(historyProductId) : null;
 
   return (
@@ -337,7 +349,11 @@ export default function StockInventory() {
           <Button
             onClick={() => setBulkDialogOpen(true)}
             className="bg-brand hover:bg-brand-hover text-white"
+            disabled={isUpdating}
           >
+            {isUpdating ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : null}
             Ajustar {selectedIds.size} seleccionados
           </Button>
         )}
@@ -405,14 +421,20 @@ export default function StockInventory() {
                               }
                             }}
                             className="w-20 h-8 text-sm"
+                            disabled={isUpdating}
                           />
                           <Button
                             size="icon"
                             variant="ghost"
                             className="h-8 w-8 text-green-600"
                             onClick={() => handleQuickSave(product.id)}
+                            disabled={isUpdating}
                           >
-                            <Check className="h-4 w-4" />
+                            {isUpdating ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Check className="h-4 w-4" />
+                            )}
                           </Button>
                           <Button
                             size="icon"
@@ -422,6 +444,7 @@ export default function StockInventory() {
                               setQuickEditId(null);
                               setQuickEditValue('');
                             }}
+                            disabled={isUpdating}
                           >
                             <X className="h-4 w-4" />
                           </Button>
@@ -459,7 +482,7 @@ export default function StockInventory() {
                   size="icon"
                   variant="ghost"
                   title="Ver historial"
-                  onClick={() => setHistoryProductId(product.id)}
+                  onClick={() => handleOpenHistory(product.id)}
                 >
                   <History className="h-4 w-4" />
                 </Button>
@@ -475,7 +498,7 @@ export default function StockInventory() {
           <DialogHeader>
             <DialogTitle>Ajuste masivo de stock</DialogTitle>
             <DialogDescription>
-              {selectedIds.size} producto(s) seleccionado(s). Elige cómo actualizar el stock.
+              {selectedIds.size} producto(s) seleccionado(s). Elegí cómo actualizar el stock.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -507,13 +530,21 @@ export default function StockInventory() {
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setBulkDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setBulkDialogOpen(false)}
+              disabled={isUpdating}
+            >
               Cancelar
             </Button>
             <Button
               className="bg-brand hover:bg-brand-hover text-white"
               onClick={handleBulkApply}
+              disabled={isUpdating}
             >
+              {isUpdating ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : null}
               Aplicar
             </Button>
           </DialogFooter>
@@ -521,7 +552,7 @@ export default function StockInventory() {
       </Dialog>
 
       {/* Dialog historial */}
-      <Dialog open={!!historyProductId} onOpenChange={(open) => !open && setHistoryProductId(null)}>
+      <Dialog open={!!historyProductId} onOpenChange={(open) => !open && handleCloseHistory()}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Historial de stock</DialogTitle>
@@ -530,10 +561,15 @@ export default function StockInventory() {
             </DialogDescription>
           </DialogHeader>
           <div className="max-h-80 overflow-y-auto space-y-2">
-            {historyForProduct.length === 0 ? (
+            {isLoading ? (
+              <div className="flex items-center justify-center py-6 text-gray-400">
+                <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                Cargando historial…
+              </div>
+            ) : productHistory.length === 0 ? (
               <p className="text-sm text-gray-500">Sin movimientos registrados</p>
             ) : (
-              historyForProduct.map((entry) => (
+              productHistory.map((entry) => (
                 <div
                   key={entry.id}
                   className="flex items-center justify-between text-sm py-2 border-b border-gray-100 last:border-0"

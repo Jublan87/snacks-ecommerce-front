@@ -1,9 +1,15 @@
 'use client';
 
+/**
+ * Admin order detail page — Client Component.
+ *
+ * Fetches order via GET /admin/orders/:id (admin endpoint — not user-scoped).
+ * Status updates call PUT /admin/orders/:id/status for a real backend persist.
+ */
+
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import {
   ArrowLeft,
   Package,
@@ -14,8 +20,12 @@ import {
   X,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useOrderStore } from '@features/order/store/order-store';
 import { OrderStatus } from '@features/order/types';
+import {
+  getAdminOrderById,
+  updateOrderStatus,
+  type AdminOrderDetail,
+} from '@features/admin/services/order.service';
 import {
   getStatusBadge,
   getPaymentMethodText,
@@ -50,45 +60,78 @@ export default function AdminOrderDetailPage() {
   const router = useRouter();
   const params = useParams();
   const orderId = params.id as string;
-  const order = useOrderStore((state) =>
-    orderId ? state.orders.find((o) => o.id === orderId) ?? null : null
-  );
-  const updateOrderStatus = useOrderStore((state) => state.updateOrderStatus);
+
+  const [order, setOrder] = useState<AdminOrderDetail | null>(null);
+  const [isFetching, setIsFetching] = useState(!!orderId);
   const [isUpdating, setIsUpdating] = useState(false);
 
+  // Fetch via admin endpoint on mount — no store cache, always fresh
   useEffect(() => {
     if (!orderId) {
       toast.error('ID de pedido no válido');
       router.push('/admin/pedidos');
       return;
     }
-    if (!order) {
-      toast.error('Pedido no encontrado');
-      router.push('/admin/pedidos');
-      return;
-    }
-  }, [orderId, order, router]);
+
+    setIsFetching(true);
+    getAdminOrderById(orderId)
+      .then((fetched) => {
+        if (!fetched) {
+          toast.error('Pedido no encontrado');
+          router.push('/admin/pedidos');
+          return;
+        }
+        setOrder(fetched);
+      })
+      .catch(() => {
+        toast.error('Error al cargar el pedido');
+        router.push('/admin/pedidos');
+      })
+      .finally(() => setIsFetching(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orderId]);
 
   const handleStatusChange = async (newStatus: OrderStatus) => {
     if (!order) return;
     setIsUpdating(true);
+
+    // Optimistic update for instant UI feedback
+    setOrder((prev) =>
+      prev ? { ...prev, status: newStatus, updatedAt: new Date().toISOString() } : prev
+    );
+
     try {
-      updateOrderStatus(order.id, newStatus);
+      // Persist to backend and sync with confirmed server state
+      const updated = await updateOrderStatus(order.id, newStatus);
+      setOrder(updated);
       toast.success('Estado actualizado correctamente');
     } catch (e) {
+      // Rollback: refetch the real order
       toast.error(
         e instanceof Error ? e.message : 'Error al actualizar el estado'
       );
+      const refetched = await getAdminOrderById(order.id).catch(() => null);
+      if (refetched) setOrder(refetched);
     } finally {
       setIsUpdating(false);
     }
   };
+
+  if (isFetching) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
+        <p className="text-gray-500">Cargando pedido...</p>
+      </div>
+    );
+  }
 
   if (!order) {
     return null;
   }
 
   const isCancelled = order.status === CANCELLED;
+  // shippingAddress is typed as Record<string,unknown> in the admin endpoint
+  const addr = order.shippingAddress as Record<string, string>;
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -110,7 +153,7 @@ export default function AdminOrderDetailPage() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            {getStatusBadge(order.status)}
+            {getStatusBadge(order.status as OrderStatus)}
             <Select
               value={order.status}
               onValueChange={(value) => handleStatusChange(value as OrderStatus)}
@@ -145,20 +188,11 @@ export default function AdminOrderDetailPage() {
               <div className="space-y-4">
                 {order.items.map((item) => (
                   <div key={item.id} className="flex gap-4">
+                    {/* Admin order items don't include product images — show placeholder */}
                     <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-                      {item.product.images?.[0] ? (
-                        <Image
-                          src={item.product.images[0].url}
-                          alt={item.product.images[0].alt || item.product.name}
-                          fill
-                          className="object-cover"
-                          sizes="96px"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Package className="w-8 h-8 text-gray-400" />
-                        </div>
-                      )}
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Package className="w-8 h-8 text-gray-400" />
+                      </div>
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-gray-900 mb-1">
@@ -191,22 +225,22 @@ export default function AdminOrderDetailPage() {
             <CardContent>
               <div className="space-y-1 text-gray-700">
                 <p className="font-semibold">
-                  {order.shippingAddress.firstName}{' '}
-                  {order.shippingAddress.lastName}
+                  {addr.firstName}{' '}
+                  {addr.lastName}
                 </p>
-                <p>{order.shippingAddress.email}</p>
-                {order.shippingAddress.phone && (
-                  <p>Teléfono: {order.shippingAddress.phone}</p>
+                <p>{addr.email}</p>
+                {addr.phone && (
+                  <p>Teléfono: {addr.phone}</p>
                 )}
-                <p>{order.shippingAddress.address}</p>
+                <p>{addr.address}</p>
                 <p>
-                  {order.shippingAddress.city},{' '}
-                  {order.shippingAddress.province}
+                  {addr.city},{' '}
+                  {addr.province}
                 </p>
-                <p>Código Postal: {order.shippingAddress.postalCode}</p>
-                {order.shippingAddress.notes && (
+                <p>Código Postal: {addr.postalCode}</p>
+                {addr.notes && (
                   <p className="text-sm text-gray-600 mt-2">
-                    Notas: {order.shippingAddress.notes}
+                    Notas: {addr.notes}
                   </p>
                 )}
               </div>
@@ -293,13 +327,16 @@ export default function AdminOrderDetailPage() {
                 </div>
                 {/* Estados del flujo */}
                 {STATUS_FLOW.map((status, index) => {
-                  const currentFlowIndex = STATUS_FLOW.indexOf(order.status);
+                  const currentFlowIndex = STATUS_FLOW.indexOf(
+                    order.status as OrderStatus
+                  );
                   const isReached =
                     order.status === status ||
                     (!isCancelled && currentFlowIndex >= index) ||
                     (isCancelled && index === 0);
                   const isCurrent = order.status === status && !isCancelled;
-                  const isLastStep = !isCancelled && order.status === status;
+                  const isLastStep =
+                    !isCancelled && order.status === status;
                   const showLineBelow = isCancelled || !isLastStep;
                   return (
                     <div
@@ -311,7 +348,9 @@ export default function AdminOrderDetailPage() {
                       )}
                       <div
                         className={`relative z-10 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full ${
-                          isReached ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-400'
+                          isReached
+                            ? 'bg-green-500 text-white'
+                            : 'bg-gray-200 text-gray-400'
                         }`}
                       >
                         {isReached ? (
@@ -323,22 +362,25 @@ export default function AdminOrderDetailPage() {
                       <div>
                         <p
                           className={
-                            isCurrent ? 'font-bold text-gray-900' : 'font-medium text-gray-900'
+                            isCurrent
+                              ? 'font-bold text-gray-900'
+                              : 'font-medium text-gray-900'
                           }
                         >
                           {ORDER_STATUS_CONFIG[status].label}
                         </p>
-                        {isCurrent && order.updatedAt !== order.createdAt && (
-                          <p className="text-sm text-gray-500">
-                            Actualizado:{' '}
-                            {formatDate(order.updatedAt, true)}
-                          </p>
-                        )}
+                        {isCurrent &&
+                          order.updatedAt !== order.createdAt && (
+                            <p className="text-sm text-gray-500">
+                              Actualizado:{' '}
+                              {formatDate(order.updatedAt, true)}
+                            </p>
+                          )}
                       </div>
                     </div>
                   );
                 })}
-                {/* Cancelado (si aplica): único con cruz roja, sin línea después */}
+                {/* Cancelado */}
                 {isCancelled && (
                   <div className="relative flex gap-4">
                     <div className="relative z-10 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-red-500 text-white">
