@@ -42,7 +42,12 @@ function toAdminBody(data: ProductFormInput): AdminProductBody {
   if (data.shortDescription) body.shortDescription = data.shortDescription;
   if (data.discountPercentage !== undefined) body.discountPercentage = data.discountPercentage;
   if (data.weight !== undefined) body.weight = data.weight;
-  if (data.dimensions) body.dimensions = data.dimensions;
+  if (data.dimensions) {
+    const { width, height, depth } = data.dimensions;
+    if (width !== undefined && height !== undefined && depth !== undefined) {
+      body.dimensions = { width, height, depth };
+    }
+  }
 
   // El backend espera las imágenes como array de objetos planos (sin el id local)
   if (data.images && data.images.length > 0) {

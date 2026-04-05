@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { Card } from '@shared/ui/card';
 import { Package, ShoppingCart, DollarSign, Users, Loader2, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
@@ -169,7 +170,7 @@ export default function AdminDashboard() {
           Acciones Rápidas
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <a
+          <Link
             href="/admin/productos"
             className="p-4 border border-gray-200 rounded-lg hover:border-brand hover:bg-gray-50 transition-colors"
           >
@@ -177,8 +178,8 @@ export default function AdminDashboard() {
             <p className="text-sm text-gray-600 mt-1">
               Agregar, editar o eliminar productos
             </p>
-          </a>
-          <a
+          </Link>
+          <Link
             href="/admin/pedidos"
             className="p-4 border border-gray-200 rounded-lg hover:border-brand hover:bg-gray-50 transition-colors"
           >
@@ -186,8 +187,8 @@ export default function AdminDashboard() {
             <p className="text-sm text-gray-600 mt-1">
               Revisar y gestionar pedidos
             </p>
-          </a>
-          <a
+          </Link>
+          <Link
             href="/admin/stock"
             className="p-4 border border-gray-200 rounded-lg hover:border-brand hover:bg-gray-50 transition-colors"
           >
@@ -195,7 +196,7 @@ export default function AdminDashboard() {
             <p className="text-sm text-gray-600 mt-1">
               Gestionar inventario
             </p>
-          </a>
+          </Link>
         </div>
       </Card>
     </div>

@@ -18,11 +18,10 @@ export const productImageSchema = z.object({
 });
 
 // Helper: acepta number | undefined, convierte NaN a undefined
+// Se usa z.number().optional() directamente (sin z.preprocess) para que el tipo
+// inferido sea `number | undefined` — compatible con useForm<ProductFormInput>.
 const optionalPositiveNumber = (msg: string) =>
-  z.preprocess(
-    (v) => (v === undefined || (typeof v === 'number' && isNaN(v)) ? undefined : v),
-    z.number().positive(msg).optional(),
-  );
+  z.number().positive(msg).optional();
 
 // Esquema para dimensiones
 export const dimensionsSchema = z
