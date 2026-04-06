@@ -1,7 +1,5 @@
 import { ApiError } from '@shared/api';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
-
 export interface UploadImageResponse {
   url: string;
   storageKey: string;
@@ -10,18 +8,20 @@ export interface UploadImageResponse {
 /**
  * Sube una imagen al servidor y devuelve la URL pública.
  *
- * Nota: NO usamos `apiClient` aquí porque ese wrapper siempre añade
- * `Content-Type: application/json` y serializa el body como JSON.
+ * Nota: NO usamos `apiClient` ni `adminFetch` aquí porque esos wrappers
+ * siempre añaden `Content-Type: application/json` y serializan el body como JSON.
  * Para multipart/form-data el navegador debe poner el header con el
  * boundary correcto — por eso hacemos el fetch directamente.
+ *
+ * Usamos una URL relativa que apunta al BFF Route Handler (same-origin),
+ * el cual reenvía el FormData al backend con la cookie HttpOnly de admin.
  */
 export async function uploadImage(file: File): Promise<UploadImageResponse> {
   const formData = new FormData();
   formData.append('file', file);
 
-  const response = await fetch(`${BASE_URL}/admin/upload`, {
+  const response = await fetch('/api/admin/upload', {
     method: 'POST',
-    credentials: 'include', // envía las cookies HttpOnly con el JWT
     body: formData,
     // No ponemos Content-Type — el navegador lo setea solo con el boundary
   });

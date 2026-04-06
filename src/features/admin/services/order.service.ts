@@ -7,11 +7,11 @@
  * (which is server-side and calls /orders without admin privileges).
  */
 
-import { apiClient } from '@shared/api';
+import { adminFetch } from '@shared/api';
 import type { Order, OrderStatus } from '@features/order/types';
 import type { AdminOrderFilters } from '@features/admin/types/admin-order.types';
 
-const BASE = '/admin/orders';
+const BASE = '/api/admin/orders';
 
 /**
  * Admin paginated orders response.
@@ -60,7 +60,7 @@ export async function getAdminOrders(
   if (filters?.limit)         params.set('limit', String(filters.limit));
 
   const query = params.toString() ? `?${params.toString()}` : '';
-  return apiClient.get<AdminPaginatedOrders>(`${BASE}${query}`);
+  return adminFetch.get<AdminPaginatedOrders>(`${BASE}${query}`);
 }
 
 // ─── Admin order detail types (backend shape) ────────────────────────────────
@@ -110,7 +110,7 @@ export interface AdminOrderDetail {
  */
 export async function getAdminOrderById(id: string): Promise<AdminOrderDetail | null> {
   try {
-    return await apiClient.get<AdminOrderDetail>(`${BASE}/${id}`);
+    return await adminFetch.get<AdminOrderDetail>(`${BASE}/${id}`);
   } catch (err: unknown) {
     const status = (err as { status?: number }).status;
     if (status === 403 || status === 404) return null;
@@ -126,7 +126,7 @@ export async function getAdminOrderByNumber(
   orderNumber: string
 ): Promise<AdminOrderDetail | null> {
   try {
-    return await apiClient.get<AdminOrderDetail>(
+    return await adminFetch.get<AdminOrderDetail>(
       `${BASE}/number/${encodeURIComponent(orderNumber)}`
     );
   } catch (err: unknown) {
@@ -144,5 +144,5 @@ export async function updateOrderStatus(
   id: string,
   status: OrderStatus
 ): Promise<AdminOrderDetail> {
-  return apiClient.put<AdminOrderDetail>(`${BASE}/${id}/status`, { status });
+  return adminFetch.put<AdminOrderDetail>(`${BASE}/${id}/status`, { status });
 }

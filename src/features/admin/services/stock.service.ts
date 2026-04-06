@@ -1,8 +1,8 @@
 /**
  * Stock service — client-side calls (Client Components / Zustand store).
  *
- * Usa apiClient que ya incluye credentials: 'include' para enviar
- * la cookie HttpOnly con el JWT de admin.
+ * Usa adminFetch que enruta a través del BFF Route Handler (same-origin),
+ * el cual reenvía la petición al backend con la cookie HttpOnly de admin.
  *
  * Endpoints:
  *  GET  /api/admin/stock/history          — historial paginado (con filtros opcionales)
@@ -10,7 +10,7 @@
  *  PUT  /api/admin/products/:id/stock     — actualizar stock (en el controller de productos)
  */
 
-import { apiClient } from '@shared/api';
+import { adminFetch } from '@shared/api';
 import type {
   StockHistoryFilters,
   PaginatedStockHistory,
@@ -32,7 +32,7 @@ export async function getStockHistory(
 
   const query = params.toString() ? `?${params.toString()}` : '';
 
-  return apiClient.get<PaginatedStockHistory>(`/admin/stock/history${query}`);
+  return adminFetch.get<PaginatedStockHistory>(`/api/admin/stock/history${query}`);
 }
 
 /** Trae el historial de stock de un producto específico (paginado). */
@@ -50,8 +50,8 @@ export async function getProductStockHistory(
 
   const query = params.toString() ? `?${params.toString()}` : '';
 
-  return apiClient.get<PaginatedStockHistory>(
-    `/admin/stock/history/${encodeURIComponent(productId)}${query}`
+  return adminFetch.get<PaginatedStockHistory>(
+    `/api/admin/stock/history/${encodeURIComponent(productId)}${query}`
   );
 }
 
@@ -64,7 +64,7 @@ export async function updateStock(
   newStock: number,
   reason?: string
 ): Promise<void> {
-  await apiClient.put(`/admin/products/${encodeURIComponent(productId)}/stock`, {
+  await adminFetch.put(`/api/admin/products/${encodeURIComponent(productId)}/stock`, {
     newStock,
     ...(reason ? { reason } : {}),
   });

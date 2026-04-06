@@ -1,15 +1,15 @@
 /**
  * Admin user service — CLIENT-side only (Client Components).
  *
- * Calls the admin-specific endpoints:
- *   GET  /admin/users        — paginated user list with optional filters
- *   PATCH /admin/users/:id/role — update a user's role
+ * Calls the admin-specific endpoints via the BFF Route Handler (same-origin):
+ *   GET  /api/admin/users        — paginated user list with optional filters
+ *   PATCH /api/admin/users/:id/role — update a user's role
  *
- * Uses apiClient which sends credentials: 'include' so the HttpOnly JWT cookie
- * is forwarded automatically.
+ * Uses adminFetch which routes through the BFF, which forwards the HttpOnly
+ * JWT cookie to the backend.
  */
 
-import { apiClient } from '@shared/api';
+import { adminFetch } from '@shared/api';
 import type {
   AdminPaginatedUsers,
   AdminUser,
@@ -17,7 +17,7 @@ import type {
   UserRole,
 } from '@features/admin/types/admin-user.types';
 
-const BASE = '/admin/users';
+const BASE = '/api/admin/users';
 
 /**
  * Fetches paginated users with optional filters.
@@ -34,7 +34,7 @@ export async function getUsers(
   if (filters?.search?.trim())     params.set('search', filters.search.trim());
 
   const query = params.toString() ? `?${params.toString()}` : '';
-  return apiClient.get<AdminPaginatedUsers>(`${BASE}${query}`);
+  return adminFetch.get<AdminPaginatedUsers>(`${BASE}${query}`);
 }
 
 /**
@@ -45,5 +45,5 @@ export async function updateUserRole(
   id: string,
   role: UserRole
 ): Promise<AdminUser> {
-  return apiClient.patch<AdminUser>(`${BASE}/${id}/role`, { role });
+  return adminFetch.patch<AdminUser>(`${BASE}/${id}/role`, { role });
 }
