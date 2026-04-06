@@ -1,4 +1,4 @@
-import { apiClient } from '@shared/api';
+import { apiClient, adminFetch } from '@shared/api';
 import { Product, ProductsResponse } from '@features/product/types';
 import { ProductFormInput } from '@features/admin/schemas/product.schema';
 
@@ -106,7 +106,7 @@ export async function getProductBySlug(slug: string): Promise<Product> {
  * POST /api/admin/products
  */
 export async function createProduct(data: ProductFormInput): Promise<Product> {
-  return apiClient.post<Product>('/admin/products', toAdminBody(data));
+  return adminFetch.post<Product>('/api/admin/products', toAdminBody(data));
 }
 
 /**
@@ -117,7 +117,7 @@ export async function updateProduct(
   id: string,
   data: Partial<ProductFormInput>,
 ): Promise<Product> {
-  return apiClient.put<Product>(`/admin/products/${id}`, toAdminBody(data as ProductFormInput));
+  return adminFetch.put<Product>(`/api/admin/products/${id}`, toAdminBody(data as ProductFormInput));
 }
 
 /**
@@ -125,7 +125,7 @@ export async function updateProduct(
  * DELETE /api/admin/products/:id
  */
 export async function deleteProduct(id: string): Promise<void> {
-  return apiClient.delete<void>(`/admin/products/${id}`);
+  return adminFetch.delete<void>(`/api/admin/products/${id}`);
 }
 
 /**
@@ -137,5 +137,5 @@ export async function updateProductStock(
   newStock: number,
   reason?: string,
 ): Promise<void> {
-  return apiClient.put<void>(`/admin/products/${id}/stock`, { newStock, reason });
+  return adminFetch.put<void>(`/api/admin/products/${id}/stock`, { newStock, reason });
 }

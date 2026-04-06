@@ -1,4 +1,4 @@
-import { apiClient } from '@shared/api';
+import { apiClient, adminFetch } from '@shared/api';
 import { Category } from '@features/product/types';
 import { CategoryFormInput } from '@features/admin/schemas/product.schema';
 
@@ -56,7 +56,7 @@ export async function getCategoryBySlug(slug: string): Promise<Category> {
  * POST /api/admin/categories
  */
 export async function createCategory(data: CategoryFormInput): Promise<Category> {
-  return apiClient.post<Category>('/admin/categories', toAdminBody(data));
+  return adminFetch.post<Category>('/api/admin/categories', toAdminBody(data));
 }
 
 /**
@@ -67,7 +67,7 @@ export async function updateCategory(
   id: string,
   data: Partial<CategoryFormInput>,
 ): Promise<Category> {
-  return apiClient.put<Category>(`/admin/categories/${id}`, toAdminBody(data));
+  return adminFetch.put<Category>(`/api/admin/categories/${id}`, toAdminBody(data));
 }
 
 /**
@@ -76,5 +76,5 @@ export async function updateCategory(
  * El backend devuelve 409 si hay productos o subcategorías asociadas.
  */
 export async function deleteCategory(id: string): Promise<void> {
-  return apiClient.delete<void>(`/admin/categories/${id}`);
+  return adminFetch.delete<void>(`/api/admin/categories/${id}`);
 }

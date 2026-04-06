@@ -1,4 +1,4 @@
-import { apiClient } from '@shared/api';
+import { adminFetch } from '@shared/api';
 
 // ─── Tipos ───────────────────────────────────────────────────────────────────
 
@@ -17,5 +17,5 @@ export interface DashboardStats {
  * GET /api/admin/dashboard/stats
  */
 export async function getDashboardStats(): Promise<DashboardStats> {
-  return apiClient.get<DashboardStats>('/admin/dashboard/stats');
+  return adminFetch.get<DashboardStats>('/api/admin/dashboard/stats');
 }
