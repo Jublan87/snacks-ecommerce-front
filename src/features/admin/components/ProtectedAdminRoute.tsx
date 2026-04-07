@@ -13,6 +13,7 @@ export default function ProtectedAdminRoute({ children }: ProtectedAdminRoutePro
   const router = useRouter();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isLoading = useAuthStore((state) => state.isLoading);
+  const isLoggingOut = useAuthStore((state) => state.isLoggingOut);
   const isAdmin = useAuthStore((state) => state.isAdmin);
   const initialize = useAuthStore((state) => state.initialize);
 
@@ -22,6 +23,7 @@ export default function ProtectedAdminRoute({ children }: ProtectedAdminRoutePro
 
   useEffect(() => {
     if (isLoading) return;
+    if (isLoggingOut) return;
 
     if (!isAuthenticated || !isAdmin()) {
       toast.error('No tienes permisos para acceder a esta sección', {
@@ -29,7 +31,7 @@ export default function ProtectedAdminRoute({ children }: ProtectedAdminRoutePro
       });
       router.replace('/');
     }
-  }, [isAuthenticated, isLoading, isAdmin, router]);
+  }, [isAuthenticated, isLoading, isLoggingOut, isAdmin, router]);
 
   if (isLoading) {
     return (
