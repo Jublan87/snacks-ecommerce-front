@@ -1,13 +1,15 @@
 /**
  * Order service — client-side only (Client Components / Zustand stores).
  *
- * Uses apiClient (credentials: 'include') so the browser sends the HttpOnly
- * cookie automatically. Do NOT use serverGet here — that requires next/headers.
+ * Uses clientFetch (BFF proxy) so the Next.js server reads the HttpOnly
+ * cookie and forwards it as an Authorization header to the backend.
+ * This avoids cross-origin cookie issues (sameSite: 'strict') between
+ * the Vercel frontend and the Render backend.
  *
  * For Server Components and Server Actions, use order.service.ts instead.
  */
 
-import { apiClient } from '@shared/api/client';
+import { clientFetch } from '@shared/api';
 import type { Order, PaginatedOrders, OrderFilters } from '@features/order/types';
 
 const BASE = '/orders';
@@ -26,7 +28,7 @@ export async function getOrdersClient(filters?: OrderFilters): Promise<Paginated
   const query = params.toString() ? `?${params.toString()}` : '';
 
   try {
-    return await apiClient.get<PaginatedOrders>(`${BASE}${query}`);
+    return await clientFetch.get<PaginatedOrders>(`${BASE}${query}`);
   } catch (err: unknown) {
     const status = (err as { status?: number }).status;
     if (status === 401) return null; // unauthenticated
@@ -40,7 +42,7 @@ export async function getOrdersClient(filters?: OrderFilters): Promise<Paginated
  */
 export async function getOrderByNumberClient(orderNumber: string): Promise<Order | null> {
   try {
-    return await apiClient.get<Order>(`${BASE}/number/${encodeURIComponent(orderNumber)}`);
+    return await clientFetch.get<Order>(`${BASE}/number/${encodeURIComponent(orderNumber)}`);
   } catch (err: unknown) {
     const status = (err as { status?: number }).status;
     if (status === 401 || status === 403 || status === 404) return null;
