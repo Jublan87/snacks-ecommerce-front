@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import AdminSidebar from './AdminSidebar';
 import AdminHeader from './AdminHeader';
 
@@ -16,6 +16,7 @@ export default function AdminLayoutClient({
   children,
 }: AdminLayoutClientProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const handleMobileClose = useCallback(() => setIsMobileMenuOpen(false), []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -23,7 +24,7 @@ export default function AdminLayoutClient({
       <div className="flex">
         <AdminSidebar
           isMobileOpen={isMobileMenuOpen}
-          onMobileClose={() => setIsMobileMenuOpen(false)}
+          onMobileClose={handleMobileClose}
         />
         <main className="flex-1 min-w-0 p-6 lg:p-8">{children}</main>
       </div>
