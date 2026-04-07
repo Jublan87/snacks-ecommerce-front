@@ -15,6 +15,7 @@ interface AuthStore {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isLoggingOut: boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
@@ -29,6 +30,7 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
   user: null,
   isAuthenticated: false,
   isLoading: true,
+  isLoggingOut: false,
 
   initialize: async () => {
     set({ isLoading: true });
@@ -57,6 +59,7 @@ export const useAuthStore = create<AuthStore>()((set, get) => ({
   },
 
   logout: async () => {
+    set({ isLoggingOut: true });
     await logoutAction();
     // Clear auth state and cart — cart items are user-specific
     set({ user: null, isAuthenticated: false });
