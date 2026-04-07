@@ -14,7 +14,7 @@ async function proxy(
 
   const { path: pathSegments } = await params;
   const qs = request.nextUrl.searchParams.toString();
-  const upstream = `${process.env.API_URL}/api/${pathSegments.join('/')}${qs ? `?${qs}` : ''}`;
+  const upstream = `${process.env.API_URL}/${pathSegments.join('/')}${qs ? `?${qs}` : ''}`;
 
   const isReadMethod = request.method === 'GET' || request.method === 'HEAD';
   const body = isReadMethod ? undefined : await request.text();

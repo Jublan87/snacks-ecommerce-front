@@ -78,7 +78,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         {/* Categoría */}
         {product.category && (
           <Link
-            href={`/productos/categoria/${product.category.slug}`}
+            href={`/productos?categoria=${product.category.slug}`}
             className="text-xs text-gray-500 hover:text-gray-700 mb-1 transition-colors"
           >
             {product.category.name}
