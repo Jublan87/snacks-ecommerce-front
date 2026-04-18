@@ -25,7 +25,7 @@ export async function generateMetadata({
 
   try {
     const product = await getProductBySlug(slug);
-    const currentPrice = product.discountPrice ?? product.price;
+    const currentPrice = product.discountPrice ?? product.salePrice;
     const description = product.shortDescription ?? product.description;
 
     return {
@@ -79,7 +79,7 @@ export default async function ProductDetailPage({
     .filter((p) => p.id !== product.id)
     .slice(0, 4);
 
-  const currentPrice = product.discountPrice ?? product.price;
+  const currentPrice = product.discountPrice ?? product.salePrice;
   const hasDiscount = product.discountPrice !== null;
   const isOutOfStock = product.stock === 0;
 
@@ -146,7 +146,7 @@ export default async function ProductDetailPage({
                         ${currentPrice.toLocaleString('es-AR')}
                       </span>
                       <span className="text-lg md:text-xl text-gray-500 line-through">
-                        ${product.price.toLocaleString('es-AR')}
+                        ${product.salePrice.toLocaleString('es-AR')}
                       </span>
                       <div className="bg-red-600 text-white px-2 py-0.5 rounded font-bold text-xs shadow-md">
                         -{product.discountPercentage}% OFF

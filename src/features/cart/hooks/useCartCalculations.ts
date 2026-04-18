@@ -32,7 +32,7 @@ export function useCartCalculations() {
     if (!items || items.length === 0) return 0;
     return items.reduce(
       (acc, item) =>
-        acc + (item.product.discountPrice || item.product.price) * item.quantity,
+        acc + (item.product.discountPrice || item.product.salePrice) * item.quantity,
       0
     );
   }, [items]);

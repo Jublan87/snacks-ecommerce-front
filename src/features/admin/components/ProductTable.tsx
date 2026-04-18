@@ -122,7 +122,7 @@ export default function ProductTable({
             dir * (a.category?.name ?? '').localeCompare(b.category?.name ?? '')
           );
         case 'price':
-          return dir * (a.price - b.price);
+          return dir * (a.salePrice - b.salePrice);
         case 'stock':
           return dir * (a.stock - b.stock);
         case 'status':
@@ -341,7 +341,7 @@ export default function ProductTable({
                   {product.discountPrice ? (
                     <>
                       <div className="line-through text-gray-400">
-                        {formatPrice(product.price)}
+                        {formatPrice(product.salePrice)}
                       </div>
                       <div className="font-medium text-red-600">
                         {formatPrice(product.discountPrice)}
@@ -349,7 +349,7 @@ export default function ProductTable({
                     </>
                   ) : (
                     <div className="font-medium">
-                      {formatPrice(product.price)}
+                      {formatPrice(product.salePrice)}
                     </div>
                   )}
                 </div>

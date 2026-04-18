@@ -64,10 +64,14 @@ export const productFormSchema = z.object({
       /^[A-Z0-9-]+$/,
       'El SKU solo puede contener letras mayúsculas, números y guiones',
     ),
-  price: z
+  salePrice: z
     .number()
-    .positive('El precio debe ser positivo')
-    .min(0.01, 'El precio debe ser mayor a 0'),
+    .positive('El precio de venta debe ser positivo')
+    .min(0.01, 'El precio de venta debe ser mayor a 0'),
+  costPrice: z
+    .number()
+    .positive('El precio de costo debe ser positivo')
+    .min(0.01, 'El precio de costo debe ser mayor a 0'),
   discountPercentage: z
     .number()
     .int('El porcentaje de descuento debe ser un número entero')

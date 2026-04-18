@@ -10,7 +10,8 @@ interface AdminProductBody {
   description: string;
   shortDescription?: string;
   sku: string;
-  price: number;
+  salePrice: number;
+  costPrice: number;
   discountPercentage?: number;
   stock: number;
   categoryId: string;
@@ -31,7 +32,8 @@ function toAdminBody(data: ProductFormInput): AdminProductBody {
     name: data.name,
     description: data.description,
     sku: data.sku,
-    price: data.price,
+    salePrice: data.salePrice,
+    costPrice: data.costPrice,
     stock: data.stock,
     categoryId: data.categoryId,
     isActive: data.isActive,
