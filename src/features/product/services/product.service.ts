@@ -27,31 +27,31 @@ function buildQueryString(filters?: ProductFilters): string {
 export async function getProducts(filters?: ProductFilters): Promise<ProductsResponse> {
   const qs = buildQueryString(filters);
   return serverGet<ProductsResponse>(`/products${qs}`, {
-    next: { revalidate: 60, tags: ['products'] },
+    next: { revalidate: 0, tags: ['products'] },
   });
 }
 
 export async function getProductBySlug(slug: string): Promise<Product> {
   return serverGet<Product>(`/products/slug/${slug}`, {
-    next: { revalidate: 60, tags: ['products'] },
+    next: { revalidate: 0, tags: ['products'] },
   });
 }
 
 export async function getProductById(id: string): Promise<Product> {
   return serverGet<Product>(`/products/${id}`, {
-    next: { revalidate: 60, tags: ['products'] },
+    next: { revalidate: 0, tags: ['products'] },
   });
 }
 
 export async function getCategories(): Promise<Category[]> {
   return serverGet<Category[]>('/categories', {
-    next: { revalidate: 300, tags: ['categories'] },
+    next: { revalidate: 0, tags: ['categories'] },
   });
 }
 
 export async function getCategoryById(id: string): Promise<Category> {
   return serverGet<Category>(`/categories/${id}`, {
-    next: { revalidate: 300, tags: ['categories'] },
+    next: { revalidate: 0, tags: ['categories'] },
   });
 }
 

@@ -31,10 +31,13 @@ async function proxy(
     body,
   });
 
+  const isGet = request.method === 'GET';
+
   return new NextResponse(backendResponse.body, {
     status: backendResponse.status,
     headers: {
       'Content-Type': backendResponse.headers.get('Content-Type') ?? 'application/json',
+      ...(isGet ? { 'Cache-Control': 'no-store' } : {}),
     },
   });
 }

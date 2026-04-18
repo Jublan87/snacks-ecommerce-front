@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Product } from '@features/product/types';
+import { AdminProduct, Product } from '@features/product/types';
 import { useProductStore } from '@features/admin/store/product-store';
-import { getProductById } from '@features/admin/services/product.service';
+import { getAdminProductById } from '@features/admin/services/product.service';
 import { type ProductFormInput, type CategoryFormInput } from '@features/admin/schemas/product.schema';
 import ProductTable from '@features/admin/components/ProductTable';
 import ProductForm from '@features/admin/components/ProductForm';
@@ -34,7 +34,7 @@ export default function AdminProductosPage() {
   } = useProductStore();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | undefined>();
+  const [editingProduct, setEditingProduct] = useState<AdminProduct | undefined>();
   const [isSaving, setIsSaving] = useState(false);
 
   // Cargar datos desde la API al montar
@@ -49,13 +49,14 @@ export default function AdminProductosPage() {
 
   const handleEdit = async (product: Product) => {
     try {
-      const fullProduct = await getProductById(product.id);
+      const fullProduct = await getAdminProductById(product.id);
       setEditingProduct(fullProduct);
-    } catch {
-      // Si falla el fetch del detalle, usar el producto del listado como fallback
-      setEditingProduct(product);
+      setIsFormOpen(true);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : 'Error al cargar el producto'
+      );
     }
-    setIsFormOpen(true);
   };
 
   const handleDelete = async (productId: string) => {
