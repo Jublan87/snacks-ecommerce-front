@@ -44,7 +44,7 @@ export interface Product {
   description: string;
   shortDescription: string | null;
   sku: string;
-  price: number;
+  salePrice: number;
   discountPrice: number | null;
   discountPercentage: number | null;
   stock: number;
@@ -62,12 +62,20 @@ export interface Product {
   updatedAt: string;
 }
 
+/**
+ * Extiende Product con campos solo visibles en el admin.
+ * NUNCA exponer costPrice en componentes públicos.
+ */
+export interface AdminProduct extends Product {
+  costPrice: number;
+}
+
 export interface ProductListItem {
   id: string;
   name: string;
   slug: string;
   shortDescription: string | null;
-  price: number;
+  salePrice: number;
   discountPrice: number | null;
   discountPercentage: number | null;
   stock: number;

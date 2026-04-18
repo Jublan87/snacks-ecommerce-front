@@ -14,7 +14,7 @@ export interface CartProduct {
   id: string;
   name: string;
   slug: string;
-  price: number;
+  salePrice: number;
   discountPrice: number | null;
   stock: number;
   isActive: boolean;

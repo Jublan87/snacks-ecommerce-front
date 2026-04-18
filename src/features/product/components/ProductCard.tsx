@@ -18,7 +18,7 @@ export default function ProductCard({ product }: ProductCardProps) {
     quantity: 1,
   });
 
-  const currentPrice = product.discountPrice || product.price;
+  const currentPrice = product.discountPrice || product.salePrice;
   const hasDiscount = !!product.discountPrice;
 
   // Función que se ejecuta al hacer clic en "Agregar al Carrito"
@@ -107,7 +107,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                 ${currentPrice.toLocaleString('es-AR')}
               </span>
               <span className="text-sm text-gray-500 line-through">
-                ${product.price.toLocaleString('es-AR')}
+                ${product.salePrice.toLocaleString('es-AR')}
               </span>
               <div className="bg-red-600 text-white px-2 py-0.5 rounded font-bold text-xs shadow-md">
                 -{product.discountPercentage}% OFF

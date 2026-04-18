@@ -50,15 +50,15 @@ export function sortProducts(
 
     case 'price-asc':
       return sorted.sort((a, b) => {
-        const priceA = a.discountPrice || a.price;
-        const priceB = b.discountPrice || b.price;
+        const priceA = a.discountPrice || a.salePrice;
+        const priceB = b.discountPrice || b.salePrice;
         return priceA - priceB;
       });
 
     case 'price-desc':
       return sorted.sort((a, b) => {
-        const priceA = a.discountPrice || a.price;
-        const priceB = b.discountPrice || b.price;
+        const priceA = a.discountPrice || a.salePrice;
+        const priceB = b.discountPrice || b.salePrice;
         return priceB - priceA;
       });
 

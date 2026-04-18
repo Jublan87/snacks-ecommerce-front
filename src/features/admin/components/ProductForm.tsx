@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Product, ProductImage, Category } from '@features/product/types';
+import { AdminProduct, ProductImage, Category } from '@features/product/types';
 import {
   productFormSchema,
   type ProductFormInput,
@@ -23,7 +23,7 @@ import ProductImageUpload from './ProductImageUpload';
 import { toast } from 'sonner';
 
 interface ProductFormProps {
-  product?: Product;
+  product?: AdminProduct;
   categories: Category[];
   onSubmit: (data: ProductFormInput) => Promise<void> | void;
   onCancel: () => void;
@@ -58,7 +58,8 @@ export default function ProductForm({
           description: product.description,
           shortDescription: product.shortDescription || '',
           sku: product.sku,
-          price: product.price,
+          salePrice: product.salePrice,
+          costPrice: product.costPrice ?? 0,
           discountPercentage: product.discountPercentage ?? undefined,
           stock: product.stock,
           categoryId: product.categoryId,
@@ -75,7 +76,8 @@ export default function ProductForm({
           description: '',
           shortDescription: '',
           sku: '',
-          price: 0,
+          salePrice: 0,
+          costPrice: 0,
           discountPercentage: undefined,
           stock: 0,
           categoryId: '',
@@ -103,12 +105,17 @@ export default function ProductForm({
   }, [productName, isEditing, setValue]);
 
   // Calcular precio con descuento basado en el porcentaje
-  const price = watch('price');
+  const salePrice = watch('salePrice');
+  const costPrice = watch('costPrice');
   const discountPercentage = watch('discountPercentage');
   const discountPrice =
-    discountPercentage && price
-      ? price * (1 - discountPercentage / 100)
+    discountPercentage && salePrice
+      ? salePrice * (1 - discountPercentage / 100)
       : undefined;
+  const margin =
+    salePrice > 0
+      ? (((salePrice - costPrice) / salePrice) * 100).toFixed(1)
+      : '0.0';
 
   // Obtener todas las categorías en formato plano
   const getAllCategoriesFlat = (cats: Category[]): Category[] => {
@@ -282,70 +289,97 @@ export default function ProductForm({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label
-                htmlFor="price"
+                htmlFor="salePrice"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Precio *
+                Precio de venta *
               </label>
               <Input
-                id="price"
+                id="salePrice"
                 type="number"
                 step="0.01"
                 min="0"
-                {...register('price', { valueAsNumber: true })}
+                {...register('salePrice', { valueAsNumber: true })}
                 placeholder="0.00"
               />
-              {errors.price && (
+              {errors.salePrice && (
                 <p className="mt-1 text-sm text-red-600">
-                  {errors.price.message}
+                  {errors.salePrice.message}
                 </p>
               )}
             </div>
 
             <div>
               <label
-                htmlFor="discountPercentage"
+                htmlFor="costPrice"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Porcentaje de Descuento (%)
+                Precio de costo *
               </label>
               <Input
-                id="discountPercentage"
+                id="costPrice"
                 type="number"
-                step="1"
+                step="0.01"
                 min="0"
-                max="100"
-                {...register('discountPercentage', {
-                  setValueAs: (v) => (v === '' || v === undefined ? undefined : Number(v)),
-                })}
-                placeholder="0"
+                {...register('costPrice', { valueAsNumber: true })}
+                placeholder="0.00"
               />
-              {discountPercentage &&
-                discountPercentage > 0 &&
-                discountPrice && (
-                  <div className="mt-2 space-y-1">
-                    <p className="text-sm text-gray-600">
-                      Precio con descuento:{' '}
-                      {new Intl.NumberFormat('es-AR', {
-                        style: 'currency',
-                        currency: 'ARS',
-                      }).format(discountPrice)}
-                    </p>
-                    <p className="text-sm text-green-600 font-medium">
-                      Ahorro:{' '}
-                      {new Intl.NumberFormat('es-AR', {
-                        style: 'currency',
-                        currency: 'ARS',
-                      }).format(price - discountPrice)}
-                    </p>
-                  </div>
-                )}
-              {errors.discountPercentage && (
+              {errors.costPrice && (
                 <p className="mt-1 text-sm text-red-600">
-                  {errors.discountPercentage.message}
+                  {errors.costPrice.message}
                 </p>
               )}
             </div>
+          </div>
+
+          {/* Margen calculado */}
+          <div className="text-sm text-gray-600">
+            Margen: <span className="font-medium text-gray-800">{margin}%</span>
+          </div>
+
+          <div>
+            <label
+              htmlFor="discountPercentage"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Porcentaje de Descuento (%)
+            </label>
+            <Input
+              id="discountPercentage"
+              type="number"
+              step="1"
+              min="0"
+              max="100"
+              {...register('discountPercentage', {
+                setValueAs: (v) => (v === '' || v === undefined ? undefined : Number(v)),
+              })}
+              placeholder="0"
+            />
+            {discountPercentage &&
+              discountPercentage > 0 &&
+              discountPrice && (
+                <div className="mt-2 space-y-1">
+                  <p className="text-sm text-gray-600">
+                    Precio con descuento:{' '}
+                    {new Intl.NumberFormat('es-AR', {
+                      style: 'currency',
+                      currency: 'ARS',
+                    }).format(discountPrice)}
+                  </p>
+                  <p className="text-sm text-green-600 font-medium">
+                    Ahorro:{' '}
+                    {new Intl.NumberFormat('es-AR', {
+                      style: 'currency',
+                      currency: 'ARS',
+                    }).format(salePrice - discountPrice)}
+                  </p>
+                </div>
+              )}
+            {errors.discountPercentage && (
+              <p className="mt-1 text-sm text-red-600">
+                {errors.discountPercentage.message}
+              </p>
+            )}
           </div>
 
           <div>

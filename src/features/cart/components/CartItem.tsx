@@ -43,7 +43,7 @@ export default function CartItem({
   onRemove,
   onItemClick,
 }: CartItemProps) {
-  const currentPrice = item.product.discountPrice || item.product.price;
+  const currentPrice = item.product.discountPrice || item.product.salePrice;
   const itemTotal = currentPrice * item.quantity;
 
   // Estilos según la variante
@@ -105,7 +105,7 @@ export default function CartItem({
         </p>
         {item.product.discountPrice && (
           <p className="text-xs md:text-sm font-semibold text-gray-500 line-through">
-            ${item.product.price.toLocaleString('es-AR')}
+            ${item.product.salePrice.toLocaleString('es-AR')}
           </p>
         )}
 
