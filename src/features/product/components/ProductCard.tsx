@@ -2,6 +2,8 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useState } from 'react';
+import { Minus, Plus } from 'lucide-react';
 import type { ProductListItem } from '@features/product/types';
 import { Button } from '@shared/ui/button';
 import { useAddToCart } from '@features/cart/hooks/useAddToCart';
@@ -11,23 +13,38 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
+  const [quantity, setQuantity] = useState(1);
+
   // Usar el hook personalizado para manejar la lógica de agregar al carrito
-  // quantity: 1 por defecto (desde la card siempre se agrega 1 unidad)
   const { handleAddToCart, isAdding, isOutOfStock } = useAddToCart({
     product,
-    quantity: 1,
+    quantity,
   });
 
   const currentPrice = product.discountPrice || product.salePrice;
   const hasDiscount = !!product.discountPrice;
 
   // Función que se ejecuta al hacer clic en "Agregar al Carrito"
-  const onButtonClick = (e: React.MouseEvent) => {
+  const onButtonClick = async (e: React.MouseEvent) => {
     // Prevenir que el click se propague al Link del producto
     e.preventDefault();
     e.stopPropagation();
-    // Llamar a la función del hook
-    handleAddToCart();
+    // Llamar a la función del hook con la cantidad seleccionada
+    await handleAddToCart(quantity);
+    // Resetear cantidad a 1 después de agregar
+    setQuantity(1);
+  };
+
+  const onDecrement = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setQuantity((q) => Math.max(1, q - 1));
+  };
+
+  const onIncrement = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setQuantity((q) => (product.stock ? Math.min(product.stock, q + 1) : q + 1));
   };
 
   return (
@@ -125,6 +142,38 @@ export default function ProductCard({ product }: ProductCardProps) {
           <p className="text-xs text-green-600 mb-3">
             ✓ {product.stock} unidades disponibles
           </p>
+        )}
+
+        {/* Selector de cantidad — solo cuando hay stock */}
+        {!isOutOfStock && (
+          <div className="flex items-center gap-2 mb-3">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 min-h-[32px] min-w-[32px]"
+              onClick={onDecrement}
+              disabled={quantity <= 1}
+              aria-label="Reducir cantidad"
+            >
+              <Minus className="h-3 w-3" aria-hidden="true" />
+            </Button>
+            <span
+              className="w-8 text-center font-bold text-sm"
+              aria-label={`Cantidad: ${quantity}`}
+            >
+              {quantity}
+            </span>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 min-h-[32px] min-w-[32px]"
+              onClick={onIncrement}
+              disabled={!!product.stock && quantity >= product.stock}
+              aria-label="Aumentar cantidad"
+            >
+              <Plus className="h-3 w-3" aria-hidden="true" />
+            </Button>
+          </div>
         )}
 
         {/* Botón agregar al carrito */}

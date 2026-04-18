@@ -1,5 +1,5 @@
 import { apiClient, adminFetch } from '@shared/api';
-import { Product, ProductsResponse } from '@features/product/types';
+import { AdminProduct, Product, ProductsResponse } from '@features/product/types';
 import { ProductFormInput } from '@features/admin/schemas/product.schema';
 
 // ─── Tipos de respuesta del backend ────────────────────────────────────────
@@ -91,6 +91,14 @@ export async function getProducts(params?: {
  */
 export async function getProductById(id: string): Promise<Product> {
   return apiClient.get<Product>(`/products/${id}`);
+}
+
+/**
+ * Trae un producto por ID desde el endpoint admin (incluye costPrice).
+ * Usa el endpoint admin GET /api/admin/products/:id.
+ */
+export async function getAdminProductById(id: string): Promise<AdminProduct> {
+  return adminFetch.get<AdminProduct>(`/api/admin/products/${id}`);
 }
 
 /**
