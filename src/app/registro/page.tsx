@@ -50,12 +50,22 @@ export default function RegisterPage() {
 
   const onSubmit = async (data: RegisterFormInput) => {
     try {
+      const hasAddress = !!(data.address?.trim() && data.city?.trim() && data.province?.trim() && data.postalCode?.trim());
       await register({
         email: data.email,
         password: data.password,
         firstName: data.firstName,
         lastName: data.lastName,
-        phone: data.phone,
+        phone: data.phone || undefined,
+        shippingAddress: hasAddress
+          ? {
+              address: data.address!,
+              city: data.city!,
+              province: data.province!,
+              postalCode: data.postalCode!,
+              notes: data.notes?.trim() || undefined,
+            }
+          : undefined,
       });
       toast.success('¡Cuenta creada exitosamente!');
       router.push('/');

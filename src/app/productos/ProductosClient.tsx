@@ -22,13 +22,19 @@ const ITEMS_PER_PAGE = 12;
 interface ProductosClientProps {
   initialProducts: ProductListItem[];
   categories: Category[];
+  initialSearch?: string;
 }
 
 export default function ProductosClient({
   initialProducts,
   categories,
+  initialSearch,
 }: ProductosClientProps) {
-  const { searchQuery } = useSearch();
+  const { searchQuery, setSearchQuery } = useSearch();
+
+  useEffect(() => {
+    if (initialSearch) setSearchQuery(initialSearch);
+  }, [initialSearch]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [hasDiscount, setHasDiscount] = useState<boolean>(false);
   const [sortBy, setSortBy] = useState<SortOption>('name-asc');

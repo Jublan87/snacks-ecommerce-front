@@ -7,7 +7,7 @@ import { adminMiddleware } from '@shared/middleware/admin.middleware';
  * Middleware principal de Next.js
  * Combina todos los middlewares de la aplicación
  */
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   // Ejecutar middleware de autenticación
   const authResponse = authMiddleware(request);
   if (authResponse) {

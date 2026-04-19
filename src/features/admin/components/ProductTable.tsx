@@ -80,9 +80,9 @@ export default function ProductTable({
       // Búsqueda por nombre, SKU o descripción
       const matchesSearch =
         searchQuery === '' ||
-        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchQuery.toLowerCase());
+        (product.name ?? '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (product.sku ?? '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (product.description ?? '').toLowerCase().includes(searchQuery.toLowerCase());
 
       // Filtro por estado
       const matchesStatus =

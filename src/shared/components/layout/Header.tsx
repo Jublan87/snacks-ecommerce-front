@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { User, LogOut, LogIn, Package, LayoutDashboard } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@shared/ui/badge';
@@ -33,11 +33,20 @@ import {
 
 export default function Header() {
   const router = useRouter();
+  const pathname = usePathname();
   // Estados para controlar la apertura/cierre de menús
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Menú móvil
   const [isCartOpen, setIsCartOpen] = useState(false); // Drawer del carrito
   const [mounted, setMounted] = useState(false); // Para evitar error de hidratación
   const { searchQuery, setSearchQuery } = useSearch();
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    if (value && pathname !== '/productos') {
+      router.push(`/productos?q=${encodeURIComponent(value)}`);
+    }
+  };
+
   // Obtener la cantidad total de items en el carrito (se actualiza automáticamente)
   const itemCount = useCartStore((state) => state.getItemCount());
   // Auth state
@@ -116,7 +125,7 @@ export default function Header() {
             <div className="flex-1 max-w-md" role="search">
               <ProductSearch
                 searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
+                onSearchChange={handleSearchChange}
               />
             </div>
           </div>
@@ -307,7 +316,7 @@ export default function Header() {
                 <div className="px-4 mb-4">
                   <ProductSearch
                     searchQuery={searchQuery}
-                    onSearchChange={setSearchQuery}
+                    onSearchChange={handleSearchChange}
                   />
                 </div>
                 <Link

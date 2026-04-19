@@ -25,6 +25,7 @@ export interface RegisterData {
   firstName: string;
   lastName: string;
   phone?: string;
+  shippingAddress?: StoredShippingAddress;
 }
 
 export interface UpdateProfileData {
