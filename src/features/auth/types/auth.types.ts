@@ -1,6 +1,18 @@
-import { StoredShippingAddress } from '@features/checkout/types';
-
 export type UserRole = 'customer' | 'admin';
+
+export interface Address {
+  id: string;
+  userId: string;
+  address: string;
+  city: string;
+  province: string;
+  postalCode: string;
+  notes?: string | null;
+  label?: string | null;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export interface User {
   id: string;
@@ -8,8 +20,7 @@ export interface User {
   firstName: string;
   lastName: string;
   phone?: string;
-  // Only address/city/province/postalCode/notes — matches backend ShippingAddressDto
-  shippingAddress?: StoredShippingAddress;
+  addresses: Address[];
   role: UserRole;
   createdAt: string;
 }
@@ -25,14 +36,20 @@ export interface RegisterData {
   firstName: string;
   lastName: string;
   phone?: string;
-  shippingAddress?: StoredShippingAddress;
+  // Backend still accepts optional shippingAddress in register transaction
+  shippingAddress?: {
+    address: string;
+    city: string;
+    province: string;
+    postalCode: string;
+    notes?: string;
+  };
 }
 
 export interface UpdateProfileData {
   firstName?: string;
   lastName?: string;
   phone?: string;
-  shippingAddress?: StoredShippingAddress | null;
 }
 
 export interface ChangePasswordData {

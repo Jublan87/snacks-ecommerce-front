@@ -40,51 +40,30 @@ export const updateProfileSchema = z.object({
 export type UpdateProfileFormInput = z.infer<typeof updateProfileSchema>;
 
 /**
- * Esquema para actualizar dirección de envío.
- * firstName / lastName / phone se envían al nivel raíz de UpdateProfileDto.
- * Solo address, city, province, postalCode y notes van dentro de shippingAddress.
+ * Esquema base para campos de dirección postal.
+ * Usado tanto para crear como para editar una Address.
  */
-export const updateAddressSchema = z.object({
-  // Campos de perfil (top-level en UpdateProfileDto)
-  firstName: z
-    .string()
-    .min(1, 'El nombre es requerido')
-    .min(2, 'El nombre debe tener al menos 2 caracteres')
-    .max(50, 'El nombre no puede exceder 50 caracteres'),
-  lastName: z
-    .string()
-    .min(1, 'El apellido es requerido')
-    .min(2, 'El apellido debe tener al menos 2 caracteres')
-    .max(50, 'El apellido no puede exceder 50 caracteres'),
-  phone: z
-    .string()
-    .min(1, 'El teléfono es requerido')
-    .min(10, 'El teléfono debe tener al menos 10 dígitos')
-    .refine(
-      (val) => /^[0-9+\-\s()]+$/.test(val),
-      'El teléfono solo puede contener números y caracteres especiales'
-    ),
-  // Campos de dirección (van dentro de shippingAddress en UpdateProfileDto)
+export const addressFormSchema = z.object({
   address: z
     .string()
     .min(1, 'La dirección es requerida')
     .min(5, 'La dirección debe tener al menos 5 caracteres')
-    .max(200, 'La dirección no puede exceder 200 caracteres'),
+    .max(500, 'La dirección no puede exceder 500 caracteres'),
   city: z
     .string()
     .min(1, 'La ciudad es requerida')
     .min(2, 'La ciudad debe tener al menos 2 caracteres')
-    .max(50, 'La ciudad no puede exceder 50 caracteres'),
+    .max(100, 'La ciudad no puede exceder 100 caracteres'),
   province: z
     .string()
     .min(1, 'La provincia es requerida')
     .min(2, 'La provincia debe tener al menos 2 caracteres')
-    .max(50, 'La provincia no puede exceder 50 caracteres'),
+    .max(100, 'La provincia no puede exceder 100 caracteres'),
   postalCode: z
     .string()
     .min(1, 'El código postal es requerido')
     .min(4, 'El código postal debe tener al menos 4 caracteres')
-    .max(10, 'El código postal no puede exceder 10 caracteres')
+    .max(20, 'El código postal no puede exceder 20 caracteres')
     .refine(
       (val) => /^[0-9A-Za-z\s-]+$/.test(val),
       'El código postal contiene caracteres inválidos'
@@ -93,9 +72,23 @@ export const updateAddressSchema = z.object({
     .string()
     .max(500, 'Las notas no pueden exceder 500 caracteres')
     .optional(),
+  label: z
+    .string()
+    .max(100, 'La etiqueta no puede exceder 100 caracteres')
+    .optional(),
 });
 
-export type UpdateAddressFormInput = z.infer<typeof updateAddressSchema>;
+export type AddressFormInput = z.infer<typeof addressFormSchema>;
+
+/**
+ * @deprecated — Use addressFormSchema. Kept for schema reference only.
+ * The old updateAddressSchema mixed profile fields + address fields
+ * (firstName/lastName/phone at the top level of UpdateProfileDto).
+ * Address mutations now go through /addresses endpoints exclusively.
+ */
+export const updateAddressSchema = addressFormSchema;
+
+export type UpdateAddressFormInput = AddressFormInput;
 
 // Esquema para cambiar contraseña
 export const changePasswordSchema = z

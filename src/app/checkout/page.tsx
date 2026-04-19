@@ -100,19 +100,21 @@ function CheckoutPageContent() {
 
   // Cargar dirección guardada al montar
   useEffect(() => {
-    if (user?.shippingAddress) {
-      // StoredShippingAddress only has address/city/province/postalCode/notes.
+    // Prefer the user's default address (relational model).
+    // Falls back to localStorage cache when no default is set.
+    const def = user?.addresses?.find((a) => a.isDefault);
+    if (def) {
+      // Default Address has address/city/province/postalCode/notes.
       // Personal fields (firstName, lastName, email, phone) come from the user directly.
-      const a = user.shippingAddress;
-      setValue('shippingAddress.firstName', user.firstName);
-      setValue('shippingAddress.lastName', user.lastName);
-      setValue('shippingAddress.email', user.email);
-      if (user.phone) setValue('shippingAddress.phone', user.phone);
-      setValue('shippingAddress.address', a.address);
-      setValue('shippingAddress.city', a.city);
-      setValue('shippingAddress.province', a.province);
-      setValue('shippingAddress.postalCode', a.postalCode);
-      if (a.notes) setValue('shippingAddress.notes', a.notes);
+      setValue('shippingAddress.firstName', user!.firstName);
+      setValue('shippingAddress.lastName', user!.lastName);
+      setValue('shippingAddress.email', user!.email);
+      if (user!.phone) setValue('shippingAddress.phone', user!.phone);
+      setValue('shippingAddress.address', def.address);
+      setValue('shippingAddress.city', def.city);
+      setValue('shippingAddress.province', def.province);
+      setValue('shippingAddress.postalCode', def.postalCode);
+      if (def.notes) setValue('shippingAddress.notes', def.notes);
     } else {
       const saved = getSavedShippingAddress();
       if (saved) {

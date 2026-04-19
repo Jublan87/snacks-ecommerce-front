@@ -4,12 +4,20 @@ import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { Plus, Edit2, Trash2, MapPin } from 'lucide-react';
+import { Plus, Edit2, Trash2, MapPin, Star } from 'lucide-react';
 import { useAuthStore } from '@features/auth/store/auth-store';
 import {
-  updateAddressSchema,
-  type UpdateAddressFormInput,
+  addressFormSchema,
+  type AddressFormInput,
 } from '@features/auth/schemas/profile.schema';
+import {
+  createAddress,
+  updateAddress,
+  deleteAddress,
+  setDefaultAddress,
+} from '@features/auth/services/addresses.service';
+import type { Address } from '@features/auth/types/auth.types';
+import { Badge } from '@shared/ui/badge';
 import { Button } from '@shared/ui/button';
 import { Input } from '@shared/ui/input';
 import { Separator } from '@shared/ui/separator';
@@ -21,6 +29,14 @@ import {
   CardTitle,
 } from '@shared/ui/card';
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@shared/ui/dialog';
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -28,478 +44,473 @@ import {
   SelectValue,
 } from '@shared/ui/select';
 
-export default function ProfileAddressTab() {
-  const { user, updateUser } = useAuthStore();
-  const [isAdding, setIsAdding] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
+// Provincias de Argentina
+const PROVINCES = [
+  'Buenos Aires',
+  'Catamarca',
+  'Chaco',
+  'Chubut',
+  'Córdoba',
+  'Corrientes',
+  'Entre Ríos',
+  'Formosa',
+  'Jujuy',
+  'La Pampa',
+  'La Rioja',
+  'Mendoza',
+  'Misiones',
+  'Neuquén',
+  'Río Negro',
+  'Salta',
+  'San Juan',
+  'San Luis',
+  'Santa Cruz',
+  'Santa Fe',
+  'Santiago del Estero',
+  'Tierra del Fuego',
+  'Tucumán',
+];
 
+// --- Address Form (create / edit) ---
+
+interface AddressFormProps {
+  initial?: Address;
+  onSave: (data: AddressFormInput) => Promise<void>;
+  onCancel: () => void;
+  isSubmitting: boolean;
+}
+
+function AddressForm({ initial, onSave, onCancel, isSubmitting }: AddressFormProps) {
   const {
     register,
     handleSubmit,
     control,
-    setValue,
-    formState: { errors, isSubmitting },
-    reset,
-  } = useForm<UpdateAddressFormInput>({
-    resolver: zodResolver(updateAddressSchema),
+    formState: { errors },
+  } = useForm<AddressFormInput>({
+    resolver: zodResolver(addressFormSchema),
     defaultValues: {
-      // Profile-level fields (sent at top level of UpdateProfileDto)
-      firstName: user?.firstName || '',
-      lastName: user?.lastName || '',
-      phone: user?.phone || '',
-      // Address-level fields (sent inside shippingAddress)
-      address: user?.shippingAddress?.address || '',
-      city: user?.shippingAddress?.city || '',
-      province: user?.shippingAddress?.province || '',
-      postalCode: user?.shippingAddress?.postalCode || '',
-      notes: user?.shippingAddress?.notes || '',
+      address: initial?.address ?? '',
+      city: initial?.city ?? '',
+      province: initial?.province ?? '',
+      postalCode: initial?.postalCode ?? '',
+      notes: initial?.notes ?? '',
+      label: initial?.label ?? '',
     },
   });
 
-  const onSubmit = async (data: UpdateAddressFormInput) => {
+  return (
+    <form onSubmit={handleSubmit(onSave)} className="space-y-4">
+      {/* Etiqueta (opcional) */}
+      <div className="space-y-2">
+        <label htmlFor="addr-label" className="text-sm font-medium text-gray-700">
+          Etiqueta <span className="text-gray-400">(opcional)</span>
+        </label>
+        <Input
+          id="addr-label"
+          placeholder="Ej: Casa, Trabajo"
+          {...register('label')}
+          aria-invalid={errors.label ? 'true' : 'false'}
+        />
+        {errors.label && (
+          <p className="text-sm text-red-600" role="alert">
+            {errors.label.message}
+          </p>
+        )}
+      </div>
+
+      {/* Dirección */}
+      <div className="space-y-2">
+        <label htmlFor="addr-address" className="text-sm font-medium text-gray-700">
+          Dirección *
+        </label>
+        <Input
+          id="addr-address"
+          placeholder="Calle y número"
+          {...register('address')}
+          aria-invalid={errors.address ? 'true' : 'false'}
+        />
+        {errors.address && (
+          <p className="text-sm text-red-600" role="alert">
+            {errors.address.message}
+          </p>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Ciudad */}
+        <div className="space-y-2">
+          <label htmlFor="addr-city" className="text-sm font-medium text-gray-700">
+            Ciudad *
+          </label>
+          <Input
+            id="addr-city"
+            {...register('city')}
+            aria-invalid={errors.city ? 'true' : 'false'}
+          />
+          {errors.city && (
+            <p className="text-sm text-red-600" role="alert">
+              {errors.city.message}
+            </p>
+          )}
+        </div>
+
+        {/* Provincia */}
+        <div className="space-y-2">
+          <label htmlFor="addr-province" className="text-sm font-medium text-gray-700">
+            Provincia *
+          </label>
+          <Controller
+            name="province"
+            control={control}
+            render={({ field }) => (
+              <Select value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger id="addr-province">
+                  <SelectValue placeholder="Seleccioná una provincia" />
+                </SelectTrigger>
+                <SelectContent>
+                  {PROVINCES.map((prov) => (
+                    <SelectItem key={prov} value={prov}>
+                      {prov}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
+          {errors.province && (
+            <p className="text-sm text-red-600" role="alert">
+              {errors.province.message}
+            </p>
+          )}
+        </div>
+
+        {/* Código Postal */}
+        <div className="space-y-2">
+          <label htmlFor="addr-postalCode" className="text-sm font-medium text-gray-700">
+            Código Postal *
+          </label>
+          <Input
+            id="addr-postalCode"
+            {...register('postalCode')}
+            aria-invalid={errors.postalCode ? 'true' : 'false'}
+          />
+          {errors.postalCode && (
+            <p className="text-sm text-red-600" role="alert">
+              {errors.postalCode.message}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Notas */}
+      <div className="space-y-2">
+        <label htmlFor="addr-notes" className="text-sm font-medium text-gray-700">
+          Notas <span className="text-gray-400">(opcional)</span>
+        </label>
+        <Input
+          id="addr-notes"
+          placeholder="Referencias, instrucciones especiales, etc."
+          {...register('notes')}
+          aria-invalid={errors.notes ? 'true' : 'false'}
+        />
+        {errors.notes && (
+          <p className="text-sm text-red-600" role="alert">
+            {errors.notes.message}
+          </p>
+        )}
+      </div>
+
+      <div className="flex gap-3 pt-2">
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Guardando...' : 'Guardar dirección'}
+        </Button>
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+          Cancelar
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+// --- Delete Confirm Dialog ---
+
+interface DeleteConfirmDialogProps {
+  open: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+  isDeleting: boolean;
+}
+
+function DeleteConfirmDialog({ open, onConfirm, onCancel, isDeleting }: DeleteConfirmDialogProps) {
+  return (
+    <Dialog open={open} onOpenChange={(o) => { if (!o) onCancel(); }}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Eliminar dirección</DialogTitle>
+          <DialogDescription>
+            ¿Estás seguro de que querés eliminar esta dirección? Esta acción no se puede deshacer.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="outline" onClick={onCancel} disabled={isDeleting}>
+            Cancelar
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={onConfirm}
+            disabled={isDeleting}
+            className="bg-red-600 hover:bg-red-700 text-white"
+          >
+            {isDeleting ? 'Eliminando...' : 'Eliminar'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// --- Address Card ---
+
+interface AddressCardProps {
+  address: Address;
+  onEdit: (address: Address) => void;
+  onDelete: (address: Address) => void;
+  onSetDefault: (address: Address) => void;
+  isLoading: boolean;
+}
+
+function AddressCard({ address, onEdit, onDelete, onSetDefault, isLoading }: AddressCardProps) {
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-start gap-3">
+            <MapPin className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                {address.label && (
+                  <span className="font-semibold text-gray-800">{address.label}</span>
+                )}
+                {address.isDefault && (
+                  <Badge variant="default" className="text-xs">
+                    Predeterminada
+                  </Badge>
+                )}
+              </div>
+            </div>
+          </div>
+          <div className="flex gap-1 shrink-0">
+            {!address.isDefault && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onSetDefault(address)}
+                disabled={isLoading}
+                title="Marcar como predeterminada"
+                aria-label="Marcar como dirección predeterminada"
+                className="flex items-center gap-1 text-xs text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50"
+              >
+                <Star className="w-3.5 h-3.5" />
+                Predeterminar
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onEdit(address)}
+              disabled={isLoading}
+              className="flex items-center gap-1"
+              aria-label="Editar dirección"
+            >
+              <Edit2 className="w-3.5 h-3.5" />
+              Editar
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onDelete(address)}
+              disabled={isLoading}
+              className="flex items-center gap-1 text-red-600 hover:text-red-700 hover:bg-red-50"
+              aria-label="Eliminar dirección"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              Eliminar
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-1 text-sm text-gray-700 ml-8">
+          <p>{address.address}</p>
+          <p>
+            {address.city}, {address.province} {address.postalCode}
+          </p>
+          {address.notes && (
+            <p className="text-gray-500 italic">Notas: {address.notes}</p>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// --- Main Tab ---
+
+export default function ProfileAddressTab() {
+  const { user, initialize } = useAuthStore();
+  const addresses = user?.addresses ?? [];
+
+  // Form state: null = hidden, undefined = new, Address = editing
+  const [formTarget, setFormTarget] = useState<Address | undefined | null>(null);
+  const [isFormSubmitting, setIsFormSubmitting] = useState(false);
+
+  // Delete confirm state
+  const [pendingDelete, setPendingDelete] = useState<Address | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Loading for set-default
+  const [loadingId, setLoadingId] = useState<string | null>(null);
+
+  const isAnyLoading = isFormSubmitting || isDeleting || loadingId !== null;
+
+  const handleOpenAdd = () => setFormTarget(undefined);
+  const handleOpenEdit = (address: Address) => setFormTarget(address);
+  const handleCloseForm = () => setFormTarget(null);
+
+  const handleSave = async (data: AddressFormInput) => {
+    setIsFormSubmitting(true);
     try {
-      // firstName / lastName / phone go to UpdateProfileDto top level.
-      // Only address fields accepted by ShippingAddressDto go inside shippingAddress.
-      await updateUser({
-        firstName: data.firstName,
-        lastName: data.lastName,
-        phone: data.phone,
-        shippingAddress: {
-          address: data.address,
-          city: data.city,
-          province: data.province,
-          postalCode: data.postalCode,
-          notes: data.notes,
-        },
-      });
-      toast.success('Dirección guardada correctamente');
-      setIsAdding(false);
-      setIsEditing(false);
-      reset();
+      if (formTarget === undefined) {
+        // Create
+        await createAddress(data);
+        toast.success('Dirección agregada correctamente');
+      } else if (formTarget !== null) {
+        // Edit
+        await updateAddress(formTarget.id, data);
+        toast.success('Dirección actualizada correctamente');
+      }
+      await initialize(); // Re-fetch /auth/me to sync addresses into the store
+      setFormTarget(null);
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : 'Error al guardar dirección'
-      );
+      toast.error(error instanceof Error ? error.message : 'Error al guardar dirección');
+    } finally {
+      setIsFormSubmitting(false);
     }
   };
 
-  const handleCancel = () => {
-    reset({
-      firstName: user?.firstName || '',
-      lastName: user?.lastName || '',
-      phone: user?.phone || '',
-      address: user?.shippingAddress?.address || '',
-      city: user?.shippingAddress?.city || '',
-      province: user?.shippingAddress?.province || '',
-      postalCode: user?.shippingAddress?.postalCode || '',
-      notes: user?.shippingAddress?.notes || '',
-    });
-    setIsAdding(false);
-    setIsEditing(false);
-  };
+  const handleDeleteRequest = (address: Address) => setPendingDelete(address);
 
-  const handleDelete = () => {
-    if (confirm('¿Estás seguro de que deseas eliminar esta dirección?')) {
-      updateUser({
-        shippingAddress: undefined,
-      })
-        .then(() => {
-          toast.success('Dirección eliminada correctamente');
-        })
-        .catch((error) => {
-          toast.error(
-            error instanceof Error
-              ? error.message
-              : 'Error al eliminar dirección'
-          );
-        });
+  const handleDeleteConfirm = async () => {
+    if (!pendingDelete) return;
+    setIsDeleting(true);
+    try {
+      await deleteAddress(pendingDelete.id);
+      toast.success('Dirección eliminada correctamente');
+      await initialize();
+      setPendingDelete(null);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Error al eliminar dirección');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
-  const handleEdit = () => {
-    if (user?.shippingAddress) {
-      // Profile fields come from user directly (top-level model fields)
-      setValue('firstName', user.firstName);
-      setValue('lastName', user.lastName);
-      setValue('phone', user.phone || '');
-      // Address fields come from user.shippingAddress
-      setValue('address', user.shippingAddress.address);
-      setValue('city', user.shippingAddress.city);
-      setValue('province', user.shippingAddress.province);
-      setValue('postalCode', user.shippingAddress.postalCode);
-      setValue('notes', user.shippingAddress.notes || '');
-      setIsEditing(true);
+  const handleSetDefault = async (address: Address) => {
+    setLoadingId(address.id);
+    try {
+      await setDefaultAddress(address.id);
+      toast.success('Dirección predeterminada actualizada');
+      await initialize();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Error al actualizar dirección predeterminada');
+    } finally {
+      setLoadingId(null);
     }
   };
 
-  const hasAddress = !!user?.shippingAddress;
-  const showForm = isAdding || isEditing;
-
-  // Provincias de Argentina
-  const provinces = [
-    'Buenos Aires',
-    'Catamarca',
-    'Chaco',
-    'Chubut',
-    'Córdoba',
-    'Corrientes',
-    'Entre Ríos',
-    'Formosa',
-    'Jujuy',
-    'La Pampa',
-    'La Rioja',
-    'Mendoza',
-    'Misiones',
-    'Neuquén',
-    'Río Negro',
-    'Salta',
-    'San Juan',
-    'San Luis',
-    'Santa Cruz',
-    'Santa Fe',
-    'Santiago del Estero',
-    'Tierra del Fuego',
-    'Tucumán',
-  ];
+  const showForm = formTarget !== null;
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">
-            Direcciones de Envío
-          </h2>
-          <p className="text-sm text-gray-600 mt-1">
-            Gestiona tus direcciones de envío
-          </p>
+          <h2 className="text-xl font-semibold text-gray-900">Direcciones de Envío</h2>
+          <p className="text-sm text-gray-600 mt-1">Gestioná tus direcciones de envío</p>
         </div>
         {!showForm && (
           <Button
-            onClick={() => {
-              reset({
-                firstName: user?.firstName || '',
-                lastName: user?.lastName || '',
-                phone: user?.phone || '',
-                address: '',
-                city: '',
-                province: '',
-                postalCode: '',
-                notes: '',
-              });
-              setIsAdding(true);
-            }}
+            onClick={handleOpenAdd}
+            disabled={isAnyLoading}
             className="flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
-            Agregar Dirección
+            Agregar dirección
           </Button>
         )}
       </div>
 
       <Separator />
 
+      {/* Address Form (create / edit) */}
+      {showForm && (
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              {formTarget === undefined ? 'Nueva dirección' : 'Editar dirección'}
+            </CardTitle>
+            <CardDescription>Completá los datos de tu dirección de envío</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <AddressForm
+              initial={formTarget === undefined ? undefined : formTarget}
+              onSave={handleSave}
+              onCancel={handleCloseForm}
+              isSubmitting={isFormSubmitting}
+            />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Address List */}
       {!showForm && (
         <>
-          {hasAddress && user?.shippingAddress ? (
-            <Card>
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-3">
-                    <MapPin className="w-5 h-5 text-gray-400 mt-0.5" />
-                    <div>
-                      <CardTitle className="text-lg">
-                        {user.firstName}{' '}
-                        {user.lastName}
-                      </CardTitle>
-                      <CardDescription className="mt-1">
-                        {user.email}
-                      </CardDescription>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleEdit}
-                      className="flex items-center gap-2"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                      Editar
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleDelete}
-                      className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      Eliminar
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2 text-sm text-gray-700">
-                  <p>{user.shippingAddress.address}</p>
-                  <p>
-                    {user.shippingAddress.city}, {user.shippingAddress.province}{' '}
-                    {user.shippingAddress.postalCode}
-                  </p>
-                  {user.phone && (
-                    <p>Tel: {user.phone}</p>
-                  )}
-                  {user.shippingAddress.notes && (
-                    <p className="text-gray-500 italic">
-                      Notas: {user.shippingAddress.notes}
-                    </p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+          {addresses.length > 0 ? (
+            <div className="space-y-4">
+              {addresses.map((addr) => (
+                <AddressCard
+                  key={addr.id}
+                  address={addr}
+                  onEdit={handleOpenEdit}
+                  onDelete={handleDeleteRequest}
+                  onSetDefault={handleSetDefault}
+                  isLoading={isAnyLoading}
+                />
+              ))}
+            </div>
           ) : (
             <div className="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg">
               <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600 mb-4">
-                No tienes direcciones guardadas
-              </p>
+              <p className="text-gray-600 mb-4">No tenés direcciones guardadas</p>
               <Button
-                onClick={() => {
-                  reset({
-                    firstName: user?.firstName || '',
-                    lastName: user?.lastName || '',
-                    phone: user?.phone || '',
-                    address: '',
-                    city: '',
-                    province: '',
-                    postalCode: '',
-                    notes: '',
-                  });
-                  setIsAdding(true);
-                }}
+                onClick={handleOpenAdd}
                 className="flex items-center gap-2 mx-auto"
               >
                 <Plus className="w-4 h-4" />
-                Agregar Primera Dirección
+                Agregar primera dirección
               </Button>
             </div>
           )}
         </>
       )}
 
-      {showForm && (
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              {isEditing ? 'Editar Dirección' : 'Nueva Dirección'}
-            </CardTitle>
-            <CardDescription>
-              Completa los datos de tu dirección de envío
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Nombre */}
-                <div className="space-y-2">
-                  <label
-                    htmlFor="address-firstName"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    Nombre
-                  </label>
-                  <Input
-                    id="address-firstName"
-                    {...register('firstName')}
-                    aria-invalid={errors.firstName ? 'true' : 'false'}
-                  />
-                  {errors.firstName && (
-                    <p className="text-sm text-red-600" role="alert">
-                      {errors.firstName.message}
-                    </p>
-                  )}
-                </div>
-
-                {/* Apellido */}
-                <div className="space-y-2">
-                  <label
-                    htmlFor="address-lastName"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    Apellido
-                  </label>
-                  <Input
-                    id="address-lastName"
-                    {...register('lastName')}
-                    aria-invalid={errors.lastName ? 'true' : 'false'}
-                  />
-                  {errors.lastName && (
-                    <p className="text-sm text-red-600" role="alert">
-                      {errors.lastName.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Teléfono */}
-              <div className="space-y-2">
-                <label
-                  htmlFor="address-phone"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Teléfono
-                </label>
-                <Input
-                  id="address-phone"
-                  type="tel"
-                  placeholder="+54 11 1234-5678"
-                  {...register('phone')}
-                  aria-invalid={errors.phone ? 'true' : 'false'}
-                />
-                {errors.phone && (
-                  <p className="text-sm text-red-600" role="alert">
-                    {errors.phone.message}
-                  </p>
-                )}
-              </div>
-
-              {/* Dirección */}
-              <div className="space-y-2">
-                <label
-                  htmlFor="address-address"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Dirección
-                </label>
-                <Input
-                  id="address-address"
-                  placeholder="Calle y número"
-                  {...register('address')}
-                  aria-invalid={errors.address ? 'true' : 'false'}
-                />
-                {errors.address && (
-                  <p className="text-sm text-red-600" role="alert">
-                    {errors.address.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Ciudad */}
-                <div className="space-y-2">
-                  <label
-                    htmlFor="address-city"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    Ciudad
-                  </label>
-                  <Input
-                    id="address-city"
-                    {...register('city')}
-                    aria-invalid={errors.city ? 'true' : 'false'}
-                  />
-                  {errors.city && (
-                    <p className="text-sm text-red-600" role="alert">
-                      {errors.city.message}
-                    </p>
-                  )}
-                </div>
-
-                {/* Provincia */}
-                <div className="space-y-2">
-                  <label
-                    htmlFor="address-province"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    Provincia
-                  </label>
-                  <Controller
-                    name="province"
-                    control={control}
-                    render={({ field }) => (
-                      <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      >
-                        <SelectTrigger id="address-province">
-                          <SelectValue placeholder="Selecciona una provincia" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {provinces.map((prov) => (
-                            <SelectItem key={prov} value={prov}>
-                              {prov}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                  {errors.province && (
-                    <p className="text-sm text-red-600" role="alert">
-                      {errors.province.message}
-                    </p>
-                  )}
-                </div>
-
-                {/* Código Postal */}
-                <div className="space-y-2">
-                  <label
-                    htmlFor="address-postalCode"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    Código Postal
-                  </label>
-                  <Input
-                    id="address-postalCode"
-                    {...register('postalCode')}
-                    aria-invalid={errors.postalCode ? 'true' : 'false'}
-                  />
-                  {errors.postalCode && (
-                    <p className="text-sm text-red-600" role="alert">
-                      {errors.postalCode.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Notas */}
-              <div className="space-y-2">
-                <label
-                  htmlFor="address-notes"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Notas (opcional)
-                </label>
-                <Input
-                  id="address-notes"
-                  placeholder="Referencias, instrucciones especiales, etc."
-                  {...register('notes')}
-                  aria-invalid={errors.notes ? 'true' : 'false'}
-                />
-                {errors.notes && (
-                  <p className="text-sm text-red-600" role="alert">
-                    {errors.notes.message}
-                  </p>
-                )}
-              </div>
-
-              {/* Botones */}
-              <div className="flex gap-3 pt-4">
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? 'Guardando...' : 'Guardar Dirección'}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleCancel}
-                  disabled={isSubmitting}
-                >
-                  Cancelar
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      )}
+      {/* Delete Confirm Dialog */}
+      <DeleteConfirmDialog
+        open={pendingDelete !== null}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setPendingDelete(null)}
+        isDeleting={isDeleting}
+      />
     </div>
   );
 }
