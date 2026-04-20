@@ -2,7 +2,7 @@
 
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
-import { serverGet, serverPost, serverPut } from '@shared/api/server';
+import { serverGet, serverPost, serverPut, serverPatch } from '@shared/api/server';
 import { ApiError } from '@shared/api';
 import type {
   User,
@@ -163,9 +163,9 @@ export async function verifyAction(): Promise<ActionResult<{ valid: boolean }>> 
 
 export async function updateProfileAction(data: UpdateProfileData): Promise<ActionResult<User>> {
   try {
-    // Backend PUT /auth/profile returns MeResponse = { user: UserWithoutPassword }
+    // Backend PATCH /users/me returns MeResponse = { user: UserWithoutPassword }
     // After envelope unwrap: { user: User } — extract the user field
-    const result = await serverPut<{ user: User }>('/auth/profile', data);
+    const result = await serverPatch<{ user: User }>('/users/me', data);
     const updated = result?.user ?? (result as unknown as User);
     revalidatePath('/perfil');
     return { success: true, data: updated };
